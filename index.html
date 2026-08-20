@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel — Layihələr və Xərclər</title>
+<style>
+  :root{
+    --blue:#1a6fe0;
+    --blue-dark:#0f4fb0;
+    --navy:#152945;
+    --navy-2:#1d3a5f;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e3e7ee;
+    --text:#26324a;
+    --muted:#7c8aa3;
+    --title:#8a6d3b;
+    --green:#1f9d55;
+    --green-bg:#e6f7ed;
+    --orange:#e0932a;
+    --orange-bg:#fdf1e0;
+    --red:#e04b4b;
+    --red-bg:#fdecec;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-size:14px;
+  }
+  .app{display:flex;height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:230px;background:var(--navy);color:#c9d4e6;
+    display:flex;flex-direction:column;flex-shrink:0;
+  }
+  .sidebar .logo{
+    padding:22px 20px;font-weight:700;color:#fff;font-size:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.3px;
+  }
+  .sidebar .logo span{display:block;font-size:11px;font-weight:400;color:#8fa1c2;margin-top:3px;letter-spacing:.4px;}
+  .nav{flex:1;padding:14px 10px;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:8px;
+    cursor:pointer;color:#c9d4e6;margin-bottom:4px;font-weight:500;transition:.15s;
+    position:relative;
+  }
+  .nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85;}
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{background:var(--blue);color:#fff;}
+  .nav-item.active svg{opacity:1;}
+  .nav-badge{
+    margin-left:auto;background:var(--orange);color:#fff;font-size:11px;font-weight:700;
+    border-radius:10px;padding:1px 7px;min-width:18px;text-align:center;
+  }
+  .role-box{margin:10px;padding:12px;background:rgba(255,255,255,.05);border-radius:10px;}
+  .role-box .label{font-size:10.5px;color:#8fa1c2;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .role-toggle{display:flex;background:rgba(0,0,0,.25);border-radius:8px;padding:3px;}
+  .role-toggle button{
+    flex:1;border:none;background:transparent;color:#c9d4e6;padding:7px 4px;border-radius:6px;
+    font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .role-toggle button.active{background:var(--blue);color:#fff;}
+  .role-name{margin-top:9px;font-size:12px;color:#fff;font-weight:600;}
+  .role-name span{color:#8fa1c2;font-weight:400;}
+
+  /* Main */
+  .main{flex:1;overflow-y:auto;padding:26px 32px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .toolbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .page-title{font-size:19px;font-weight:700;color:var(--title);margin:0;}
+  .page-sub{color:var(--muted);font-size:13px;margin-top:6px;}
+  .page-sub b{color:var(--text);}
+  .toolbar-actions{display:flex;gap:10px;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border:none;border-radius:6px;
+    padding:9px 15px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  .btn svg{width:15px;height:15px;}
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-primary:hover{background:var(--blue-dark);}
+  .btn-outline{background:#fff;color:var(--blue);border:1px solid #c9d9f5;}
+  .btn-outline:hover{background:#f0f6ff;}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .btn-ghost:hover{background:#eef1f6;}
+  .btn-green{background:var(--green);color:#fff;}
+  .btn-green:hover{background:#188046;}
+  .btn-red{background:#fff;color:var(--red);border:1px solid #f6c9c9;}
+  .btn-red:hover{background:var(--red-bg);}
+  .btn-sm{padding:6px 11px;font-size:12.5px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  th{
+    text-align:left;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;
+    padding:12px 14px;background:#fafbfd;border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;
+  }
+  td{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fafcff;}
+  .link{color:var(--blue);cursor:pointer;font-weight:600;}
+  .link:hover{text-decoration:underline;}
+  .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .icon-btn{
+    border:1px solid var(--border);background:#fff;border-radius:6px;width:30px;height:30px;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:.15s;
+  }
+  .icon-btn:hover{background:#eef1f6;color:var(--text);}
+  .icon-btn.danger:hover{background:var(--red-bg);color:var(--red);border-color:#f6c9c9;}
+  .icon-btn svg{width:15px;height:15px;}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+  .badge svg{width:11px;height:11px;}
+  .badge-pending{background:var(--orange-bg);color:var(--orange);}
+  .badge-approved{background:var(--green-bg);color:var(--green);}
+  .badge-rejected{background:var(--red-bg);color:var(--red);}
+  .badge-blue{background:#e7f0ff;color:var(--blue);}
+
+  .empty{padding:50px 20px;text-align:center;color:var(--muted);}
+  .empty svg{width:38px;height:38px;opacity:.4;margin-bottom:10px;}
+
+  /* Modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(15,25,45,.45);display:none;align-items:flex-start;justify-content:center;
+    padding:40px 20px;overflow-y:auto;z-index:50;
+  }
+  .overlay.active{display:flex;}
+  .modal{background:#fff;border-radius:12px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+  .modal.wide{max-width:760px;}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);}
+  .modal-header h3{margin:0;font-size:16px;color:var(--text);}
+  .modal-close{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;}
+  .modal-close:hover{background:#eef1f6;}
+  .modal-close svg{width:18px;height:18px;}
+  .modal-body{padding:20px 22px;max-height:70vh;overflow-y:auto;}
+  .modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-field{display:flex;flex-direction:column;gap:6px;}
+  .form-field.full{grid-column:1 / -1;}
+  .form-field label{font-size:12.5px;font-weight:600;color:var(--text);}
+  .form-field label .opt{color:var(--muted);font-weight:400;}
+  .form-field input,.form-field select,.form-field textarea{
+    border:1px solid var(--border);border-radius:7px;padding:9px 11px;font-size:13.5px;font-family:inherit;color:var(--text);
+    background:#fff;
+  }
+  .form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:none;border-color:var(--blue);}
+  .form-field textarea{resize:vertical;min-height:60px;}
+  .file-drop{
+    border:1.5px dashed var(--border);border-radius:7px;padding:14px;display:flex;align-items:center;gap:10px;
+    color:var(--muted);font-size:13px;cursor:pointer;background:#fafbfd;
+  }
+  .file-drop:hover{border-color:var(--blue);}
+  .file-drop svg{width:18px;height:18px;flex-shrink:0;}
+  .file-drop.has-file{color:var(--text);border-color:#c9d9f5;background:#f0f6ff;}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+  /* Project detail */
+  .detail-back{display:flex;align-items:center;gap:6px;color:var(--blue);cursor:pointer;font-weight:600;font-size:13px;margin-bottom:14px;}
+  .detail-back svg{width:15px;height:15px;}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .detail-title{font-size:20px;font-weight:700;color:var(--text);margin:0 0 6px;}
+  .detail-meta{display:flex;gap:18px;color:var(--muted);font-size:13px;flex-wrap:wrap;}
+  .detail-meta b{color:var(--text);}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .tab{
+    padding:10px 18px;font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:13px 18px;border-radius:9px;
+    font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(0,0,0,.25);
+    transform:translateY(20px);opacity:0;transition:.25s;z-index:100;
+  }
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast svg{width:16px;height:16px;color:#5fd88a;flex-shrink:0;}
+
+  .admin-note{
+    background:var(--orange-bg);border:1px solid #f3ddb0;color:#8a5c17;border-radius:8px;padding:10px 14px;
+    font-size:12.5px;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;
+  }
+  .admin-note svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;}
+
+  /* Layihə form sections */
+  .form-section{margin-bottom:22px;}
+  .form-section:last-child{margin-bottom:0;}
+  .form-section-title{
+    font-size:13px;font-weight:700;color:var(--text);margin:0 0 3px;display:flex;align-items:center;gap:8px;
+  }
+  .form-section-title .num{
+    width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .form-section-sub{font-size:11.5px;color:var(--muted);margin:0 0 12px 28px;}
+  .form-section + .form-section{border-top:1px solid var(--border);padding-top:18px;}
+
+  .pill-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill{
+    display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;
+    font-size:12.5px;cursor:pointer;background:#fff;color:var(--text);user-select:none;
+  }
+  .pill input{margin:0;accent-color:var(--blue);}
+  .pill.checked{background:#e7f0ff;border-color:#b9d2f9;color:var(--blue-dark);font-weight:600;}
+
+  .repeater{display:flex;flex-direction:column;gap:8px;}
+  .repeater-row{
+    display:flex;gap:8px;align-items:flex-start;background:#fafbfd;border:1px solid var(--border);
+    border-radius:8px;padding:10px;
+  }
+  .repeater-row .form-grid{flex:1;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
+  .repeater-row .icon-btn{flex-shrink:0;margin-top:2px;}
+  .repeater-add{
+    display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--border);border-radius:8px;
+    padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--blue);cursor:pointer;background:#fafcff;
+    justify-content:center;
+  }
+  .repeater-add:hover{background:#f0f6ff;border-color:#b9d2f9;}
+  .repeater-empty{font-size:12px;color:var(--muted);padding:4px 2px;}
+  .field-note{font-size:11px;color:var(--muted);margin-top:2px;}
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+  .info-item .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;}
+  .info-item .v{font-size:13.5px;color:var(--text);font-weight:600;}
+  .info-item .v.muted-v{color:var(--muted);font-weight:400;}
+  .chip-list{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{background:#eef1f6;color:var(--text);border-radius:6px;padding:3px 9px;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">Xərc İdarəetmə<span>Admin Panel</span></div>
+    <div class="nav">
+      <div class="nav-item active" data-view="layihe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Layihələr
+      </div>
+      <div class="nav-item" data-view="xerc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M6 3v3M18 3v3M4 8h16M6 12h4M6 16h4M14 12h4M14 16h4"/><rect x="3" y="5" width="18" height="16" rx="2"/></svg>
+        Ümumi Təyinatlı Xərclər
+        <span class="nav-badge" id="pendingBadge" style="display:none;">0</span>
+      </div>
+    </div>
+    <div class="role-box">
+      <div class="label">Görünüş rejimi</div>
+      <div class="role-toggle">
+        <button data-role="layiheci" class="active">Layihəçi</button>
+        <button data-role="admin">Admin</button>
+        <button data-role="maliyye">Maliyyə</button>
+      </div>
+      <div class="role-name" id="roleName">Layihəçi <span>— məlumat daxil edir</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- LAYİHƏLƏR LIST VIEW -->
+    <div class="view active" id="view-layihe">
+
+      <!-- ƏSAS LAYİHƏLƏR LIST -->
+      <div id="layiheListWrap">
+        <div class="toolbar">
+          <div>
+            <h1 class="page-title">Əsas Layihələr</h1>
+            <div class="page-sub">Toplam əsas layihə sayı: <b id="layiheCount">0</b></div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="btnNewLayihe">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+              Yeni Əsas Layihə
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">№</th>
+                <th>Ad</th>
+                <th>Kateqoriya</th>
+                <th>Layihə növü</th>
+                <th>Yaranma tarixi</th>
+                <th>Alt layihə sayı</th>
+                <th style="text-align:right;">Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody id="layiheTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ƏSAS LAYİHƏ DETAIL — ALT LAYİHƏLƏR SİYAHISI -->
+      <div id="esasDetailWrap" style="display:none;">
+        <div class="detail-back" id="btnBackToLayihe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          Əsas Layihələrə qayıt
+        </div>
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title" id="esasDetailTitle">—</h2>
+            <div class="detail-meta"><span id="esasDetailBadges"></span></div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-ghost btn-sm" id="btnEditEsas">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Redaktə et
+            </button>
+          </div>
+        </div>
+        <div class="info-card" id="esasDetailInfoCard"></div>
+
+        <div class="toolbar">
+          <h3 class="page-title" style="font-size:15px;">Alt Layihələr</h3>
+          <button class="btn btn-primary btn-sm" id="btnNewAlt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Yeni Alt Layihə
+          </button>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">№</th>
+                <th>Ad</th>
+                <th>Tarix aralığı</th>
+                <th>Təşkil forması</th>
+                <th>Ödəniş</th>
+                <th style="text-align:right;">Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody id="altTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALT LAYİHƏ DETAIL -->
+      <div id="altDetailWrap" style="display:none;">
+        <div class="detail-back" id="btnBackToEsas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <span id="btnBackToEsasLabel">Əsas layihəyə qayıt</span>
+        </div>
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title" id="detailTitle">—</h2>
+            <div class="detail-meta">
+              <span id="detailBadges"></span>
+            </div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-ghost btn-sm" id="btnEditLayihe">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Redaktə et
+            </button>
+          </div>
+        </div>
+        <div class="info-card" id="detailInfoCard"></div>
+        <div class="tabs">
+          <div class="tab active" data-tab="1">Ödəniş 1</div>
+          <div class="tab" data-tab="2">Ödəniş 2</div>
+        </div>
+        <div class="tab-panel active" id="tabpanel-1"></div>
+        <div class="tab-panel" id="tabpanel-2"></div>
+      </div>
+    </div>
+
+    <!-- ÜMUMİ TƏYİNATLI XƏRCLƏR VIEW -->
+    <div class="view" id="view-xerc">
+      <div class="toolbar">
+        <div>
+          <h1 class="page-title">Ümumi Təyinatlı Xərclərin Siyahısı</h1>
+          <div class="page-sub">Toplam nəticə sayı: <b id="xercCount">0</b></div>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnNewXerc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Yeni
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-note" id="adminNote" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span id="adminNoteText"></span>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:50px;">№</th>
+              <th>Layihə</th>
+              <th>İstiqamət</th>
+              <th>Xərcin təyinatı</th>
+              <th>Ödəniş qəbzi</th>
+              <th>Ödəmə tarixi</th>
+              <th>ƏDV</th>
+              <th>Ümumi</th>
+              <th>Status</th>
+              <th style="text-align:right;">Əməliyyat</th>
+            </tr>
+          </thead>
+          <tbody id="xercTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: Yeni / Redaktə Əsas Layihə -->
+<div class="overlay" id="modalEsas">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalEsasTitle">Yeni Əsas Layihə</h3>
+      <button class="modal-close" data-close="modalEsas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>Ad <span class="opt">(məcburi)</span></label>
+          <input type="text" id="fEsasAd" placeholder="Məs: Hədiyyə karvanı">
+        </div>
+        <div class="form-field full">
+          <label>Ətraflı məlumat <span class="opt">(məcburi)</span></label>
+          <textarea id="fEsasMelumat" placeholder="Əsas layihə haqqında məlumat" style="min-height:80px;"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Kateqoriya <span class="opt">(məcburi)</span></label>
+          <select id="fEsasKateqoriya">
+            <option value="Sosial">Sosial</option>
+            <option value="Təhsil">Təhsil</option>
+            <option value="Yardım">Yardım</option>
+            <option value="Digər">Digər</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Layihə növü <span class="opt">(məcburi)</span></label>
+          <select id="fEsasNovu">
+            <option value="Sosial">Sosial</option>
+            <option value="Humanitar">Humanitar</option>
+            <option value="İnfrastruktur">İnfrastruktur</option>
+            <option value="Təhsil">Təhsil</option>
+            <option value="Digər">Digər</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Layihənin yaranma tarixi <span class="opt">(məcburi)</span></label>
+          <input type="date" id="fEsasTarix">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalEsas">Ləğv et</button>
+      <button class="btn btn-primary" id="btnSaveEsas">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Yeni / Redaktə Alt Layihə -->
+<div class="overlay" id="modalAlt">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h3 id="modalAltTitle">Yeni Alt Layihə</h3>
+      <button class="modal-close" data-close="modalAlt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-section">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Əsas layihə <span class="opt">(məcburi)</span></label>
+            <select id="fAltParent"></select>
+          </div>
+          <div class="form-field full">
+            <label>Ad <span class="opt">(məcburi)</span></label>
+            <input type="text" id="fAltAd" placeholder="Məs: Hədiyyə karvanı — 2026, Gəncə">
+          </div>
+          <div class="form-field">
+            <label>Başlama tarixi</label>
+            <input type="date" id="fAltBaslama">
+          </div>
+          <div class="form-field">
+            <label>Bitmə tarixi</label>
+            <input type="date" id="fAltBitme">
+          </div>
+          <div class="form-field">
+            <label>Ümumi müddət <span class="opt">(avtomatik)</span></label>
+            <input type="text" id="fAltMuddet" readonly style="background:#f4f6f9;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Əhatə dairəsi</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Ölkə</label>
+            <select id="fAltOlke"><option>Azərbaycan</option><option>Digər</option></select>
+          </div>
+          <div class="form-field">
+            <label>Şəhər</label>
+            <select id="fAltSeher">
+              <option>Bakı</option><option>Gəncə</option><option>Sumqayıt</option><option>Şəki</option><option>Mingəçevir</option><option>Digər</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Rayon</label>
+            <input type="text" id="fAltRayon" placeholder="Rayon">
+          </div>
+          <div class="form-field">
+            <label>İcra olunan müəssisə/obyekt</label>
+            <input type="text" id="fAltObyekt" placeholder="Məs: 15 nömrəli məktəb">
+          </div>
+          <div class="form-field">
+            <label>Təşkil forması</label>
+            <select id="fAltTeskil">
+              <option value="offline">Offline</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Layihə ödənişi</div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <div class="pill-group" id="altOdenisGroup">
+              <label class="pill checked"><input type="radio" name="altOdenis" value="odenissiz" checked> Ödənişsiz</label>
+              <label class="pill"><input type="radio" name="altOdenis" value="odenisli"> Ödənişli</label>
+              <label class="pill"><input type="radio" name="altOdenis" value="sponsor"> Sponsor</label>
+            </div>
+            <div class="field-note" id="altUmumiTeyinatliNote" style="display:none;">Bu layihə üzrə məlumatlar avtomatik olaraq <b>Ümumi Təyinatlı Xərclər</b> bölməsinə düşəcək.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">İştirakçılar</div>
+        <div class="form-field full">
+          <label>FİN daxil edin — ad soyad, cins və yaş avtomatik göstərilir</label>
+          <div class="repeater" id="repIstirakci"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="repeater-add" data-repeater-add="istirakci">+ FİN ilə əlavə et</div>
+            <div class="repeater-add" id="btnExcelImport">⬆ Excel ilə idxal et</div>
+          </div>
+        </div>
+        <div class="form-field full" style="margin-top:12px;">
+          <label>İştirak edən YAŞAT əməkdaşları</label>
+          <div class="pill-group" id="emekdaslarGroup"></div>
+        </div>
+        <div class="form-field full" style="margin-top:12px;">
+          <label>İştirak edən tərəfdaş iştirakçılar <span class="opt">(FİN daxil et)</span></label>
+          <div class="repeater" id="repTerefdas"></div>
+          <div class="repeater-add" data-repeater-add="terefdas">+ FİN ilə əlavə et</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Sponsor / Sosial tərəfdaş</div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <select id="fAltSponsorNovu">
+              <option value="">— Seçilməyib —</option>
+              <option value="sponsor">Sponsor</option>
+              <option value="sosial_terefdas">Sosial tərəfdaş</option>
+            </select>
+          </div>
+          <div class="form-field full" id="sponsorTohfeWrap" style="display:none;">
+            <label>Sponsor töhfəsi</label>
+            <div class="pill-group" id="sponsorTohfeGroup">
+              <label class="pill"><input type="checkbox" value="maliyye"> Maliyyə</label>
+              <label class="pill"><input type="checkbox" value="xidmet"> Xidmət</label>
+              <label class="pill"><input type="checkbox" value="esya"> Əşya/material</label>
+              <label class="pill"><input type="checkbox" value="digar"> Digər</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Sənəd və link</div>
+        <div class="form-field full">
+          <label>Sənəd yüklə <span class="opt">(müqavilə, təqdimat, şəkil)</span></label>
+          <div class="file-drop" id="altFileDrop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
+            <span>Fayl seçmək üçün klikləyin (PDF, DOCX, PPTX, JPG, PNG)</span>
+          </div>
+          <input type="file" id="fAltFile" accept=".pdf,.docx,.pptx,.jpg,.jpeg,.png" style="display:none;">
+        </div>
+        <div class="repeater" id="repSenedler" style="margin-top:10px;"></div>
+
+        <div class="form-field full" style="margin-top:14px;">
+          <label>Link əlavə et</label>
+          <div class="repeater" id="repLinkler"></div>
+          <div class="repeater-add" data-repeater-add="link">+ Link əlavə et</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalAlt">Ləğv et</button>
+      <button class="btn btn-primary" id="btnSaveAlt">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Yeni Xərc -->
+<div class="overlay" id="modalXerc">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h3>Yeni Ümumi Təyinatlı Xərc</h3>
+      <button class="modal-close" data-close="modalXerc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>Layihə</label>
+          <select id="fXercLayihe"></select>
+        </div>
+        <div class="form-field">
+          <label>Ödəniş nömrəsi</label>
+          <input type="number" id="fXercOdenis" min="1" step="1" placeholder="Məs: 1, 2, 3...">
+          <div class="hint">Layihə üzrə istənilən sayda ödəniş əlavə edilə bilər.</div>
+        </div>
+        <div class="form-field">
+          <label>İstiqamət</label>
+          <input type="text" id="fXercIstiqamet" placeholder="Məs: Müalicə və psixoloji dəstək xərclərinin ödənilməsi">
+        </div>
+        <div class="form-field full">
+          <label>Xərcin təyinatı</label>
+          <input type="text" id="fXercTeyinat" placeholder="Xərcin təyinatı">
+        </div>
+        <div class="form-field full">
+          <label>Xərcin detallı təsviri <span class="opt">(könüllü)</span></label>
+          <textarea id="fXercTesvir" placeholder="Xərc haqqında əlavə izah"></textarea>
+        </div>
+        <div class="form-field full">
+          <label>Ödəniş qəbzi</label>
+          <div class="file-drop" id="fileDrop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
+            <span id="fileDropText">Qəbzi seçmək üçün klikləyin (PDF/JPG/PNG)</span>
+          </div>
+          <input type="file" id="fXercQebz" style="display:none;">
+        </div>
+        <div class="form-field">
+          <label>Ödəmə tarixi</label>
+          <input type="date" id="fXercTarix">
+        </div>
+        <div class="form-field">
+          <label>İcraçının adı</label>
+          <input type="text" id="fXercIcraci" placeholder="Ad Soyad">
+        </div>
+        <div class="form-field">
+          <label>YAŞAT Fondu tərəfindən</label>
+          <input type="number" id="fXercYasat" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-field">
+          <label>ƏDV</label>
+          <input type="number" id="fXercEdv" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-field full">
+          <label>Ümumi</label>
+          <input type="number" id="fXercUmumi" placeholder="0.00" step="0.01">
+          <div class="hint">YAŞAT Fondu tərəfindən + ƏDV cəmi avtomatik hesablanır, lazım olsa dəyişə bilərsiniz.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalXerc">Ləğv et</button>
+      <button class="btn btn-primary" id="btnSubmitXerc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+        Təsdiq üçün göndər
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Qəbzə baxış -->
+<div class="overlay" id="modalView">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Xərc məlumatı</h3>
+      <button class="modal-close" data-close="modalView">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="viewBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modalView">Bağla</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Ödəniş qəbzi (fayl önizləməsi) -->
+<div class="overlay" id="modalReceipt">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h3 id="receiptTitle">Ödəniş qəbzi</h3>
+      <button class="modal-close" data-close="modalReceipt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="receiptBody" style="padding:0;max-height:75vh;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modalReceipt">Bağla</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Geri qaytar (Admin) -->
+<div class="overlay" id="modalReturn">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h3>Xərci Maliyyəyə geri qaytar</h3>
+      <button class="modal-close" data-close="modalReturn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field full">
+        <label>Geri qaytarma səbəbi <span class="opt">(məcburi)</span></label>
+        <textarea id="fReturnSebeb" placeholder="Məs: Qəbz oxunaqlı deyil, məbləğ səhvdir və s."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalReturn">Ləğv et</button>
+      <button class="btn btn-red" id="btnConfirmReturn" style="background:var(--red);color:#fff;border:none;">Geri qaytar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirm -->
+<div class="overlay" id="modalConfirm">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Silinsin?</h3>
+      <button class="modal-close" data-close="modalConfirm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body"><p id="confirmText" style="margin:0;color:var(--muted);font-size:13.5px;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalConfirm">Ləğv et</button>
+      <button class="btn btn-red" id="btnConfirmAction" style="background:var(--red);color:#fff;border:none;">Bəli, sil</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastText">Yadda saxlanıldı</span>
+</div>
+
+<script>
+// ---------- STATE ----------
+let role = 'layiheci'; // 'layiheci' | 'admin' | 'maliyye'
+let currentDetailProjectId = null; // alt layihə id currently open (Ödəniş tabs)
+let currentEsasId = null; // əsas layihə id currently open
+let pendingDeleteAction = null;
+let editingEsasId = null;
+let editingAltId = null;
+
+let projects = [
+  // Əsas layihələr
+  { id: 1, tip: 'esas', ad: 'Hədiyyə karvanı', melumat: 'Hər il təkrarlanan, döyüş bölgələrindəki ailələrə hədiyyə paylanması tədbiri.', kateqoriya: 'Sosial', novu: 'Sosial', yaranma: '2024-01-15' },
+  { id: 2, tip: 'esas', ad: 'Reabilitasiya proqramı', melumat: 'Psixoloji və fiziki reabilitasiya xidmətləri üzrə davamlı proqram.', kateqoriya: 'Yardım', novu: 'Humanitar', yaranma: '2025-02-10' },
+  // Alt layihələr
+  { id: 3, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2026, Gəncə', yaradilma: '2026-03-01',
+    baslama: '2026-03-12', bitme: '2026-09-12',
+    olke: 'Azərbaycan', seher: 'Gəncə', rayon: 'Kəpəz', obyekt: '15 nömrəli məktəb', teskil: 'offline',
+    odenis: 'odenisli',
+    istirakcilar: [{ fin: '7AB3CD2', ad: 'Kamran Əliyev', cins: 'Erkək', yas: 34 }],
+    emekdaslar: ['Elvin Məmmədov'],
+    terefdasIstirakcilar: [],
+    sponsorNovu: 'sponsor', sponsorTohfe: ['maliyye'],
+    senedler: [{ ad: 'muqavile_azt.pdf', kateqoriya: 'Müqavilə' }], linkler: [] },
+  { id: 4, tip: 'alt', parentId: 2, ad: 'Reabilitasiya Mərkəzi — Bakı', yaradilma: '2026-04-20',
+    baslama: '2026-05-02', bitme: '2026-12-01',
+    olke: 'Azərbaycan', seher: 'Bakı', rayon: 'Nəsimi', obyekt: '', teskil: 'hybrid',
+    odenis: 'sponsor',
+    istirakcilar: [], emekdaslar: ['Aygün Rəhimova'], terefdasIstirakcilar: [],
+    sponsorNovu: 'sosial_terefdas', sponsorTohfe: [],
+    senedler: [], linkler: [] },
+];
+
+let expenses = [
+  { id: 1, layiheId: 3, odenis: '1', istiqamet: 'Müalicə və psixoloji dəstək xərclərinin ödənilməsi', teyinat: '123123', tesvir: '12312', qebz: 'qebz_0108.pdf', tarix: '2026-06-01', icraci: 'Elvin Məmmədov', yasat: 3123, edv: 213213, umumi: 216336, status: 'tesdiq_olundu' },
+  { id: 2, layiheId: 3, odenis: '2', istiqamet: 'Müalicə və psixoloji dəstək xərclərinin ödənilməsi', teyinat: '123123', tesvir: '123123', qebz: 'qebz_0106.pdf', tarix: '2026-06-03', icraci: 'Elvin Məmmədov', yasat: 123123, edv: 123123, umumi: 246246, status: 'tesdiq_olundu' },
+  { id: 3, layiheId: 4, odenis: '3', istiqamet: 'Müalicə və psixoloji dəstək xərclərinin ödənilməsi', teyinat: '123123', tesvir: 'errere', qebz: 'qebz_0105.pdf', tarix: '2026-06-05', icraci: 'Aygün Rəhimova', yasat: 234324, edv: 23432432, umumi: 23666756, status: 'gozleme' },
+  { id: 4, layiheId: 4, odenis: '1', istiqamet: 'Ofis ləvazimatı alışı', teyinat: 'Kanc-2026', tesvir: 'Kartric, kağız', qebz: 'qebz_0110.pdf', tarix: '2026-07-10', icraci: 'Aygün Rəhimova', yasat: 450, edv: 76.5, umumi: 526.5, status: 'geri_qaytarildi', geriSebeb: 'Qəbz oxunaqlı deyil, zəhmət olmasa daha aydın şəkil yükləyin.' },
+];
+
+// Mövcud sistem istifadəçiləri (YAŞAT əməkdaşları) — statik nümunə siyahı
+const sistemIstifadecileri = ['Elvin Məmmədov', 'Aygün Rəhimova', 'Rəşad Quliyev', 'Nərmin Əliyeva', 'Tural Hüseynov'];
+
+// FİN-dən ad/cins/yaş "gətirən" demo funksiya — real inteqrasiya olmadığı üçün FİN-ə görə deterministik nümunə məlumat yaradır
+const demoAdlar = ['Kamran Əliyev','Günel Həsənova','Tural Bayramov','Səbinə Quliyeva','Orxan Məmmədov','Leyla İsmayılova','Rüstəm Vəliyev','Aynur Səfərova'];
+function finLookup(fin){
+  let h = 0;
+  for(const ch of fin) h = (h * 31 + ch.charCodeAt(0)) % 100000;
+  const ad = demoAdlar[h % demoAdlar.length];
+  const cins = (ad.endsWith('a') || ad.endsWith('ə')) ? 'Qadın' : 'Erkək';
+  const yas = 18 + (h % 50);
+  return { ad, cins, yas };
+}
+
+let nextProjectId = 5;
+let nextExpenseId = 5;
+
+// ---------- HELPERS ----------
+const $ = (sel) => document.querySelector(sel);
+const $all = (sel) => document.querySelectorAll(sel);
+const fmt = (n) => Number(n || 0).toLocaleString('az-AZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtDate = (d) => { if(!d) return '—'; const [y,m,day]=d.split('-'); return `${day}.${m}.${y}`; };
+const projectById = (id) => projects.find(p => p.id === id);
+
+function showToast(text){
+  const t = $('#toast');
+  $('#toastText').textContent = text;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+function openModal(id){ $('#'+id).classList.add('active'); }
+function closeModal(id){ $('#'+id).classList.remove('active'); }
+$all('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+$all('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) ov.classList.remove('active'); }));
+
+function statusBadge(status){
+  if(status === 'tesdiq_olundu') return `<span class="badge badge-approved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>Təsdiq olundu</span>`;
+  if(status === 'geri_qaytarildi') return `<span class="badge badge-rejected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"/></svg>Geri qaytarıldı</span>`;
+  return `<span class="badge badge-pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="9"/></svg>Göndərildi</span>`;
+}
+
+// ---------- NAV ----------
+$all('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    $all('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    $all('.view').forEach(v => v.classList.remove('active'));
+    $('#view-' + item.dataset.view).classList.add('active');
+    if(item.dataset.view === 'layihe'){ showLayiheList(); }
+  });
+});
+
+// ---------- ROLE TOGGLE ----------
+// QEYD: rol seçimi YALNIZ "Ümumi Təyinatlı Xərclər" bölməsinə təsir edir.
+// "Layihələr" bölməsində bütün rollar eyni hüquqla işləyir (rol oradan asılı deyil).
+$all('.role-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    role = btn.dataset.role;
+    $all('.role-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if(role === 'admin'){
+      $('#roleName').innerHTML = 'Admin <span>— təsdiq / geri qaytarır</span>';
+    } else if(role === 'maliyye'){
+      $('#roleName').innerHTML = 'Maliyyə <span>— xərc yaradıb göndərir</span>';
+    } else {
+      $('#roleName').innerHTML = 'Layihəçi <span>— layihələri idarə edir</span>';
+    }
+    renderAll();
+  });
+});
+
+// ---------- LAYİHƏLƏR (Əsas / Alt) ----------
+function esasList(){ return projects.filter(p => p.tip === 'esas'); }
+function altListByParent(pid){ return projects.filter(p => p.tip === 'alt' && p.parentId === pid); }
+
+const teskilLabel = { offline: 'Offline', online: 'Online', hybrid: 'Hybrid' };
+const odenisLabel = { odenissiz: 'Ödənişsiz', odenisli: 'Ödənişli', sponsor: 'Sponsor' };
+function odenisBadge(v){
+  const cls = v === 'odenissiz' ? 'badge-pending' : 'badge-blue';
+  return `<span class="badge ${cls}">${odenisLabel[v] || v}</span>`;
+}
+
+function renderLayiheTable(){
+  const rows = esasList();
+  $('#layiheCount').textContent = rows.length;
+  const html = rows.map(p => {
+    const altCount = altListByParent(p.id).length;
+    return `
+      <tr>
+        <td>#${String(p.id).padStart(4,'0')}</td>
+        <td><span class="link" data-open-esas="${p.id}">${p.ad}</span></td>
+        <td>${p.kateqoriya}</td>
+        <td>${p.novu}</td>
+        <td>${fmtDate(p.yaranma)}</td>
+        <td>${altCount}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" title="Bax" data-open-esas="${p.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="icon-btn" title="Redaktə et" data-edit-esas="${p.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="icon-btn danger" title="Sil" data-delete-esas="${p.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+  $('#layiheTableBody').innerHTML = html || `<tr><td colspan="7"><div class="empty">Hələ əsas layihə yoxdur</div></td></tr>`;
+
+  $all('[data-open-esas]').forEach(el => el.addEventListener('click', () => openEsasDetail(Number(el.dataset.openEsas))));
+  $all('[data-edit-esas]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openEsasModal(Number(el.dataset.editEsas)); }));
+  $all('[data-delete-esas]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = Number(el.dataset.deleteEsas);
+    const altIds = altListByParent(id).map(a => a.id);
+    confirmAction('Əsas layihə silinsin?', 'Bu əməliyyat əsas layihəni, ona bağlı bütün alt layihələri və onların ödəniş qəbzlərini siyahıdan siləcək.', () => {
+      projects = projects.filter(p => p.id !== id && !altIds.includes(p.id));
+      expenses = expenses.filter(e => !altIds.includes(e.layiheId));
+      renderAll();
+      showToast('Əsas layihə silindi');
+    });
+  }));
+}
+
+function showLayiheList(){
+  currentEsasId = null; currentDetailProjectId = null;
+  $('#layiheListWrap').style.display = '';
+  $('#esasDetailWrap').style.display = 'none';
+  $('#altDetailWrap').style.display = 'none';
+  renderLayiheTable();
+}
+$('#btnBackToLayihe').addEventListener('click', showLayiheList);
+
+function openEsasDetail(id){
+  currentEsasId = id;
+  const p = projectById(id);
+  if(!p) return;
+  $('#layiheListWrap').style.display = 'none';
+  $('#altDetailWrap').style.display = 'none';
+  $('#esasDetailWrap').style.display = '';
+  $('#esasDetailTitle').textContent = p.ad;
+  $('#esasDetailBadges').innerHTML = `<span class="badge badge-blue">${p.novu}</span> <span class="badge badge-blue" style="margin-left:6px;">${p.kateqoriya}</span>`;
+  $('#esasDetailInfoCard').innerHTML = `
+    <div class="info-grid">
+      <div class="info-item"><div class="k">Yaranma tarixi</div><div class="v">${fmtDate(p.yaranma)}</div></div>
+      <div class="info-item"><div class="k">Kateqoriya</div><div class="v">${p.kateqoriya}</div></div>
+      <div class="info-item"><div class="k">Layihə növü</div><div class="v">${p.novu}</div></div>
+      <div class="info-item"><div class="k">Alt layihə sayı</div><div class="v">${altListByParent(p.id).length}</div></div>
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div class="k" style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;">Ətraflı məlumat</div>
+      <div style="font-size:13.5px;">${p.melumat || '—'}</div>
+    </div>`;
+  renderAltTable();
+}
+$('#btnBackToEsas').addEventListener('click', () => currentEsasId ? openEsasDetail(currentEsasId) : showLayiheList());
+$('#btnEditEsas').addEventListener('click', () => openEsasModal(currentEsasId));
+
+function renderAltTable(){
+  const rows = altListByParent(currentEsasId);
+  const html = rows.map(a => `
+      <tr>
+        <td>#${String(a.id).padStart(4,'0')}</td>
+        <td><span class="link" data-open-alt="${a.id}">${a.ad}</span></td>
+        <td>${fmtDate(a.baslama)} — ${fmtDate(a.bitme)}</td>
+        <td>${teskilLabel[a.teskil] || '—'}</td>
+        <td>${odenisBadge(a.odenis)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" title="Bax" data-open-alt="${a.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="icon-btn" title="Redaktə et" data-edit-alt="${a.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="icon-btn danger" title="Sil" data-delete-alt="${a.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`).join('');
+  $('#altTableBody').innerHTML = html || `<tr><td colspan="6"><div class="empty">Hələ alt layihə yoxdur</div></td></tr>`;
+
+  $all('[data-open-alt]').forEach(el => el.addEventListener('click', () => openAltDetail(Number(el.dataset.openAlt))));
+  $all('[data-edit-alt]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openAltModal(Number(el.dataset.editAlt)); }));
+  $all('[data-delete-alt]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = Number(el.dataset.deleteAlt);
+    confirmAction('Alt layihə silinsin?', 'Bu əməliyyat alt layihəni və ona bağlı bütün ödəniş qəbzlərini siyahıdan siləcək.', () => {
+      projects = projects.filter(p => p.id !== id);
+      expenses = expenses.filter(e => e.layiheId !== id);
+      renderAll();
+      showToast('Alt layihə silindi');
+    });
+  }));
+}
+$('#btnNewAlt').addEventListener('click', () => openAltModal(null));
+
+function openAltDetail(id){
+  currentDetailProjectId = id;
+  const a = projectById(id);
+  if(!a) return;
+  const parent = projectById(a.parentId);
+  $('#layiheListWrap').style.display = 'none';
+  $('#esasDetailWrap').style.display = 'none';
+  $('#altDetailWrap').style.display = '';
+  $('#btnBackToEsasLabel').textContent = parent ? `"${parent.ad}" — alt layihələrə qayıt` : 'Əsas layihəyə qayıt';
+  $('#detailTitle').textContent = a.ad;
+  $('#detailBadges').innerHTML = `${odenisBadge(a.odenis)} <span class="badge badge-blue" style="margin-left:6px;">${teskilLabel[a.teskil] || '—'}</span>`;
+
+  const emekdasChips = (a.emekdaslar || []).map(m => `<span class="chip">${m}</span>`).join(' ') || '<span class="v muted-v">—</span>';
+  const istirakciChips = (a.istirakcilar || []).map(r => `<span class="chip">${r.ad} (${r.cins}, ${r.yas})</span>`).join(' ') || '<span class="v muted-v">—</span>';
+  const terefdasChips = (a.terefdasIstirakcilar || []).map(r => `<span class="chip">${r.ad || r.fin}</span>`).join(' ') || '<span class="v muted-v">—</span>';
+  const sponsorNovuLabel = { sponsor: 'Sponsor', sosial_terefdas: 'Sosial tərəfdaş', '': '—' };
+  const tohfeLabel = { maliyye: 'Maliyyə', xidmet: 'Xidmət', esya: 'Əşya/material', digar: 'Digər' };
+  const tohfeChips = (a.sponsorTohfe || []).map(t => `<span class="chip">${tohfeLabel[t] || t}</span>`).join(' ') || '<span class="v muted-v">—</span>';
+
+  $('#detailInfoCard').innerHTML = `
+    <div class="info-grid">
+      <div class="info-item"><div class="k">Əsas layihə</div><div class="v">${parent ? parent.ad : '—'}</div></div>
+      <div class="info-item"><div class="k">Yaradılma tarixi</div><div class="v">${fmtDate(a.yaradilma)}</div></div>
+      <div class="info-item"><div class="k">Başlama — Bitmə</div><div class="v">${fmtDate(a.baslama)} — ${fmtDate(a.bitme)}</div></div>
+      <div class="info-item"><div class="k">Ümumi müddət</div><div class="v">${muddetHesabla(a.baslama, a.bitme) || '—'}</div></div>
+      <div class="info-item"><div class="k">Əhatə dairəsi</div><div class="v">${[a.olke, a.seher, a.rayon].filter(Boolean).join(' / ') || '—'}</div></div>
+      <div class="info-item"><div class="k">İcra olunan obyekt</div><div class="v ${a.obyekt ? '' : 'muted-v'}">${a.obyekt || '—'}</div></div>
+      <div class="info-item"><div class="k">Təşkil forması</div><div class="v">${teskilLabel[a.teskil] || '—'}</div></div>
+      <div class="info-item"><div class="k">Layihə ödənişi</div><div class="v">${odenisLabel[a.odenis] || '—'}</div></div>
+      <div class="info-item"><div class="k">İştirakçılar</div><div class="v">${istirakciChips}</div></div>
+      <div class="info-item"><div class="k">YAŞAT əməkdaşları</div><div class="v">${emekdasChips}</div></div>
+      <div class="info-item"><div class="k">Tərəfdaş iştirakçılar</div><div class="v">${terefdasChips}</div></div>
+      <div class="info-item"><div class="k">Sponsor/Sosial tərəfdaş</div><div class="v">${sponsorNovuLabel[a.sponsorNovu || '']}</div></div>
+      <div class="info-item"><div class="k">Sponsor töhfəsi</div><div class="v">${tohfeChips}</div></div>
+      <div class="info-item"><div class="k">Sənəd sayı</div><div class="v">${(a.senedler || []).length}</div></div>
+      <div class="info-item"><div class="k">Link sayı</div><div class="v">${(a.linkler || []).length}</div></div>
+    </div>`;
+
+  renderOdenisTabs();
+}
+$('#btnEditLayihe').addEventListener('click', () => openAltModal(currentDetailProjectId));
+
+$all('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $all('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    $all('.tab-panel').forEach(p => p.classList.remove('active'));
+    $('#tabpanel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+function renderOdenisTabs(){
+  ['1','2'].forEach(n => {
+    const list = expenses.filter(e => e.layiheId === currentDetailProjectId && e.odenis === n && e.status === 'tesdiq_olundu');
+    const rows = list.map(e => `
+      <tr>
+        <td>${e.icraci}</td>
+        <td>${e.teyinat}</td>
+        <td><span class="link" data-view-expense="${e.id}"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>${e.qebz}</span></td>
+        <td>${fmtDate(e.tarix)}</td>
+        <td>${fmt(e.umumi)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" title="Bax" data-view-expense="${e.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="icon-btn" title="Redaktə et" data-edit-expense="${e.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="icon-btn danger" title="Sil" data-delete-expense="${e.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    $('#tabpanel-' + n).innerHTML = `
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>İcraçının adı</th>
+              <th>Xərcin təyinatı</th>
+              <th>Ödəniş qəbzi</th>
+              <th>Ödəmə tarixi</th>
+              <th>Ümumi</th>
+              <th style="text-align:right;">Əməliyyat</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="6"><div class="empty">Ödəniş ${n} üzrə təsdiqlənmiş qəbz yoxdur</div></td></tr>`}</tbody>
+        </table>
+      </div>`;
+  });
+
+  bindExpenseRowActions();
+}
+
+// ---------- ƏSAS LAYİHƏ MODAL ----------
+$('#btnNewLayihe').addEventListener('click', () => openEsasModal(null));
+
+function openEsasModal(id){
+  editingEsasId = id;
+  if(id){
+    const p = projectById(id);
+    $('#modalEsasTitle').textContent = 'Əsas layihəni redaktə et';
+    $('#fEsasAd').value = p.ad;
+    $('#fEsasMelumat').value = p.melumat;
+    $('#fEsasKateqoriya').value = p.kateqoriya;
+    $('#fEsasNovu').value = p.novu;
+    $('#fEsasTarix').value = p.yaranma;
+  } else {
+    $('#modalEsasTitle').textContent = 'Yeni Əsas Layihə';
+    $('#fEsasAd').value = ''; $('#fEsasMelumat').value = '';
+    $('#fEsasKateqoriya').value = 'Sosial'; $('#fEsasNovu').value = 'Sosial';
+    $('#fEsasTarix').value = '';
+  }
+  openModal('modalEsas');
+}
+
+$('#btnSaveEsas').addEventListener('click', () => {
+  const ad = $('#fEsasAd').value.trim();
+  const melumat = $('#fEsasMelumat').value.trim();
+  const tarix = $('#fEsasTarix').value;
+  if(!ad || !melumat || !tarix){ showToast('Bütün xanalar məcburidir'); return; }
+
+  const data = { ad, melumat, kateqoriya: $('#fEsasKateqoriya').value, novu: $('#fEsasNovu').value, yaranma: tarix };
+  if(editingEsasId){
+    Object.assign(projectById(editingEsasId), data);
+    showToast('Əsas layihə yeniləndi');
+  } else {
+    projects.push({ id: nextProjectId++, tip: 'esas', ...data });
+    showToast('Əsas layihə əlavə edildi');
+  }
+  closeModal('modalEsas');
+  renderAll();
+  if(currentEsasId) openEsasDetail(currentEsasId);
+});
+
+// ---------- ALT LAYİHƏ MODAL ----------
+let repeaterState = {};
+function renderRepeaterSimple(key, containerId, fields, emptyText){
+  const rows = repeaterState[key] || [];
+  const wrap = $('#' + containerId);
+  if(rows.length === 0){ wrap.innerHTML = `<div class="repeater-empty">${emptyText}</div>`; return; }
+  wrap.innerHTML = rows.map((r, i) => `
+      <div class="repeater-row">
+        <div class="form-grid">
+          ${fields.map(f => `<input type="${f.type||'text'}" value="${r[f.key]||''}" placeholder="${f.ph}" ${f.readonly?'readonly style="background:#f4f6f9;"':''} data-rep-field="${key}:${i}:${f.key}">`).join('')}
+        </div>
+        <button class="icon-btn danger" data-rep-remove="${key}:${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>`).join('');
+  bindRepeaterEvents(key);
+}
+
+function bindRepeaterEvents(key){
+  $all(`[data-rep-field^="${key}:"]`).forEach(el => el.addEventListener('input', () => {
+    const [k, i, field] = el.dataset.repField.split(':');
+    repeaterState[k][Number(i)][field] = el.value;
+    if(k === 'istirakci' && field === 'fin' && el.value.trim().length >= 5){
+      const info = finLookup(el.value.trim());
+      Object.assign(repeaterState.istirakci[Number(i)], info);
+      renderRepeaterIstirakci();
+    }
+    if(k === 'terefdas' && field === 'fin' && el.value.trim().length >= 5){
+      const info = finLookup(el.value.trim());
+      repeaterState.terefdas[Number(i)].ad = info.ad;
+      renderRepeaterTerefdas();
+    }
+  }));
+  $all(`[data-rep-remove^="${key}:"]`).forEach(el => el.addEventListener('click', () => {
+    const [k, i] = el.dataset.repRemove.split(':');
+    repeaterState[k].splice(Number(i), 1);
+    renderRepeaterFor(k);
+  }));
+}
+
+function renderRepeaterIstirakci(){
+  const rows = repeaterState.istirakci || [];
+  const wrap = $('#repIstirakci');
+  if(rows.length === 0){ wrap.innerHTML = `<div class="repeater-empty">İştirakçı əlavə edilməyib</div>`; return; }
+  wrap.innerHTML = rows.map((r, i) => `
+      <div class="repeater-row">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 90px 70px;">
+          <input type="text" value="${r.fin||''}" placeholder="FİN" data-rep-field="istirakci:${i}:fin">
+          <input type="text" value="${r.ad||''}" placeholder="Ad Soyad (avtomatik)" readonly style="background:#f4f6f9;">
+          <input type="text" value="${r.cins||''}" placeholder="Cins" readonly style="background:#f4f6f9;">
+          <input type="text" value="${r.yas||''}" placeholder="Yaş" readonly style="background:#f4f6f9;">
+        </div>
+        <button class="icon-btn danger" data-rep-remove="istirakci:${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>`).join('');
+  bindRepeaterEvents('istirakci');
+}
+function renderRepeaterTerefdas(){
+  renderRepeaterSimple('terefdas', 'repTerefdas', [{ key: 'fin', ph: 'FİN' }, { key: 'ad', ph: 'Ad Soyad (avtomatik)', readonly: true }], 'Tərəfdaş iştirakçı əlavə edilməyib');
+}
+function renderRepeaterLink(){
+  renderRepeaterSimple('link', 'repLinkler', [{ key: 'url', ph: 'https://...' }, { key: 'baslik', ph: 'Başlıq' }], 'Link əlavə edilməyib');
+}
+function renderRepeaterSenedler(){
+  const rows = repeaterState.senedler || [];
+  const wrap = $('#repSenedler');
+  if(rows.length === 0){ wrap.innerHTML = `<div class="repeater-empty">Fayl yüklənməyib</div>`; return; }
+  wrap.innerHTML = rows.map((r, i) => `
+      <div class="repeater-row">
+        <svg style="width:16px;height:16px;margin-top:6px;flex-shrink:0;color:var(--muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <div class="form-grid" style="flex:1;">
+          <div class="form-field"><label style="font-weight:600;">${r.ad}</label></div>
+          <div class="form-field">
+            <select data-rep-field="senedler:${i}:kateqoriya">
+              ${['Müqavilə','Təqdimat','Şəkil','Digər'].map(o => `<option ${r.kateqoriya===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <button class="icon-btn danger" data-rep-remove="senedler:${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>`).join('');
+  bindRepeaterEvents('senedler');
+}
+function renderRepeaterFor(key){
+  if(key === 'istirakci') renderRepeaterIstirakci();
+  else if(key === 'terefdas') renderRepeaterTerefdas();
+  else if(key === 'link') renderRepeaterLink();
+  else if(key === 'senedler') renderRepeaterSenedler();
+}
+
+$all('[data-repeater-add]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.repeaterAdd;
+    repeaterState[key].push({});
+    renderRepeaterFor(key);
+  });
+});
+
+$('#btnExcelImport').addEventListener('click', () => {
+  const demoFins = ['5FT2AB1', '9KLM003', '2QWZ771'];
+  demoFins.forEach(fin => repeaterState.istirakci.push({ fin, ...finLookup(fin) }));
+  renderRepeaterIstirakci();
+  showToast(demoFins.length + ' iştirakçı Excel vasitəsilə idxal olundu');
+});
+
+function renderEmekdaslarGroup(selected){
+  $('#emekdaslarGroup').innerHTML = sistemIstifadecileri.map(name => `
+    <label class="pill ${selected.includes(name) ? 'checked' : ''}">
+      <input type="checkbox" value="${name}" ${selected.includes(name) ? 'checked' : ''} data-emekdas-toggle> ${name}
+    </label>`).join('');
+  $all('[data-emekdas-toggle]').forEach(cb => cb.addEventListener('change', () => cb.closest('.pill').classList.toggle('checked', cb.checked)));
+}
+
+function muddetHesabla(s, e){
+  if(!s || !e) return '';
+  const days = Math.round((new Date(e) - new Date(s)) / 86400000);
+  if(days < 0) return '';
+  const months = Math.floor(days / 30);
+  return `${days} gün${months > 0 ? ' (~' + months + ' ay)' : ''}`;
+}
+function recalcAltMuddet(){ $('#fAltMuddet').value = muddetHesabla($('#fAltBaslama').value, $('#fAltBitme').value); }
+$('#fAltBaslama').addEventListener('input', recalcAltMuddet);
+$('#fAltBitme').addEventListener('input', recalcAltMuddet);
+
+$all('input[name="altOdenis"]').forEach(r => r.addEventListener('change', () => {
+  $all('#altOdenisGroup .pill').forEach(p => p.classList.toggle('checked', p.querySelector('input').checked));
+  const val = $all('input[name="altOdenis"]:checked')[0]?.value;
+  $('#altUmumiTeyinatliNote').style.display = (val === 'odenisli' || val === 'sponsor') ? '' : 'none';
+}));
+
+$('#fAltSponsorNovu').addEventListener('change', () => {
+  $('#sponsorTohfeWrap').style.display = $('#fAltSponsorNovu').value === 'sponsor' ? '' : 'none';
+});
+$all('#sponsorTohfeGroup input').forEach(cb => cb.addEventListener('change', () => cb.closest('.pill').classList.toggle('checked', cb.checked)));
+
+$('#altFileDrop').addEventListener('click', () => $('#fAltFile').click());
+$('#fAltFile').addEventListener('change', () => {
+  const f = $('#fAltFile').files[0];
+  if(f){ repeaterState.senedler.push({ ad: f.name, kateqoriya: 'Digər' }); renderRepeaterSenedler(); $('#fAltFile').value = ''; }
+});
+
+function populateParentSelectAlt(){
+  $('#fAltParent').innerHTML = esasList().map(p => `<option value="${p.id}">${p.ad}</option>`).join('') || `<option value="">Əvvəlcə əsas layihə yaradın</option>`;
+}
+
+function openAltModal(id){
+  editingAltId = id;
+  populateParentSelectAlt();
+  repeaterState = { istirakci: [], terefdas: [], link: [], senedler: [] };
+
+  if(id){
+    const a = projectById(id);
+    $('#modalAltTitle').textContent = 'Alt layihəni redaktə et';
+    $('#fAltParent').value = a.parentId;
+    $('#fAltAd').value = a.ad;
+    $('#fAltBaslama').value = a.baslama || '';
+    $('#fAltBitme').value = a.bitme || '';
+    $('#fAltOlke').value = a.olke || 'Azərbaycan';
+    $('#fAltSeher').value = a.seher || 'Bakı';
+    $('#fAltRayon').value = a.rayon || '';
+    $('#fAltObyekt').value = a.obyekt || '';
+    $('#fAltTeskil').value = a.teskil || 'offline';
+    $all('input[name="altOdenis"]').forEach(r => { r.checked = r.value === (a.odenis || 'odenissiz'); r.closest('.pill').classList.toggle('checked', r.checked); });
+    $('#altUmumiTeyinatliNote').style.display = (a.odenis === 'odenisli' || a.odenis === 'sponsor') ? '' : 'none';
+    $('#fAltSponsorNovu').value = a.sponsorNovu || '';
+    $('#sponsorTohfeWrap').style.display = a.sponsorNovu === 'sponsor' ? '' : 'none';
+    $all('#sponsorTohfeGroup input').forEach(cb => { cb.checked = (a.sponsorTohfe || []).includes(cb.value); cb.closest('.pill').classList.toggle('checked', cb.checked); });
+    repeaterState.istirakci = (a.istirakcilar || []).map(r => ({ ...r }));
+    repeaterState.terefdas = (a.terefdasIstirakcilar || []).map(r => ({ ...r }));
+    repeaterState.link = (a.linkler || []).map(r => ({ ...r }));
+    repeaterState.senedler = (a.senedler || []).map(r => ({ ...r }));
+    renderEmekdaslarGroup(a.emekdaslar || []);
+    recalcAltMuddet();
+  } else {
+    $('#modalAltTitle').textContent = 'Yeni Alt Layihə';
+    if(currentEsasId) $('#fAltParent').value = currentEsasId;
+    $('#fAltAd').value = ''; $('#fAltBaslama').value = ''; $('#fAltBitme').value = '';
+    $('#fAltOlke').value = 'Azərbaycan'; $('#fAltSeher').value = 'Bakı'; $('#fAltRayon').value = ''; $('#fAltObyekt').value = '';
+    $('#fAltTeskil').value = 'offline';
+    $all('input[name="altOdenis"]').forEach(r => { r.checked = r.value === 'odenissiz'; r.closest('.pill').classList.toggle('checked', r.checked); });
+    $('#altUmumiTeyinatliNote').style.display = 'none';
+    $('#fAltSponsorNovu').value = '';
+    $('#sponsorTohfeWrap').style.display = 'none';
+    $all('#sponsorTohfeGroup input').forEach(cb => { cb.checked = false; cb.closest('.pill').classList.remove('checked'); });
+    $('#fAltMuddet').value = '';
+    renderEmekdaslarGroup([]);
+  }
+
+  renderRepeaterIstirakci(); renderRepeaterTerefdas(); renderRepeaterLink(); renderRepeaterSenedler();
+  openModal('modalAlt');
+}
+
+$('#btnSaveAlt').addEventListener('click', () => {
+  const parentId = Number($('#fAltParent').value);
+  const ad = $('#fAltAd').value.trim();
+  if(!parentId){ showToast('Əsas layihəni seçin'); return; }
+  if(!ad){ showToast('Alt layihənin adını daxil edin'); return; }
+
+  const now = new Date().toISOString().slice(0,10);
+  const emekdaslar = $all('#emekdaslarGroup input:checked').map(cb => cb.value);
+  const sponsorTohfe = $all('#sponsorTohfeGroup input:checked').map(cb => cb.value);
+
+  const data = {
+    parentId, ad,
+    baslama: $('#fAltBaslama').value, bitme: $('#fAltBitme').value,
+    olke: $('#fAltOlke').value, seher: $('#fAltSeher').value, rayon: $('#fAltRayon').value.trim(),
+    obyekt: $('#fAltObyekt').value.trim(), teskil: $('#fAltTeskil').value,
+    odenis: $all('input[name="altOdenis"]:checked')[0]?.value || 'odenissiz',
+    istirakcilar: (repeaterState.istirakci || []).filter(r => r.fin),
+    emekdaslar,
+    terefdasIstirakcilar: (repeaterState.terefdas || []).filter(r => r.fin),
+    sponsorNovu: $('#fAltSponsorNovu').value,
+    sponsorTohfe,
+    senedler: (repeaterState.senedler || []),
+    linkler: (repeaterState.link || []).filter(r => r.url),
+  };
+
+  if(editingAltId){
+    Object.assign(projectById(editingAltId), data);
+    showToast('Alt layihə yeniləndi');
+  } else {
+    projects.push({ id: nextProjectId++, tip: 'alt', yaradilma: now, ...data });
+    showToast('Alt layihə əlavə edildi');
+  }
+  closeModal('modalAlt');
+  renderAll();
+  if(currentEsasId) openEsasDetail(currentEsasId);
+});
+
+// ---------- ÜMUMİ TƏYİNATLI XƏRCLƏR TABLE ----------
+function renderXercTable(){
+  const list = expenses.slice().sort((a,b) => b.id - a.id);
+  $('#xercCount').textContent = list.length;
+
+  // Admin qeydi — hər rol üçün fərqli mətn. Bu bölmədəki təsdiq/geri qaytarma məntiqi
+  // YALNIZ Ümumi Təyinatlı Xərclərə aiddir — Layihələr bölməsinə heç bir təsiri yoxdur.
+  if(role === 'admin'){
+    $('#adminNote').style.display = 'flex';
+    $('#adminNoteText').textContent = 'Admin rejimində siz Maliyyənin göndərdiyi xərcləri təsdiqləyə və ya səbəb göstərərək geri qaytara bilərsiniz.';
+  } else if(role === 'maliyye'){
+    $('#adminNote').style.display = 'flex';
+    $('#adminNoteText').textContent = 'Maliyyə rejimində siz yeni xərc yaradıb admin təsdiqinə göndərə bilərsiniz. Geri qaytarılan xərcləri düzəldib yenidən göndərə bilərsiniz.';
+  } else {
+    $('#adminNote').style.display = 'flex';
+    $('#adminNoteText').textContent = 'Bu bölmə yalnız məlumat üçündür. Xərc yaratmaq Maliyyə, təsdiq/geri qaytarma isə Admin rejimindən edilir.';
+  }
+
+  // "Yeni" düyməsi yalnız Maliyyə rolunda görünür
+  $('#btnNewXerc').style.display = role === 'maliyye' ? '' : 'none';
+
+  const pendingCount = expenses.filter(e => e.status === 'gozleme').length;
+  const returnedCount = expenses.filter(e => e.status === 'geri_qaytarildi').length;
+  $('#pendingBadge').style.display = 'none';
+  if(role === 'admin' && pendingCount > 0){
+    $('#pendingBadge').style.display = '';
+    $('#pendingBadge').textContent = pendingCount;
+  } else if(role === 'maliyye' && returnedCount > 0){
+    $('#pendingBadge').style.display = '';
+    $('#pendingBadge').textContent = returnedCount;
+  }
+
+  const rows = list.map(e => {
+    const p = projectById(e.layiheId);
+    let actions = `<button class="icon-btn" title="Bax" data-view-expense="${e.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>`;
+
+    if(role === 'admin' && e.status === 'gozleme'){
+      // Admin: yalnız təsdiq edir və ya geri qaytarır
+      actions += `
+        <button class="icon-btn" style="color:var(--green);border-color:#bfe6cf;" title="Təsdiqlə" data-approve-expense="${e.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+        </button>
+        <button class="icon-btn danger" title="Geri qaytar" data-return-expense="${e.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v1"/></svg>
+        </button>`;
+    } else if(role === 'maliyye' && (e.status === 'gozleme' || e.status === 'geri_qaytarildi')){
+      // Maliyyə: öz yaratdığı, hələ təsdiqlənməmiş (və ya geri qaytarılmış) xərci redaktə/silə bilər
+      actions += `
+        <button class="icon-btn" title="Redaktə et" data-edit-expense="${e.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="icon-btn danger" title="Sil" data-delete-expense="${e.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+        </button>`;
+    }
+    // Digər hallarda (məs. tesdiq_olundu statusu, ya da Layihəçi rejimi) əlavə əməliyyat göstərilmir — sadəcə "Bax"
+
+    return `
+      <tr>
+        <td>#${String(e.id).padStart(4,'0')}</td>
+        <td>${p ? p.ad : '—'} <span class="badge badge-blue" style="margin-left:4px;">Ö${e.odenis}</span></td>
+        <td>${e.istiqamet}</td>
+        <td>${e.teyinat}</td>
+        <td><span class="link" data-view-receipt="${e.id}">${e.qebz}</span></td>
+        <td>${fmtDate(e.tarix)}</td>
+        <td>${fmt(e.edv)}</td>
+        <td>${fmt(e.umumi)}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td><div class="row-actions">${actions}</div></td>
+      </tr>`;
+  }).join('');
+
+  $('#xercTableBody').innerHTML = rows || `<tr><td colspan="10"><div class="empty">Hələ xərc qeydi yoxdur</div></td></tr>`;
+  bindExpenseRowActions();
+}
+
+function bindExpenseRowActions(){
+  $all('[data-view-expense]').forEach(el => el.addEventListener('click', () => viewExpense(Number(el.dataset.viewExpense))));
+  $all('[data-view-receipt]').forEach(el => el.addEventListener('click', () => viewReceipt(Number(el.dataset.viewReceipt))));
+  $all('[data-edit-expense]').forEach(el => el.addEventListener('click', () => openXercModal(Number(el.dataset.editExpense))));
+  $all('[data-delete-expense]').forEach(el => el.addEventListener('click', () => {
+    const id = Number(el.dataset.deleteExpense);
+    confirmAction('Xərc qeydi silinsin?', 'Bu ödəniş qəbzi siyahıdan həmişəlik silinəcək.', () => {
+      expenses = expenses.filter(e => e.id !== id);
+      renderAll();
+      showToast('Xərc qeydi silindi');
+    });
+  }));
+  $all('[data-approve-expense]').forEach(el => el.addEventListener('click', () => {
+    const e = expenses.find(x => x.id === Number(el.dataset.approveExpense));
+    e.status = 'tesdiq_olundu';
+    e.geriSebeb = '';
+    renderAll();
+    showToast('Xərc təsdiqləndi');
+  }));
+  $all('[data-return-expense]').forEach(el => el.addEventListener('click', () => openReturnModal(Number(el.dataset.returnExpense))));
+}
+
+// ---------- GERİ QAYTARMA (Admin) ----------
+let returningExpenseId = null;
+function openReturnModal(id){
+  returningExpenseId = id;
+  $('#fReturnSebeb').value = '';
+  openModal('modalReturn');
+}
+$('#btnConfirmReturn').addEventListener('click', () => {
+  const e = expenses.find(x => x.id === returningExpenseId);
+  if(!e) return;
+  const sebeb = $('#fReturnSebeb').value.trim();
+  if(!sebeb){ showToast('Geri qaytarma səbəbini qeyd edin'); return; }
+  e.status = 'geri_qaytarildi';
+  e.geriSebeb = sebeb;
+  closeModal('modalReturn');
+  returningExpenseId = null;
+  renderAll();
+  showToast('Xərc Maliyyəyə geri qaytarıldı');
+});
+
+function viewReceipt(id){
+  const e = expenses.find(x => x.id === id);
+  if(!e) return;
+  $('#receiptTitle').textContent = 'Ödəniş qəbzi — ' + e.qebz;
+
+  if(e.qebzUrl && e.qebzType && e.qebzType.includes('pdf')){
+    $('#receiptBody').innerHTML = `<embed src="${e.qebzUrl}" type="application/pdf" style="width:100%;height:70vh;border:none;display:block;">`;
+  } else if(e.qebzUrl && e.qebzType && e.qebzType.startsWith('image/')){
+    $('#receiptBody').innerHTML = `<img src="${e.qebzUrl}" style="width:100%;display:block;">`;
+  } else if(e.qebzUrl){
+    $('#receiptBody').innerHTML = `<div class="empty" style="padding:40px 20px;">Bu fayl növü üçün ön izləmə mövcud deyil.<br><a href="${e.qebzUrl}" download="${e.qebz}" style="color:var(--blue);font-weight:600;">${e.qebz} yüklə</a></div>`;
+  } else {
+    $('#receiptBody').innerHTML = `<div class="empty" style="padding:40px 20px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      Bu nümunə qeyddir — real fayl yüklənməyib (<b>${e.qebz}</b>). Yeni xərc əlavə edərkən yüklədiyiniz fayl burada göstəriləcək.
+    </div>`;
+  }
+  openModal('modalReceipt');
+}
+
+function viewExpense(id){
+  const e = expenses.find(x => x.id === id);
+  if(!e) return;
+  const p = projectById(e.layiheId);
+  $('#viewBody').innerHTML = `
+    <div class="form-grid">
+      <div class="form-field"><label>Layihə</label><div>${p ? p.ad : '—'}</div></div>
+      <div class="form-field"><label>Ödəniş nömrəsi</label><div>Ödəniş ${e.odenis}</div></div>
+      <div class="form-field"><label>İstiqamət</label><div>${e.istiqamet}</div></div>
+      <div class="form-field"><label>Xərcin təyinatı</label><div>${e.teyinat}</div></div>
+      <div class="form-field full"><label>Xərcin detallı təsviri</label><div>${e.tesvir || '—'}</div></div>
+      <div class="form-field"><label>Ödəniş qəbzi</label><div>${e.qebz}</div></div>
+      <div class="form-field"><label>Ödəmə tarixi</label><div>${fmtDate(e.tarix)}</div></div>
+      <div class="form-field"><label>İcraçının adı</label><div>${e.icraci}</div></div>
+      <div class="form-field"><label>YAŞAT Fondu tərəfindən</label><div>${fmt(e.yasat)}</div></div>
+      <div class="form-field"><label>ƏDV</label><div>${fmt(e.edv)}</div></div>
+      <div class="form-field"><label>Ümumi</label><div>${fmt(e.umumi)}</div></div>
+      <div class="form-field"><label>Status</label><div>${statusBadge(e.status)}</div></div>
+      ${e.status === 'geri_qaytarildi' && e.geriSebeb ? `<div class="form-field full"><label>Geri qaytarma səbəbi</label><div style="color:var(--red);">${e.geriSebeb}</div></div>` : ''}
+    </div>`;
+  openModal('modalView');
+}
+
+// ---------- XƏRC MODAL ----------
+function populateProjectSelect(){
+  const alts = projects.filter(p => p.tip === 'alt');
+  $('#fXercLayihe').innerHTML = alts.map(p => `<option value="${p.id}">${p.ad}</option>`).join('') || `<option value="">Əvvəlcə alt layihə yaradın</option>`;
+}
+
+let editingExpenseId = null;
+$('#btnNewXerc').addEventListener('click', () => openXercModal(null));
+
+function openXercModal(id){
+  editingExpenseId = id;
+  selectedFile = null;
+  populateProjectSelect();
+  if(id){
+    const e = expenses.find(x => x.id === id);
+    $('#fXercLayihe').value = e.layiheId;
+    $('#fXercOdenis').value = e.odenis;
+    $('#fXercIstiqamet').value = e.istiqamet;
+    $('#fXercTeyinat').value = e.teyinat;
+    $('#fXercTesvir').value = e.tesvir;
+    $('#fXercTarix').value = e.tarix;
+    $('#fXercIcraci').value = e.icraci;
+    $('#fXercYasat').value = e.yasat;
+    $('#fXercEdv').value = e.edv;
+    $('#fXercUmumi').value = e.umumi;
+    $('#fileDropText').textContent = e.qebz;
+    $('#fileDrop').classList.add('has-file');
+  } else {
+    ['fXercIstiqamet','fXercTeyinat','fXercTesvir','fXercTarix','fXercIcraci','fXercYasat','fXercEdv','fXercUmumi'].forEach(id => $('#'+id).value = '');
+    selectedFile = null;
+    $('#fXercQebz').value = '';
+    const projId = Number($('#fXercLayihe').value);
+    const existing = expenses.filter(e => e.layiheId === projId).map(e => Number(e.odenis));
+    $('#fXercOdenis').value = existing.length ? Math.max(...existing) + 1 : 1;
+    $('#fileDropText').textContent = 'Qəbzi seçmək üçün klikləyin (PDF/JPG/PNG)';
+    $('#fileDrop').classList.remove('has-file');
+  }
+  openModal('modalXerc');
+}
+
+$('#fileDrop').addEventListener('click', () => $('#fXercQebz').click());
+let selectedFile = null;
+$('#fXercQebz').addEventListener('change', () => {
+  const f = $('#fXercQebz').files[0];
+  if(f){
+    selectedFile = f;
+    $('#fileDropText').textContent = f.name;
+    $('#fileDrop').classList.add('has-file');
+  }
+});
+
+function recalcUmumi(){
+  const y = Number($('#fXercYasat').value) || 0;
+  const v = Number($('#fXercEdv').value) || 0;
+  $('#fXercUmumi').value = (y + v) || '';
+}
+$('#fXercYasat').addEventListener('input', recalcUmumi);
+$('#fXercEdv').addEventListener('input', recalcUmumi);
+
+$('#btnSubmitXerc').addEventListener('click', () => {
+  const layiheId = Number($('#fXercLayihe').value);
+  if(!layiheId){ showToast('Əvvəlcə layihə seçin'); return; }
+  const teyinat = $('#fXercTeyinat').value.trim();
+  if(!teyinat){ showToast('Xərcin təyinatını daxil edin'); return; }
+  if(!$('#fXercTarix').value){ showToast('Ödəmə tarixini seçin'); return; }
+  const odenisNo = Number($('#fXercOdenis').value);
+  if(!odenisNo || odenisNo < 1){ showToast('Ödəniş nömrəsini daxil edin'); return; }
+
+  const data = {
+    layiheId,
+    odenis: String(odenisNo),
+    istiqamet: $('#fXercIstiqamet').value.trim(),
+    teyinat,
+    tesvir: $('#fXercTesvir').value.trim(),
+    qebz: selectedFile ? selectedFile.name : ($('#fileDrop').classList.contains('has-file') ? $('#fileDropText').textContent : 'qebz_yeni.pdf'),
+    tarix: $('#fXercTarix').value,
+    icraci: $('#fXercIcraci').value.trim() || '—',
+    yasat: Number($('#fXercYasat').value) || 0,
+    edv: Number($('#fXercEdv').value) || 0,
+    umumi: Number($('#fXercUmumi').value) || 0,
+  };
+  if(selectedFile){
+    data.qebzUrl = URL.createObjectURL(selectedFile);
+    data.qebzType = selectedFile.type;
+  }
+
+  if(editingExpenseId){
+    const e = expenses.find(x => x.id === editingExpenseId);
+    Object.assign(e, data);
+    e.status = 'gozleme';
+    e.geriSebeb = '';
+    showToast('Xərc yeniləndi — yenidən admin təsdiqinə göndərildi');
+  } else {
+    expenses.push({ id: nextExpenseId++, status: 'gozleme', ...data });
+    showToast('Xərc admin təsdiqinə göndərildi');
+  }
+  closeModal('modalXerc');
+  renderAll();
+});
+
+// ---------- CONFIRM ----------
+function confirmAction(title, text, action){
+  $('#confirmTitle').textContent = title;
+  $('#confirmText').textContent = text;
+  pendingDeleteAction = action;
+  openModal('modalConfirm');
+}
+$('#btnConfirmAction').addEventListener('click', () => {
+  if(pendingDeleteAction) pendingDeleteAction();
+  pendingDeleteAction = null;
+  closeModal('modalConfirm');
+});
+
+// ---------- RENDER ALL ----------
+function renderAll(){
+  renderLayiheTable();
+  renderXercTable();
+  if(currentDetailProjectId) renderOdenisTabs();
+}
+renderAll();
+</script>
+</body>
+</html>
