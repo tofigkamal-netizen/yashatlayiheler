@@ -1833,8 +1833,9 @@ renderAll();
   <form autocomplete="on">
     <h1>Prototipə giriş</h1>
     <p class="qx-sub" id="qx-login-sub">Rəy bildirmək üçün daxil olun</p>
-    <div class="qx-field"><label for="qx-l">Login</label><input type="text" id="qx-l" autocomplete="username" placeholder="məs. e.salamova" required></div>
-    <div class="qx-field"><label for="qx-p">Parol</label><input type="password" id="qx-p" autocomplete="current-password" required></div>
+    <div class="qx-field"><label for="qx-l">Login</label><input type="text" id="qx-l" name="username" autocomplete="username" placeholder="məs. e.salamova" required></div>
+    <div class="qx-field"><label for="qx-p">Parol</label><input type="password" id="qx-p" name="password" autocomplete="current-password" required></div>
+    <label class="qx-check" style="margin:-2px 0 14px;"><input type="checkbox" id="qx-remember" checked> Məni yadda saxla (30 gün)</label>
     <div class="qx-err" id="qx-login-err"></div>
     <button class="qx-btn qx-wide" type="submit" id="qx-login-btn">Daxil ol</button>
   </form>
@@ -1936,8 +1937,30 @@ renderAll();
   function show(el, on){ el.classList.toggle('qx-hide', !on); }
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function store(k, v){ try{ v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); }catch(e){} }
-  function read(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
+  // "Məni yadda saxla" seçilibsə localStorage (brauzer bağlansa da qalır), yoxsa sessionStorage (səhifə yenilənəndə qalır)
+  function saveSession(token, user, remember){
+    clearSession();
+    try{
+      var st = remember ? localStorage : sessionStorage;
+      st.setItem('qx_token', token); st.setItem('qx_user', JSON.stringify(user));
+    }catch(e){}
+  }
+  function readSession(){
+    var stores = [];
+    try{ stores.push(localStorage); }catch(e){}
+    try{ stores.push(sessionStorage); }catch(e){}
+    for (var i = 0; i < stores.length; i++){
+      var t = stores[i].getItem('qx_token'), u = stores[i].getItem('qx_user');
+      if (t && u){ try{ return { token: t, user: JSON.parse(u) }; }catch(e){} }
+    }
+    return null;
+  }
+  function clearSession(){
+    ['qx_token','qx_user'].forEach(function(k){
+      try{ localStorage.removeItem(k); }catch(e){}
+      try{ sessionStorage.removeItem(k); }catch(e){}
+    });
+  }
 
   function run(fn){
     var args = [].slice.call(arguments, 1);
@@ -1979,8 +2002,14 @@ renderAll();
   $('qx-login').querySelector('form').addEventListener('submit', function(e){
     e.preventDefault();
     var btn = $('qx-login-btn'); btn.disabled = true; $('qx-login-err').textContent = '';
-    run('login', $('qx-l').value, $('qx-p').value).then(function(r){
+    var remember = $('qx-remember').checked, l = $('qx-l').value, pw = $('qx-p').value;
+    run('login', l, pw, remember).then(function(r){
       $('qx-p').value = '';
+      saveSession(r.token, r.user, remember);
+      // Brauzerə parolu yadda saxlamağı təklif edirik (Chrome, Edge)
+      if (remember && window.PasswordCredential && navigator.credentials){
+        try{ navigator.credentials.store(new PasswordCredential({ id: l, password: pw, name: r.user.name })).catch(function(){}); }catch(e){}
+      }
       enter(r.token, r.user);
       if (r.mustChange) openPw(true);
     }).catch(function(err){ $('qx-login-err').textContent = err.message; })
@@ -1988,7 +2017,7 @@ renderAll();
   });
 
   function enter(token, user){
-    S.token = token; S.user = user; store('qx_token', token);
+    S.token = token; S.user = user;
     show($('qx-login'), false); show($('qx-bar'), true);
     var av = $('qx-user-av'); av.textContent = initials(user.name);
     av.style.background = 'hsl(' + hue(user.login) + ',55%,45%)';
@@ -1998,15 +2027,15 @@ renderAll();
 
   function signOut(silent){
     if (S.token && !silent) run('logout', S.token).catch(function(){});
-    S.token = null; S.user = null; S.notes = []; store('qx_token', null);
+    S.token = null; S.user = null; S.notes = []; clearSession();
     setMode(false); closePop(); closeComp(); togglePanel(false); show($('qx-menu'), false);
     show($('qx-bar'), false); show($('qx-login'), true); renderPins(); $('qx-l').focus();
   }
 
-  var saved = read('qx_token');
-  if (saved){
-    run('whoami', saved).then(function(u){ enter(saved, u); }).catch(function(){ store('qx_token', null); });
-  }
+  // Səhifə yenilənəndə sessiyanı bərpa edirik: dərhal daxil oluruq, sessiya etibarsızdırsa
+  // ilk sorğu (qeydlərin yüklənməsi) bunu aşkar edib login ekranına qaytarır.
+  var saved = readSession();
+  if (saved) enter(saved.token, saved.user);
 
   /* ---------- Hesab menyusu və parol ---------- */
   $('qx-user').addEventListener('click', function(e){
