@@ -1763,6 +1763,9 @@ renderAll();
     font-size:11px;font-weight:700;letter-spacing:.2px;padding:0;transition:box-shadow .15s;}
   #qx .qx-pin:hover,#qx .qx-pin.qx-active{box-shadow:0 0 0 3px rgba(255,197,61,.45),0 3px 10px rgba(0,0,0,.28);}
   #qx .qx-pin.qx-done{background:var(--qx-done);color:#fff;}
+  #qx .qx-pin.qx-own{cursor:grab;touch-action:none;}
+  #qx .qx-pin.qx-drag{cursor:grabbing;transition:none;z-index:2;box-shadow:0 10px 24px rgba(0,0,0,.35);}
+  body.qx-dragging, body.qx-dragging *{cursor:grabbing !important;user-select:none !important;}
   #qx .qx-pin.qx-new{background:#fff;border:2px dashed var(--qx-pin-ink);}
   #qx .qx-pin .qx-n{position:absolute;top:-7px;right:-9px;background:var(--qx-navy);color:#fff;border-radius:999px;
     font-size:10px;padding:0 5px;line-height:15px;border:1.5px solid #fff;}
@@ -2210,12 +2213,19 @@ renderAll();
         el = document.createElement('button'); el.type = 'button'; el.className = 'qx-pin';
         el.addEventListener('mouseenter', function(){ if (!S.mode) openPop(n.id, false); });
         el.addEventListener('mouseleave', schedClose);
-        el.addEventListener('click', function(e){ e.stopPropagation(); openPop(n.id, true); });
+        el.addEventListener('click', function(e){
+          e.stopPropagation();
+          if (S.justDragged) return;
+          openPop(n.id, true);
+        });
+        el.addEventListener('pointerdown', function(e){ startDrag(e, n.id, el); });
         layer.appendChild(el); S.pins[n.id] = el;
       }
       var count = replies(n.id).length;
       el.innerHTML = esc(initials(n.name)) + (count ? '<span class="qx-n">' + (count + 1) + '</span>' : '');
-      el.title = '#' + (i + 1) + ' ' + n.name;
+      var own = isOwn(n);
+      el.title = '#' + (i + 1) + ' ' + n.name + (own ? ' (yerini dəyişmək üçün sürüşdürün)' : '');
+      el.classList.toggle('qx-own', own);
       el.dataset.num = i + 1;
       el.classList.toggle('qx-done', n.status === DONE);
     });
@@ -2260,6 +2270,7 @@ renderAll();
     });
     root.classList.remove('qx-measure');
     items.forEach(function(it){
+      if (it.n.id === S.dragId) return; // sürüşdürülən pinə toxunmuruq
       if (it.p){
         it.el.style.display = '';
         it.el.style.transform = 'translate(' + it.p.x + 'px,' + (it.p.y - 30) + 'px)';
@@ -2269,6 +2280,65 @@ renderAll();
         if (it.p) place($('qx-pop'), it.p); else if (!S.locked) closePop();
       }
     });
+  }
+
+  /* ---------- Pini sürüşdürmək (yalnız öz qeydləri) ---------- */
+  function isOwn(n){ return !!(S.user && n.login.toLowerCase() === S.user.login.toLowerCase()); }
+
+  function startDrag(e, id, el){
+    var n = byId(id);
+    if (e.button !== 0 || S.mode || !n || !isOwn(n)) return;
+    var sx = e.clientX, sy = e.clientY, moved = false, pt = null;
+    var r = el.getBoundingClientRect();
+    var ox = e.clientX - r.left, oy = e.clientY - r.bottom; // pinin ucu sol-alt küncdədir
+    function move(ev){
+      if (!moved){
+        if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 5) return;
+        moved = true; S.dragId = id; closePop();
+        el.classList.add('qx-drag'); document.body.classList.add('qx-dragging');
+      }
+      ev.preventDefault();
+      pt = { x: ev.clientX - ox, y: ev.clientY - oy };
+      el.style.transform = 'translate(' + pt.x + 'px,' + (pt.y - 30) + 'px)';
+    }
+    function up(){
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      if (!moved) return;
+      el.classList.remove('qx-drag'); document.body.classList.remove('qx-dragging');
+      S.justDragged = true; setTimeout(function(){ S.justDragged = false; }, 60);
+      drop(n, pt);
+      S.dragId = null;
+      layout();
+    }
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  }
+
+  function drop(n, pt){
+    if (!pt) return;
+    root.classList.add('qx-measure');
+    var hit = document.elementFromPoint(
+      Math.max(0, Math.min(pt.x, innerWidth - 1)), Math.max(0, Math.min(pt.y, innerHeight - 1)));
+    root.classList.remove('qx-measure');
+    if (!hit || root.contains(hit)){ toast('Pini bu yerə qoymaq olmur'); return; }
+    var a = hit.closest('svg') || hit;
+    if (a === document.documentElement) a = document.body;
+    var r = a.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var ctx = context();
+    var pos = {
+      selector: cssPath(a),
+      x: Math.round((pt.x - r.left) / r.width * 10000) / 100,
+      y: Math.round((pt.y - r.top) / r.height * 10000) / 100,
+      screenKey: ctx.key, screen: ctx.label
+    };
+    var old = { selector: n.selector, x: n.x, y: n.y, screenKey: n.screenKey, screen: n.screen };
+    Object.assign(n, pos); renderPanel();
+    run('moveNote', S.token, n.id, pos).then(function(){ toast('Qeydin yeri dəyişdi'); })
+      .catch(function(err){ Object.assign(n, old); refreshAll(); toast(err.message); });
   }
 
   function place(card, p){
