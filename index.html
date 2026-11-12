@@ -1791,6 +1791,15 @@ renderAll();
   #qx .qx-msg .qx-who{font-weight:600;}
   #qx .qx-msg .qx-when{color:var(--qx-muted);font-size:11.5px;margin-left:6px;font-weight:400;}
   #qx .qx-msg .qx-text{white-space:pre-wrap;word-break:break-word;margin-top:2px;}
+  #qx .qx-msg .qx-body{flex:1;min-width:0;}
+  #qx .qx-msg .qx-line{display:flex;align-items:baseline;gap:4px;white-space:nowrap;}
+  #qx .qx-msg .qx-who{overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  #qx .qx-msg .qx-edited{display:block;color:var(--qx-muted);font-size:11px;font-style:italic;margin-top:2px;}
+  #qx .qx-acts{margin-left:auto;display:flex;gap:2px;opacity:0;transition:opacity .12s;}
+  #qx .qx-msg:hover .qx-acts,#qx .qx-acts:focus-within,#qx .qx-acts.qx-armed{opacity:1;}
+  #qx .qx-acts .qx-link{font-size:11.5px;padding:2px 5px;}
+  #qx .qx-msg .qx-edit textarea{margin-top:6px;min-height:52px;}
+  @media (hover:none){ #qx .qx-acts{opacity:1;} }
   #qx-pop .qx-reply{padding:10px 12px 12px;border-top:1px solid var(--qx-line);background:#fafbfd;border-radius:0 0 12px 12px;}
   #qx-pop .qx-reply textarea{min-height:44px;}
 
@@ -1881,7 +1890,6 @@ renderAll();
   <div class="qx-head">
     <span class="qx-where" id="qx-pop-where"></span>
     <button type="button" class="qx-link" id="qx-pop-status"></button>
-    <button type="button" class="qx-link qx-danger" id="qx-pop-del">Sil</button>
   </div>
   <div class="qx-thread" id="qx-pop-thread"></div>
   <div class="qx-reply">
@@ -2201,7 +2209,7 @@ renderAll();
     return S.filter === 'all' || (S.filter === 'done' ? n.status === DONE : n.status !== DONE);
   }
 
-  function refreshAll(){ renderPins(); renderPanel(); if (S.openId) renderThread(); layout(); }
+  function refreshAll(){ renderPins(); renderPanel(); if (S.openId && !S.editId) renderThread(); layout(); }
 
   /* ---------- Pinlər ---------- */
   function renderPins(){
@@ -2370,12 +2378,12 @@ renderAll();
     if (lock) $('qx-reply-text').focus();
   }
   function closePop(){
-    S.openId = null; S.locked = false; show($('qx-pop'), false); armDel(false);
+    S.openId = null; S.locked = false; S.editId = null; S.armedId = null; show($('qx-pop'), false);
     Object.keys(S.pins).forEach(function(k){ S.pins[k].classList.remove('qx-active'); });
   }
   function busy(){
     var t = $('qx-reply-text');
-    return S.locked || t.value.trim() !== '' || document.activeElement === t;
+    return S.locked || !!S.editId || t.value.trim() !== '' || document.activeElement === t;
   }
   function schedClose(){
     clearTimeout(closeTimer);
@@ -2393,14 +2401,68 @@ renderAll();
     if (!n){ closePop(); return; }
     var all = [n].concat(replies(n.id));
     $('qx-pop-thread').innerHTML = all.map(function(m){
-      return '<div class="qx-msg">' + avatar(m) + '<div><div class="qx-who">' + esc(m.name) +
-        '<span class="qx-when">' + esc(when(m.date)) + '</span></div><div class="qx-text">' + esc(m.text) + '</div></div></div>';
+      var acts = '';
+      if (isOwn(m) && S.editId !== m.id){
+        acts = '<span class="qx-acts' + (S.armedId === m.id ? ' qx-armed' : '') + '">' +
+          '<button type="button" class="qx-link" data-act="edit" data-id="' + esc(m.id) + '">Redaktə</button>' +
+          '<button type="button" class="qx-link qx-danger" data-act="del" data-id="' + esc(m.id) + '">' +
+          (S.armedId === m.id ? 'Silinsin?' : 'Sil') + '</button></span>';
+      }
+      var body = S.editId === m.id
+        ? '<div class="qx-edit"><textarea data-edit="' + esc(m.id) + '">' + esc(m.text) + '</textarea>' +
+          '<div class="qx-row"><button type="button" class="qx-btn qx-ghost" data-act="cancel">Ləğv et</button>' +
+          '<button type="button" class="qx-btn" data-act="save" data-id="' + esc(m.id) + '">Yadda saxla</button></div></div>'
+        : '<div class="qx-text">' + esc(m.text) + '</div>';
+      return '<div class="qx-msg">' + avatar(m) + '<div class="qx-body"><div class="qx-line"><span class="qx-who">' + esc(m.name) +
+        '</span><span class="qx-when">' + esc(when(m.date)) + '</span>' + acts + '</div>' + body +
+        (m.edited && S.editId !== m.id ? '<span class="qx-edited" title="' + esc(when(m.edited)) + '">(redaktə edilib)</span>' : '') +
+        '</div></div>';
     }).join('');
     $('qx-pop-where').textContent = n.screen;
     $('qx-pop-where').title = n.screen;
     $('qx-pop-status').textContent = n.status === DONE ? 'Yenidən aç' : 'Həll edildi';
-    show($('qx-pop-del'), S.user && n.login.toLowerCase() === S.user.login.toLowerCase());
-    var th = $('qx-pop-thread'); th.scrollTop = th.scrollHeight;
+    var ta = $('qx-pop-thread').querySelector('textarea[data-edit]');
+    if (ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+    else { var th = $('qx-pop-thread'); th.scrollTop = th.scrollHeight; }
+  }
+
+  // Mesajların üzərindəki "Redaktə" / "Sil" düymələri
+  $('qx-pop-thread').addEventListener('click', function(e){
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var act = b.dataset.act, id = b.dataset.id;
+    if (act === 'edit'){ S.editId = id; S.armedId = null; S.locked = true; renderThread(); }
+    else if (act === 'cancel'){ S.editId = null; renderThread(); }
+    else if (act === 'save') saveEdit(id, b);
+    else if (act === 'del'){
+      if (S.armedId !== id){ S.armedId = id; renderThread(); return; }
+      S.armedId = null; removeNote(id);
+    }
+  });
+  $('qx-pop-thread').addEventListener('keydown', function(e){
+    var ta = e.target.closest('textarea[data-edit]'); if (!ta) return;
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) saveEdit(ta.dataset.edit);
+    if (e.key === 'Escape'){ e.stopPropagation(); S.editId = null; renderThread(); }
+  });
+
+  function saveEdit(id, btn){
+    var ta = $('qx-pop-thread').querySelector('textarea[data-edit]');
+    var text = ta ? ta.value.trim() : '';
+    if (!text){ toast('Qeyd boş ola bilməz'); return; }
+    if (btn) btn.disabled = true;
+    run('editNote', S.token, id, text).then(function(updated){
+      var n = byId(id); if (n){ n.text = updated.text; n.edited = updated.edited; }
+      S.editId = null; refreshAll(); renderThread(); toast('Qeyd redaktə edildi');
+    }).catch(function(err){ toast(err.message); if (btn) btn.disabled = false; });
+  }
+
+  function removeNote(id){
+    var n = byId(id); if (!n) return;
+    var isRoot = !n.parentId;
+    run('deleteNote', S.token, id).then(function(){
+      S.notes = S.notes.filter(function(x){ return x.id !== id && x.parentId !== id; });
+      if (isRoot) closePop();
+      refreshAll(); toast(isRoot ? 'Qeyd silindi' : 'Cavab silindi');
+    }).catch(function(err){ toast(err.message); renderThread(); });
   }
 
   $('qx-reply-send').addEventListener('click', sendReply);
@@ -2424,17 +2486,6 @@ renderAll();
       n.status = next; refreshAll();
       toast(next === DONE ? 'Qeyd həll edilmiş kimi işarələndi' : 'Qeyd yenidən açıldı');
     }).catch(function(err){ toast(err.message); });
-  });
-
-  var delArmed = false;
-  function armDel(on){ delArmed = on; $('qx-pop-del').textContent = on ? 'Silinsin?' : 'Sil'; }
-  $('qx-pop-del').addEventListener('click', function(){
-    if (!delArmed){ armDel(true); return; }
-    var id = S.openId;
-    run('deleteNote', S.token, id).then(function(){
-      S.notes = S.notes.filter(function(x){ return x.id !== id && x.parentId !== id; });
-      closePop(); refreshAll(); toast('Qeyd silindi');
-    }).catch(function(err){ toast(err.message); armDel(false); });
   });
 
   /* ---------- Sağ panel ---------- */
@@ -2503,6 +2554,7 @@ renderAll();
     if (!S.user) return;
     var t = e.target, typing = t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable);
     if (e.key === 'Escape'){
+      if (S.editId) return;
       if (S.pending) closeComp(); else if (S.mode) setMode(false); else if (S.openId) closePop();
       return;
     }
