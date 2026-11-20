@@ -327,6 +327,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
                 <th>Kateqoriya</th>
                 <th>Layihə növü</th>
                 <th>Yaranma tarixi</th>
+                <th>Bitmə tarixi</th>
                 <th>Alt layihə sayı</th>
                 <th style="text-align:right;">Əməliyyat</th>
               </tr>
@@ -476,25 +477,31 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
         <div class="form-field">
           <label>Kateqoriya <span class="opt">(məcburi)</span></label>
           <select id="fEsasKateqoriya">
-            <option value="Sosial">Sosial</option>
             <option value="Təhsil">Təhsil</option>
-            <option value="Yardım">Yardım</option>
+            <option value="Müalicə">Müalicə</option>
+            <option value="Kredit">Kredit</option>
+            <option value="Məişət">Məişət</option>
             <option value="Digər">Digər</option>
           </select>
+          <input type="text" id="fEsasKateqoriyaDiger" placeholder="Kateqoriyanı əllə yazın" style="display:none;">
         </div>
         <div class="form-field">
           <label>Layihə növü <span class="opt">(məcburi)</span></label>
           <select id="fEsasNovu">
             <option value="Sosial">Sosial</option>
-            <option value="Humanitar">Humanitar</option>
-            <option value="İnfrastruktur">İnfrastruktur</option>
             <option value="Təhsil">Təhsil</option>
+            <option value="Yaradıcılıq">Yaradıcılıq</option>
             <option value="Digər">Digər</option>
           </select>
+          <input type="text" id="fEsasNovuDiger" placeholder="Layihə növünü əllə yazın" style="display:none;">
         </div>
-        <div class="form-field full">
+        <div class="form-field">
           <label>Layihənin yaranma tarixi <span class="opt">(məcburi)</span></label>
           <input type="date" id="fEsasTarix">
+        </div>
+        <div class="form-field">
+          <label>Layihənin bitmə tarixi <span class="opt">(məcburi)</span></label>
+          <input type="date" id="fEsasBitme">
         </div>
       </div>
     </div>
@@ -817,8 +824,8 @@ let editingAltId = null;
 
 let projects = [
   // Əsas layihələr
-  { id: 1, tip: 'esas', ad: 'Hədiyyə karvanı', melumat: 'Hər il təkrarlanan, döyüş bölgələrindəki ailələrə hədiyyə paylanması tədbiri.', kateqoriya: 'Sosial', novu: 'Sosial', yaranma: '2024-01-15' },
-  { id: 2, tip: 'esas', ad: 'Reabilitasiya proqramı', melumat: 'Psixoloji və fiziki reabilitasiya xidmətləri üzrə davamlı proqram.', kateqoriya: 'Yardım', novu: 'Humanitar', yaranma: '2025-02-10' },
+  { id: 1, tip: 'esas', ad: 'Hədiyyə karvanı', melumat: 'Hər il təkrarlanan, döyüş bölgələrindəki ailələrə hədiyyə paylanması tədbiri.', kateqoriya: 'Məişət', novu: 'Sosial', yaranma: '2024-01-15', bitme: '2026-12-31' },
+  { id: 2, tip: 'esas', ad: 'Reabilitasiya proqramı', melumat: 'Psixoloji və fiziki reabilitasiya xidmətləri üzrə davamlı proqram.', kateqoriya: 'Müalicə', novu: 'Sosial', yaranma: '2025-02-10', bitme: '2027-02-10' },
   // Alt layihələr
   { id: 3, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2026, Gəncə', yaradilma: '2026-03-01',
     baslama: '2026-03-12', bitme: '2026-09-12',
@@ -941,6 +948,7 @@ function renderLayiheTable(){
         <td>${p.kateqoriya}</td>
         <td>${p.novu}</td>
         <td>${fmtDate(p.yaranma)}</td>
+        <td>${fmtDate(p.bitme)}</td>
         <td>${altCount}</td>
         <td>
           <div class="row-actions">
@@ -957,7 +965,7 @@ function renderLayiheTable(){
         </td>
       </tr>`;
   }).join('');
-  $('#layiheTableBody').innerHTML = html || `<tr><td colspan="7"><div class="empty">Hələ əsas layihə yoxdur</div></td></tr>`;
+  $('#layiheTableBody').innerHTML = html || `<tr><td colspan="8"><div class="empty">Hələ əsas layihə yoxdur</div></td></tr>`;
 
   $all('[data-open-esas]').forEach(el => el.addEventListener('click', () => openEsasDetail(Number(el.dataset.openEsas))));
   $all('[data-edit-esas]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openEsasModal(Number(el.dataset.editEsas)); }));
@@ -995,6 +1003,7 @@ function openEsasDetail(id){
   $('#esasDetailInfoCard').innerHTML = `
     <div class="info-grid">
       <div class="info-item"><div class="k">Yaranma tarixi</div><div class="v">${fmtDate(p.yaranma)}</div></div>
+      <div class="info-item"><div class="k">Bitmə tarixi</div><div class="v">${fmtDate(p.bitme)}</div></div>
       <div class="info-item"><div class="k">Kateqoriya</div><div class="v">${p.kateqoriya}</div></div>
       <div class="info-item"><div class="k">Layihə növü</div><div class="v">${p.novu}</div></div>
       <div class="info-item"><div class="k">Alt layihə sayı</div><div class="v">${altListByParent(p.id).length}</div></div>
@@ -1148,6 +1157,31 @@ function renderOdenisTabs(){
 // ---------- ƏSAS LAYİHƏ MODAL ----------
 $('#btnNewLayihe').addEventListener('click', () => openEsasModal(null));
 
+// "Digər" seçiləndə əllə yazmaq üçün mətn xanası göstərilir.
+// Əllə yazılan dəyər birbaşa kateqoriya/növ kimi saxlanılır; siyahıda olmayan dəyər redaktədə "Digər" + mətn kimi açılır.
+const DIGER = 'Digər';
+function toggleDiger(selId, inputId){
+  const show = $(selId).value === DIGER;
+  $(inputId).style.display = show ? '' : 'none';
+  if(!show) $(inputId).value = '';
+}
+function setSecim(selId, inputId, value){
+  const sel = $(selId), inp = $(inputId);
+  const known = [...sel.options].some(o => o.value === value && o.value !== DIGER);
+  if(!value){ sel.selectedIndex = 0; }
+  else if(known){ sel.value = value; }
+  else { sel.value = DIGER; }
+  toggleDiger(selId, inputId);
+  if(value && !known && value !== DIGER) inp.value = value;
+}
+function getSecim(selId, inputId){
+  const v = $(selId).value;
+  return v === DIGER ? $(inputId).value.trim() : v;
+}
+$('#fEsasKateqoriya').addEventListener('change', () => { toggleDiger('#fEsasKateqoriya', '#fEsasKateqoriyaDiger'); if($('#fEsasKateqoriya').value === DIGER) $('#fEsasKateqoriyaDiger').focus(); });
+$('#fEsasNovu').addEventListener('change', () => { toggleDiger('#fEsasNovu', '#fEsasNovuDiger'); if($('#fEsasNovu').value === DIGER) $('#fEsasNovuDiger').focus(); });
+$('#fEsasTarix').addEventListener('input', () => { $('#fEsasBitme').min = $('#fEsasTarix').value; });
+
 function openEsasModal(id){
   editingEsasId = id;
   if(id){
@@ -1155,15 +1189,19 @@ function openEsasModal(id){
     $('#modalEsasTitle').textContent = 'Əsas layihəni redaktə et';
     $('#fEsasAd').value = p.ad;
     $('#fEsasMelumat').value = p.melumat;
-    $('#fEsasKateqoriya').value = p.kateqoriya;
-    $('#fEsasNovu').value = p.novu;
+    setSecim('#fEsasKateqoriya', '#fEsasKateqoriyaDiger', p.kateqoriya);
+    setSecim('#fEsasNovu', '#fEsasNovuDiger', p.novu);
     $('#fEsasTarix').value = p.yaranma;
+    $('#fEsasBitme').value = p.bitme || '';
   } else {
     $('#modalEsasTitle').textContent = 'Yeni Əsas Layihə';
     $('#fEsasAd').value = ''; $('#fEsasMelumat').value = '';
-    $('#fEsasKateqoriya').value = 'Sosial'; $('#fEsasNovu').value = 'Sosial';
+    setSecim('#fEsasKateqoriya', '#fEsasKateqoriyaDiger', '');
+    setSecim('#fEsasNovu', '#fEsasNovuDiger', '');
     $('#fEsasTarix').value = '';
+    $('#fEsasBitme').value = '';
   }
+  $('#fEsasBitme').min = $('#fEsasTarix').value;
   openModal('modalEsas');
 }
 
@@ -1171,9 +1209,15 @@ $('#btnSaveEsas').addEventListener('click', () => {
   const ad = $('#fEsasAd').value.trim();
   const melumat = $('#fEsasMelumat').value.trim();
   const tarix = $('#fEsasTarix').value;
-  if(!ad || !melumat || !tarix){ showToast('Bütün xanalar məcburidir'); return; }
+  const bitme = $('#fEsasBitme').value;
+  const kateqoriya = getSecim('#fEsasKateqoriya', '#fEsasKateqoriyaDiger');
+  const novu = getSecim('#fEsasNovu', '#fEsasNovuDiger');
+  if(!ad || !melumat || !tarix || !bitme){ showToast('Bütün xanalar məcburidir'); return; }
+  if(!kateqoriya){ showToast('"Digər" kateqoriyanı əllə yazın'); $('#fEsasKateqoriyaDiger').focus(); return; }
+  if(!novu){ showToast('"Digər" layihə növünü əllə yazın'); $('#fEsasNovuDiger').focus(); return; }
+  if(bitme < tarix){ showToast('Bitmə tarixi yaranma tarixindən əvvəl ola bilməz'); return; }
 
-  const data = { ad, melumat, kateqoriya: $('#fEsasKateqoriya').value, novu: $('#fEsasNovu').value, yaranma: tarix };
+  const data = { ad, melumat, kateqoriya, novu, yaranma: tarix, bitme };
   if(editingEsasId){
     Object.assign(projectById(editingEsasId), data);
     showToast('Əsas layihə yeniləndi');
@@ -1381,8 +1425,8 @@ $('#btnSaveAlt').addEventListener('click', () => {
   if(!ad){ showToast('Alt layihənin adını daxil edin'); return; }
 
   const now = new Date().toISOString().slice(0,10);
-  const emekdaslar = $all('#emekdaslarGroup input:checked').map(cb => cb.value);
-  const sponsorTohfe = $all('#sponsorTohfeGroup input:checked').map(cb => cb.value);
+  const emekdaslar = [...$all('#emekdaslarGroup input:checked')].map(cb => cb.value);
+  const sponsorTohfe = [...$all('#sponsorTohfeGroup input:checked')].map(cb => cb.value);
 
   const data = {
     parentId, ad,
