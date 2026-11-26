@@ -3,10 +3,12 @@
 <head>
   
 <meta charset="UTF-8">
-<title>Admin Panel — Layihələr və Xərclər</title>
+<title>YAŞAT — Layihələr</title>
 <!-- ===== Apps Script ilə əlaqə: yalnız aşağıdakı linki dəyişin ===== -->
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksBLOnZBBUNw07xa7LcxDVjou1qgYdWinilvNidLPhqI/exec';
+// Lokalda (python server.py → http://localhost:8000) backend layiheler.xlsx olur
+if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 </script>
 <script>
 (function(){
@@ -328,6 +330,8 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
   .ms-opt input{margin:0;accent-color:var(--blue);}
   .ms-none{padding:10px;color:var(--muted);font-size:12.5px;}
   .ms-count{font-size:11px;color:var(--muted);}
+  .ms-all{border-bottom:1px solid var(--border);border-radius:0;margin-bottom:2px;}
+  .ms-add{color:var(--blue);font-weight:600;border-top:1px solid var(--border);border-radius:0;margin-top:4px;}
 
   .info-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
   .info-card h4{margin:0 0 12px;font-size:13.5px;display:flex;align-items:center;gap:8px;}
@@ -340,6 +344,12 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
   .two-col > .info-card{margin-bottom:0;}
   .mini-table th{padding:8px 10px;font-size:10.5px;}
   .mini-table td{padding:8px 10px;font-size:13px;}
+  .hist-item{padding:10px 0;border-bottom:1px solid var(--border);}
+  .hist-item:first-child{padding-top:0;}
+  .hist-item:last-child{border-bottom:none;padding-bottom:0;}
+  .hist-who{font-size:13px;margin-bottom:4px;}
+  .hist-who span{color:var(--muted);font-size:12px;}
+  .hist-item ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;}
   .yekun-box{white-space:pre-wrap;background:#fafbfd;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13.5px;}
   .money-strip{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;}
   .money-strip .info-item .v{font-size:15px;}
@@ -360,39 +370,176 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
   .col-group .cols label{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;font-weight:400;}
   .col-group input{accent-color:var(--blue);}
   .fmt-group{display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* ================= YAŞAT üslubu ================= */
+  :root{--blue:#3c8dde;--blue-dark:#2f76c0;--navy:#2c3a4f;--bg:#eef0f3;--border:#dee2e6;--text:#333;--muted:#6c757d;--title:#333;}
+  body{font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:13px;background:var(--bg);}
+  .app{display:block;height:auto;}
+  .topbar{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 22px;gap:30px;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .brand{display:flex;align-items:center;gap:6px;font-weight:800;font-size:20px;letter-spacing:.4px;color:#fff;}
+  .brand svg{width:28px;height:28px;}
+  .menu{position:relative;height:100%;}
+  .menu-btn{height:100%;display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#fff;font:inherit;font-size:13px;cursor:pointer;padding:0 12px;}
+  .menu-btn svg{width:18px;height:18px;}
+  .menu-btn .chev{width:12px;height:12px;}
+  .menu.open .menu-btn{background:rgba(255,255,255,.08);}
+  .mega{display:none;position:absolute;left:0;top:100%;background:#fff;color:#333;border:1px solid var(--border);box-shadow:0 8px 22px rgba(0,0,0,.18);padding:18px 22px;gap:44px;}
+  .menu.open .mega{display:flex;}
+  .mega-col{min-width:230px;}
+  .mega-col h6{margin:0 0 8px;font-size:13px;font-weight:600;text-transform:uppercase;color:#333;padding-bottom:8px;border-bottom:1px solid var(--border);letter-spacing:.3px;}
+  .mega .nav-item,.mega .role-toggle button{display:flex;align-items:center;gap:12px;padding:9px 10px;color:#333;background:transparent;border:none;border-radius:3px;font:inherit;font-size:13.5px;font-weight:400;cursor:pointer;width:100%;text-align:left;margin:0;}
+  .mega .nav-item svg,.mega .role-toggle button svg{width:18px;height:18px;color:#555;opacity:1;}
+  .mega .nav-item:hover,.mega .role-toggle button:hover{background:#f2f4f7;}
+  .mega .nav-item.active,.mega .role-toggle button.active{background:#e8f1fb;color:var(--blue-dark);font-weight:600;}
+  .mega .nav-item.active svg,.mega .role-toggle button.active svg{color:var(--blue-dark);}
+  .mega .role-toggle{display:block;background:none;padding:0;}
+  .mega .nav-badge{margin-left:auto;}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:13px;}
+  .role-pill{background:rgba(255,255,255,.14);padding:4px 10px;border-radius:3px;font-size:12px;}
+  .top-user{font-weight:600;text-transform:uppercase;}
+
+  .main{height:auto;overflow:visible;padding:10px 4px 110px;}
+  .view.active{background:#fff;border:1px solid var(--border);padding:18px 18px 24px;min-height:calc(100vh - 82px);}
+  .page-title{font-size:19px;font-weight:400;color:#333;}
+  .page-sub{font-size:18px;color:#333;margin-top:30px;}
+  .page-sub b{font-weight:700;color:#333;}
+  .btn{border-radius:3px;font-weight:400;font-size:13px;}
+  .btn-primary{background:var(--blue);}
+  .btn-ghost{color:#333;background:#f8f9fa;}
+  .btn-gray{background:#7a7a7a;color:#fff;padding:10px 22px;}
+  .btn-gray:hover{background:#666;}
+  .btn-export{padding:0;background:var(--blue);color:#fff;overflow:hidden;gap:0;}
+  .btn-export .ic{background:rgba(0,0,0,.13);padding:10px 13px;display:flex;}
+  .btn-export .ic svg{width:18px;height:18px;}
+  .btn-export .tx{padding:10px 20px;}
+  .btn-export:hover{background:var(--blue-dark);}
+  .btn-export.btn-sm .ic{padding:7px 10px;} .btn-export.btn-sm .tx{padding:7px 14px;}
+
+  .card{border-radius:0;}
+  th{text-align:center;text-transform:none;font-size:12.5px;color:#333;letter-spacing:0;background:#fff;border:1px solid var(--border);padding:12px 10px;white-space:normal;}
+  td{text-align:center;border:1px solid var(--border);padding:20px 10px;font-size:12.5px;color:#333;}
+  tbody tr:hover{background:#f3f3f3;}
+  .num{text-align:center;}
+  .link{font-weight:400;}
+  .badge{border-radius:3px;font-size:11px;font-weight:600;padding:3px 7px;}
+  .badge-blue{background:var(--blue);color:#fff;}
+  .badge-pending{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+  .badge-approved{background:#28a745;color:#fff;}
+  .badge-rejected{background:#dc3545;color:#fff;}
+  .badge-gray{background:#6c757d;color:#fff;}
+
+  /* Sətir menyusu (☰▾) */
+  .dd{display:inline-block;}
+  .dd-btn{border:none;background:transparent;cursor:pointer;color:#333;padding:4px 6px;display:inline-flex;align-items:center;border-radius:3px;}
+  .dd-btn:hover,.dd.open .dd-btn{background:#e9ecef;}
+  .dd-btn svg{width:26px;height:20px;}
+  .dd-menu{display:none;position:fixed;z-index:60;background:#fff;border:1px solid var(--border);box-shadow:0 8px 22px rgba(0,0,0,.16);min-width:200px;padding:5px 0;text-align:left;}
+  .dd.open .dd-menu{display:block;}
+  .dd-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;padding:8px 16px;font:inherit;font-size:13px;color:#333;cursor:pointer;text-align:left;}
+  .dd-item svg{width:15px;height:15px;color:#666;flex-shrink:0;}
+  .dd-item:hover{background:#f2f4f7;}
+  .dd-item.danger,.dd-item.danger svg{color:#dc3545;}
+  .dd-item.ok,.dd-item.ok svg{color:#28a745;}
+  .dd-sep{height:1px;background:var(--border);margin:4px 0;}
+
+  /* Ətraflı baxış: sətir-sətir (sol — ad, sağ — dəyər) */
+  .detail-title{font-size:19px;font-weight:400;color:#333;}
+  .info-card{border-radius:0;padding:0;margin-bottom:16px;}
+  .info-card > h4{margin:0;padding:13px 15px;font-size:16px;font-weight:400;border-bottom:1px solid var(--border);color:#333;}
+  .info-card > h4 .count{font-size:12.5px;}
+  .info-card > *:not(h4):not(.info-grid):not(.money-strip){margin:12px 15px;}
+  .info-card > span{display:block;}
+  .info-grid,.money-strip{display:block;margin:0;}
+  .info-item{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:11px 15px;border-bottom:1px solid var(--border);align-items:center;}
+  .info-grid .info-item:last-child,.money-strip .info-item:last-child{border-bottom:none;}
+  .info-item .k{font-size:12.5px;color:#333;text-transform:none;letter-spacing:0;margin:0;}
+  .info-item .v,.money-strip .info-item .v{font-size:12.5px;font-weight:400;}
+  .mini-table td{text-align:left;}
+  .mini-table th{text-align:left;}
+  .file-box{border:1px dashed #b9b9b9;padding:16px;display:flex;flex-wrap:wrap;gap:16px;min-height:130px;align-items:flex-start;}
+  .file-box.empty-box{align-items:center;justify-content:center;color:#aaa;font-size:14px;}
+  .file-card{width:170px;border:1px solid var(--border);box-shadow:0 1px 5px rgba(0,0,0,.13);padding:10px;text-align:center;font-size:12px;color:#666;background:#fff;}
+  .file-card .thumb{height:100px;display:flex;align-items:center;justify-content:center;background:#f6f7f9;margin-bottom:8px;}
+  .file-card .thumb svg{width:42px !important;height:42px !important;}
+  .file-card .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;}
+
+  /* Tarixçə pəncərəsi */
+  .modal{border-radius:4px;}
+  .modal-header h3{font-size:22px;font-weight:400;}
+  .hist-sub{padding:15px 22px;font-size:17px;border-bottom:1px solid var(--border);color:#333;}
+  .hist-table th,.hist-table td{text-align:left;border-left:none;border-right:none;padding:15px 18px;vertical-align:middle;}
+  .hist-table th{font-weight:400;border-top:none;border-bottom:2px solid var(--border);}
+  .hist-table td.qeyd{white-space:pre-line;line-height:1.55;}
+  .hist-table tbody tr:hover{background:transparent;}
+
+  /* Redaktə — ətraflı baxış kimi səhifədə (sol — ad, sağ — xana) */
+  #editWrap .overlay{position:static;display:block;background:none;padding:0;overflow:visible;z-index:auto;}
+  #editWrap .modal{max-width:none;box-shadow:none;border-radius:0;}
+  #editWrap .modal-header{padding:0 0 14px;border:none;}
+  #editWrap .modal-header h3{font-size:19px;font-weight:400;color:#333;}
+  #editWrap .modal-close{display:none;}
+  #editWrap .modal-body{max-height:none;overflow:visible;padding:0;}
+  #editWrap #modalEsas .modal-body{border:1px solid var(--border);}
+  #editWrap .form-section{border:1px solid var(--border);margin:0 0 16px;padding:0;}
+  #editWrap .form-section + .form-section{padding-top:0;border-top:1px solid var(--border);}
+  #editWrap .form-section-title{padding:13px 15px;margin:0;font-size:16px;font-weight:400;color:#333;border-bottom:1px solid var(--border);}
+  #editWrap .form-section-sub{padding:10px 15px 0;margin:0;}
+  #editWrap .form-section > :not(.form-section-title):not(.form-section-sub):not(.form-grid){margin:12px 15px;}
+  #editWrap .form-grid{display:block;}
+  #editWrap .form-field{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:6px;align-items:center;padding:10px 15px;border-bottom:1px solid var(--border);}
+  #editWrap .form-grid .form-field:last-child{border-bottom:none;}
+  #editWrap .form-field > label{grid-column:1;font-weight:400;font-size:12.5px;color:#333;}
+  #editWrap .form-field > :not(label){grid-column:2;}
+  #editWrap .modal-footer{padding:16px 0 4px;border:none;justify-content:flex-start;position:sticky;bottom:0;background:#fff;z-index:2;}
 </style>
 
 </head>
 <body>
 
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.4 6.2L21 9l-5 4.4L17.5 20 12 16.6 6.5 20 8 13.4 3 9l6.6-.8z"/></svg>
+    YAŞAT
+  </div>
+  <div class="menu" id="topMenu">
+    <button type="button" class="menu-btn" id="menuBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+      Menyu
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="mega">
+      <div class="mega-col">
+        <h6>Rollar</h6>
+        <div class="role-toggle">
+          <button type="button" data-role="layiheci" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14l2 2 4-4"/></svg>Layihə</button>
+          <button type="button" data-role="maliyye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/><path d="M6 6l9-3 2 3"/></svg>Maliyyə</button>
+        </div>
+      </div>
+      <div class="mega-col">
+        <h6>Bölmələr</h6>
+        <div class="nav-item active" data-view="layihe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
+          Layihələr
+        </div>
+        <div class="nav-item" data-view="xerc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
+          Ümumi Təyinatlı Xərclər
+          <span class="nav-badge" id="pendingBadge" style="display:none;">0</span>
+        </div>
+        <div class="nav-item" data-view="aile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
+          Şəhid ailələri
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="role-pill" id="roleName">Layihə</span>
+    <span class="top-user" id="topUser"></span>
+  </div>
+</header>
+
 <div class="app">
-  <aside class="sidebar">
-    <div class="logo">Xərc İdarəetmə<span>Admin Panel</span></div>
-    <div class="nav">
-      <div class="nav-item active" data-view="layihe">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-        Layihələr
-      </div>
-      <div class="nav-item" data-view="xerc">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v3M18 3v3M4 8h16M6 12h4M6 16h4M14 12h4M14 16h4"/><rect x="3" y="5" width="18" height="16" rx="2"/></svg>
-        Ümumi Təyinatlı Xərclər
-        <span class="nav-badge" id="pendingBadge" style="display:none;">0</span>
-      </div>
-      <div class="nav-item" data-view="aile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5.8"/></svg>
-        Şəhid ailələri
-      </div>
-    </div>
-    <div class="role-box">
-      <div class="label">Görünüş rejimi</div>
-      <div class="role-toggle">
-        <button data-role="layiheci" class="active">Layihəçi</button>
-        <button data-role="admin">Admin</button>
-        <button data-role="maliyye">Maliyyə</button>
-      </div>
-      <div class="role-name" id="roleName">Layihəçi <span>— layihələri idarə edir</span></div>
-    </div>
-  </aside>
 
   <main class="main">
 
@@ -403,14 +550,11 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
       <div id="layiheListWrap">
         <div class="toolbar">
           <div>
-            <h1 class="page-title">Əsas Layihələr</h1>
-            <div class="page-sub">Toplam əsas layihə sayı: <b id="layiheCount">0</b></div>
+            <h1 class="page-title">Layihələr - Əsas Layihələrin Siyahısı</h1>
+            <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="layiheCount">0</b></div>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-outline" data-act="report" data-id="all">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-              Hesabat yüklə
-            </button>
+            <button class="btn btn-export" data-act="report" data-id="all"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
             <button class="btn btn-primary" id="btnNewLayihe">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
               Yeni Əsas Layihə
@@ -428,7 +572,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
                 <th>Yaranma tarixi</th>
                 <th>Bitmə tarixi</th>
                 <th>Alt layihə sayı</th>
-                <th style="text-align:right;">Əməliyyat</th>
+                <th style="width:90px;">Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="layiheTableBody"></tbody>
@@ -448,13 +592,14 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
             <div class="detail-meta"><span id="esasDetailBadges"></span></div>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-outline btn-sm" id="btnReportEsas">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-              Hesabat yüklə
-            </button>
+            <button class="btn btn-export btn-sm" id="btnReportEsas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
             <button class="btn btn-ghost btn-sm" id="btnEditEsas">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
               Redaktə et
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btnHistEsas" data-act="history" data-id="">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+              Tarixçə
             </button>
           </div>
         </div>
@@ -477,12 +622,21 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
                 <th>Təşkil forması</th>
                 <th>Maliyyələşmə</th>
                 <th>Status</th>
-                <th style="text-align:right;">Əməliyyat</th>
+                <th style="width:90px;">Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="altTableBody"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- REDAKTƏ (ətraflı baxış kimi səhifədə) -->
+      <div id="editWrap" style="display:none;">
+        <div class="detail-back" id="btnEditBack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          Geri qayıt
+        </div>
+        <div id="editSlot"></div>
       </div>
 
       <!-- ALT LAYİHƏ DETAIL -->
@@ -506,7 +660,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
     <div class="view" id="view-xerc">
       <div class="toolbar">
         <div>
-          <h1 class="page-title">Ümumi Təyinatlı Xərclər</h1>
+          <h1 class="page-title">Maliyyə - Ümumi Təyinatlı Xərclər</h1>
           <div class="page-sub">Maliyyəyə göndərilmiş layihə: <b id="xercProjCount">0</b> · Ödəniş qeydi: <b id="xercCount">0</b></div>
         </div>
         <div class="toolbar-actions">
@@ -531,11 +685,11 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
                 <th style="width:60px;">№</th>
                 <th>Layihə</th>
                 <th>Mənbə</th>
-                <th class="num">Fond + Sponsor</th>
+                <th class="num">Plan məbləği</th>
                 <th class="num">Ödənilib (təsdiqlənmiş)</th>
                 <th>Ödəniş sayı</th>
                 <th>Status</th>
-                <th style="text-align:right;">Əməliyyat</th>
+                <th style="width:90px;">Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="xercProjBody"></tbody>
@@ -551,14 +705,13 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
               <tr>
                 <th style="width:50px;">№</th>
                 <th>Layihə</th>
-                <th>İstiqamət</th>
                 <th>Ödənişin təyinatı</th>
                 <th>Ödəniş qəbzi</th>
                 <th>Ödəmə tarixi</th>
                 <th class="num">ƏDV</th>
                 <th class="num">Ümumi</th>
                 <th>Status</th>
-                <th style="text-align:right;">Əməliyyat</th>
+                <th style="width:90px;">Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="xercTableBody"></tbody>
@@ -571,8 +724,8 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
     <div class="view" id="view-aile">
       <div class="toolbar">
         <div>
-          <h1 class="page-title">Şəhid ailələri</h1>
-          <div class="page-sub">Filtrə uyğun: <b id="aileCount">0</b> nəfər (cəmi <span id="aileTotal">0</span>) · <span style="color:var(--muted);">nümunə məlumatlar</span></div>
+          <h1 class="page-title">Şəhid ailələrinin Siyahısı</h1>
+          <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="aileCount">0</b> (cəmi <span id="aileTotal">0</span>) · <span style="color:var(--muted);">nümunə məlumatlar</span></div>
         </div>
         <div class="toolbar-actions">
           <button class="btn btn-outline" data-aile-export="xlsx">⬇ Excel</button>
@@ -609,7 +762,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
                 <th>Sinif</th>
                 <th>Region</th>
                 <th>Layihə sayı</th>
-                <th style="text-align:right;">Əməliyyat</th>
+                <th style="width:90px;">Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="aileTableBody"></tbody>
@@ -716,11 +869,16 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
 
       <div class="form-section">
         <div class="form-section-title">Məkan</div>
-        <div class="form-section-sub">Ardıcıllıq: ölkə → şəhər/rayon → əhatə dairəsi</div>
+        <div class="form-section-sub">Ardıcıllıq: ölkə → şəhər/rayon → əhatə dairəsi. Siyahıda olmayan şəhər/rayonu axtarışa yazıb siyahıya əlavə etmək olar.</div>
         <div class="form-grid">
           <div class="form-field">
             <label>Ölkə</label>
             <select id="fAltOlke"></select>
+            <div class="add-row" id="olkeAddRow" style="display:none;">
+              <input type="text" class="inp" id="fOlkeYeni" placeholder="Yeni ölkənin adı">
+              <button type="button" class="btn btn-outline btn-sm" id="btnOlkeAdd">Əlavə et</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnOlkeCancel">Ləğv et</button>
+            </div>
           </div>
           <div class="form-field">
             <label>Şəhər/Rayon <span class="opt">(bir neçəsini seçmək olar)</span></label>
@@ -728,19 +886,13 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
               <div class="ms-box"><input type="text" class="ms-search" id="msYerSearch" placeholder="Axtar və seç…" autocomplete="off"></div>
               <div class="ms-drop" id="msYerDrop"></div>
             </div>
-            <input type="text" id="fAltYerText" placeholder="Şəhər/rayon (vergüllə ayırın)" style="display:none;">
           </div>
           <div class="form-field">
-            <label>Əhatə dairəsi</label>
-            <select id="fAltEhate">
-              <option value="">— Seçin —</option>
-              <option value="Beynəlxalq">Beynəlxalq</option>
-              <option value="Respublika">Respublika</option>
-              <option value="Regional">Regional</option>
-              <option value="Yerli">Yerli</option>
-              <option value="Digər">Digər</option>
-            </select>
-            <input type="text" id="fAltEhateDiger" placeholder="Əhatə dairəsini əllə yazın" style="display:none;">
+            <label>Əhatə dairəsi <span class="opt">(əhatə olunan ətraf şəhər/rayonlar)</span></label>
+            <div class="ms" id="msEhate">
+              <div class="ms-box"><input type="text" class="ms-search" id="msEhateSearch" placeholder="Axtar və seç…" autocomplete="off"></div>
+              <div class="ms-drop" id="msEhateDrop"></div>
+            </div>
           </div>
           <div class="form-field">
             <label>İcra olunan müəssisə/obyekt</label>
@@ -808,7 +960,17 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
         </div>
 
         <div class="sub-block">
-          <label>İştirak edən YAŞAT əməkdaşları <span class="opt">(FİN ilə admin siyahısından)</span></label>
+          <label>İmtina edən iştirakçılar <span class="opt">(FİN daxil et və ya Excel ilə idxal et)</span></label>
+          <div id="repImtinaHead"></div>
+          <div class="repeater" id="repImtina"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="repeater-add" data-repeater-add="imtina">+ FİN ilə əlavə et</div>
+            <div class="repeater-add" id="btnImtinaImport">⬆ Excel ilə idxal et</div>
+          </div>
+        </div>
+
+        <div class="sub-block">
+          <label>İştirak edən Fond əməkdaşları <span class="opt">(FİN ilə admin siyahısından)</span></label>
           <div class="add-row">
             <input type="text" class="inp" id="fEmekdasFin" maxlength="7" placeholder="Əməkdaşın FİN-i">
             <button type="button" class="btn btn-outline btn-sm" id="btnEmekdasAdd">Əlavə et</button>
@@ -817,15 +979,9 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
           <div class="chip-list" id="emekdasChips" style="margin-top:8px;"></div>
         </div>
 
-        <div class="sub-block">
-          <label>İştirak edən tərəfdaş iştirakçılar <span class="opt">(FİN daxil et)</span></label>
-          <div id="repTerefdasIstHead"></div>
-          <div class="repeater" id="repTerefdasIst"></div>
-          <div class="repeater-add" data-repeater-add="terefdasIst">+ FİN ilə əlavə et</div>
-        </div>
 
         <div class="sub-block">
-          <label>Könüllülər <span class="opt">(FİN daxil et, hər biri üçün qeyd yazmaq olar)</span></label>
+          <label>Könüllülər <span class="opt">(FİN və seriya — bazada varsa ad avtomatik gəlir, yoxdursa əllə yazın; hər biri üçün qeyd yazmaq olar)</span></label>
           <div id="repKonulluHead"></div>
           <div class="repeater" id="repKonullu"></div>
           <div class="repeater-add" data-repeater-add="konullu">+ FİN ilə könüllü əlavə et</div>
@@ -835,7 +991,16 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
       <div class="form-section">
         <div class="form-section-title">Sənədlər</div>
         <div class="form-field full">
-          <label>Sənəd yüklə <span class="opt">(müqavilə və ya digər sənəd)</span></label>
+          <label>Sənədin növü <span class="opt">(əvvəlcə növü seçin)</span></label>
+          <select id="fDocNov">
+            <option value="">— Seçin —</option>
+            <option value="Müqavilə">Müqavilə</option>
+            <option value="Digər">Digər</option>
+          </select>
+          <input type="text" id="fDocNovDiger" placeholder="Sənədin növünü əllə yazın (məs: Təhvil-təslim aktı)" style="display:none;">
+        </div>
+        <div class="form-field full">
+          <label>Sənəd yüklə</label>
           <div class="file-drop" id="altFileDrop">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
             <span>Fayl seçmək üçün klikləyin (PDF, DOCX, PPTX, JPG, PNG)</span>
@@ -851,6 +1016,28 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
       <button class="btn btn-ghost" data-close="modalAlt">Ləğv et</button>
       <button class="btn btn-primary" id="btnSaveAlt">Yadda saxla</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: Tarixçə (əsas və alt layihə) -->
+<div class="overlay" id="modalHist">
+  <div class="modal xwide">
+    <div class="modal-header">
+      <h3>Tarixçə</h3>
+      <button class="modal-close" data-close="modalHist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="hist-sub" id="histSub">Əməliyyatların Siyahısı</div>
+    <div class="modal-body" style="padding:0;">
+      <div class="table-scroll">
+        <table class="hist-table">
+          <thead><tr><th style="width:50px;">#</th><th>Əməliyyat</th><th>Qeyd</th><th>Rol</th><th>İstifadəçi</th><th>Tarix</th></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-gray" data-close="modalHist">Bağla</button></div>
   </div>
 </div>
 
@@ -893,11 +1080,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbz2r6TkIObJ68rcO440Y6iksB
           <select id="fXercLayihe"></select>
           <div class="hint" id="xercNoHint"></div>
         </div>
-        <div class="form-field">
-          <label>İstiqamət</label>
-          <input type="text" id="fXercIstiqamet" placeholder="Məs: Hədiyyə paketlərinin alınması">
-        </div>
-        <div class="form-field">
+        <div class="form-field full">
           <label>Ödənişin təyinatı <span class="opt">(məcburi)</span></label>
           <input type="text" id="fXercTeyinat" placeholder="Ödənişin təyinatı">
         </div>
@@ -1096,6 +1279,9 @@ function muddetHesabla(s, e){
 function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 const ICON = {
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>',
+  menu: '<svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 6h18M2 12h18M2 18h18"/><path d="M23 10.5h8l-4 4.5z" fill="currentColor" stroke="none"/></svg>',
+  hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>',
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>',
@@ -1109,10 +1295,7 @@ const ICON = {
 // =====================================================================
 //  SORĞU KİTABÇALARI (statik nümunə siyahılar)
 // =====================================================================
-// Ölkələr — növbəti illərdə yeni ölkə lazım olsa, sadəcə bu siyahıya əlavə edin
-const OLKELER = ['Azərbaycan', 'Almaniya', 'Böyük Britaniya', 'Türkiyə', 'Avstriya'];
-
-// Azərbaycanın şəhər və rayonları (Şəhər/Rayon çoxseçimli siyahısı)
+// Ölkələr və onların şəhər/rayonları. Yeni ölkə və şəhər formdan əlavə edilə bilər (brauzerdə yadda saxlanılır).
 const AZ_SEHERLER = ['Bakı','Gəncə','Sumqayıt','Mingəçevir','Şirvan','Naftalan','Xankəndi','Lənkəran','Şəki','Yevlax','Naxçıvan','Şuşa'];
 const BAKI_RAYONLARI = ['Binəqədi','Qaradağ','Nərimanov','Nəsimi','Nizami','Pirallahı','Sabunçu','Səbail','Suraxanı','Xətai','Xəzər','Yasamal'];
 const AZ_RAYONLAR = ['Abşeron','Ağcabədi','Ağdam','Ağdaş','Ağstafa','Ağsu','Astara','Babək','Balakən','Bərdə','Beyləqan','Biləsuvar',
@@ -1120,14 +1303,34 @@ const AZ_RAYONLAR = ['Abşeron','Ağcabədi','Ağdam','Ağdaş','Ağstafa','Ağs
   'Kəlbəcər','Kəngərli','Kürdəmir','Laçın','Lənkəran','Lerik','Masallı','Neftçala','Oğuz','Ordubad','Qax','Qazax','Qəbələ',
   'Qobustan','Quba','Qubadlı','Qusar','Saatlı','Sabirabad','Sədərək','Salyan','Samux','Siyəzən','Şabran','Şahbuz','Şamaxı',
   'Şəki','Şəmkir','Şərur','Şuşa','Tərtər','Tovuz','Ucar','Xaçmaz','Xızı','Xocalı','Xocavənd','Yardımlı','Yevlax','Zaqatala',
-  'Zəngilan','Zərdab'];
-const AZ_YERLER = [
-  { qrup: 'Şəhərlər', items: AZ_SEHERLER.map(s => s + ' ş.') },
-  { qrup: 'Bakının rayonları', items: BAKI_RAYONLARI.map(r => 'Bakı, ' + r + ' r.') },
-  { qrup: 'Rayonlar', items: AZ_RAYONLAR.map(r => r + ' r.') },
-];
+  'Zəngilan','Zərdab'].filter(r => !AZ_SEHERLER.includes(r)); // eyni adlı şəhər və rayon bir dəfə göstərilir
+const YER_KATALOQ = {
+  'Azərbaycan': [
+    { qrup: 'Şəhərlər', items: AZ_SEHERLER },
+    { qrup: 'Bakının rayonları', items: BAKI_RAYONLARI.map(r => 'Bakı, ' + r) },
+    { qrup: 'Rayonlar', items: AZ_RAYONLAR },
+  ],
+  'Almaniya': [{ qrup: 'Şəhərlər', items: ['Frankfurt'] }],
+  'Böyük Britaniya': [{ qrup: 'Şəhərlər', items: ['London'] }],
+  'Türkiyə': [{ qrup: 'Şəhərlər', items: ['İstanbul', 'Antalya', 'Çanaqqala'] }],
+  'Avstriya': [{ qrup: 'Şəhərlər', items: ['Vyana'] }],
+};
+// Köhnə "Gəncə ş." / "Goranboy r." yazılışlarını "Gəncə" / "Goranboy" edir
+const yerAd = (y) => String(y || '').replace(/\s+(ş|r)\.$/u, '');
+const asArr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
+// Formdan əlavə edilən ölkə və şəhərlər
+const ELAVE_KEY = 'yasat_yer_elave';
+const yerElave = (() => { try { return JSON.parse(localStorage.getItem(ELAVE_KEY)) || {}; } catch(e) { return {}; } })();
+const saveYerElave = () => { try { localStorage.setItem(ELAVE_KEY, JSON.stringify(yerElave)); } catch(e) {} };
+const olkeler = () => [...new Set([...Object.keys(YER_KATALOQ), ...Object.keys(yerElave)])];
+function yerQruplari(olke){
+  const base = (YER_KATALOQ[olke] || []).map(g => ({ ...g }));
+  const extra = (yerElave[olke] || []).filter(x => !base.some(g => g.items.includes(x)));
+  if(extra.length) base.push({ qrup: 'Əlavə edilənlər', items: extra });
+  return base;
+}
 
-// YAŞAT əməkdaşları — admin siyahısı (FİN ilə çəkilir)
+// Fond əməkdaşları — admin siyahısı (FİN ilə çəkilir)
 const EMEKDASLAR = [
   { fin: 'EM1A2B3', ad: 'Elvin Məmmədov', vezife: 'Layihə meneceri' },
   { fin: 'AR4C5D6', ad: 'Aygün Rəhimova', vezife: 'Sosial işçi' },
@@ -1147,7 +1350,7 @@ const AILELER = (() => {
   const oglan = ['Murad','Əli','Hüseyn','Yusif','Ömər','Nihad','Kənan','Rauf','Tofiq','Emil','Ayxan','Fuad'];
   const qiz = ['Zəhra','Fatimə','Ayan','Nuray','Mədinə','Lamiyə','Aylin','Xədicə','Səma','İnci','Nərgiz','Sara'];
   const soyad = ['Məmmədov','Əliyev','Həsənov','Quliyev','Hüseynov','İsmayılov','Kərimov','Abbasov','Rzayev','Babayev','Cəfərov','Nəsirov','Orucov','Səfərov'];
-  const regionlar = ['Bakı, Nəsimi r.','Bakı, Sabunçu r.','Gəncə ş.','Sumqayıt ş.','Şəki ş.','Quba r.','Ağdam r.','Füzuli r.','Lənkəran ş.','Tərtər r.','Bərdə r.','Şəmkir r.','Masallı r.','Goranboy r.'];
+  const regionlar = ['Bakı, Nəsimi','Bakı, Sabunçu','Gəncə','Sumqayıt','Şəki','Quba','Ağdam','Füzuli','Lənkəran','Tərtər','Bərdə','Şəmkir','Masallı','Goranboy'];
   const CH = '0123456789ABCDEFGHJKLMNPRSTUVXYZ';
   const used = new Set();
   const fin = () => { let s; do { s = ''; for(let i = 0; i < 7; i++) s += CH[Math.floor(rnd() * CH.length)]; } while(used.has(s)); used.add(s); return s; };
@@ -1188,7 +1391,7 @@ function voenLookup(v){ let h = 0; for(const ch of v) h = (h * 31 + ch.charCodeA
 // =====================================================================
 //  STATE
 // =====================================================================
-let role = 'layiheci'; // 'layiheci' | 'admin' | 'maliyye'
+let role = 'layiheci'; // 'layiheci' | 'maliyye'
 let screen = 'list';   // 'list' | 'esas' | 'alt'
 let currentEsasId = null, currentAltId = null;
 let editingEsasId = null, editingAltId = null, editingExpenseId = null;
@@ -1204,24 +1407,24 @@ let projects = [
   { id: 2, tip: 'esas', ad: 'Reabilitasiya proqramı', melumat: 'Psixoloji və fiziki reabilitasiya xidmətləri üzrə davamlı proqram.', kateqoriya: 'Müalicə', novu: 'Sosial', yaranma: '2025-02-10', bitme: '2027-02-10' },
   // Alt layihələr
   { id: 3, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2026, Gəncə', yaradilma: '2026-03-01', baslama: '2026-03-12', bitme: '2026-09-12',
-    olke: 'Azərbaycan', yerler: ['Gəncə ş.', 'Goranboy r.'], ehate: 'Regional', obyekt: '15 nömrəli məktəb', teskil: 'offline',
+    olke: 'Azərbaycan', yerler: ['Gəncə'], ehate: ['Goranboy', 'Şəmkir', 'Samux'], obyekt: '15 nömrəli məktəb', teskil: 'offline',
     maliyye: { fond: 5000, sponsor: 2000 },
     sponsorlar: [orgRow('1700345121', 'Maliyyə')], terefdaslar: [],
     istirakcilar: [usaqlar[0], usaqlar[1], usaqlar[2], usaqlar[3]].map(p => istFromReg(p, '2026-03-12')),
     emekdaslar: [EMEKDASLAR[0]], terefdasIstirakcilar: [],
-    konulluler: [{ fin: 'K7L8M9N', ad: finLookup('K7L8M9N').ad, qeyd: 'Hədiyyələrin paylanmasında köməklik etdi' }],
+    konulluler: [{ fin: 'K7L8M9N', seriya: 'AA4417290', ad: finLookup('K7L8M9N').ad, qeyd: 'Hədiyyələrin paylanmasında köməklik etdi' }],
     senedler: [{ ad: 'muqavile_azt.pdf', nov: 'Müqavilə' }],
     status: 'maliyyede', yekunTarix: '2026-09-15',
     yekunQeyd: 'Layihədə 1 insident yaşandı, 2 nəfər layihədən kənarlaşdırıldı. 5 nəfər iştirakı təsdiqləmişdi, 3-ü gəldi.' },
   { id: 4, tip: 'alt', parentId: 2, ad: 'Reabilitasiya Mərkəzi — Bakı', yaradilma: '2026-04-20', baslama: '2026-05-02', bitme: '2026-12-01',
-    olke: 'Azərbaycan', yerler: ['Bakı, Nəsimi r.'], ehate: 'Yerli', obyekt: '', teskil: 'hybrid',
+    olke: 'Azərbaycan', yerler: ['Bakı, Nəsimi'], ehate: ['Bakı, Yasamal', 'Bakı, Nərimanov'], obyekt: '', teskil: 'hybrid',
     maliyye: { sponsor: 8000, terefdas: 2500 },
     sponsorlar: [orgRow('1500872341', 'Maliyyə')], terefdaslar: [orgRow('2000456781', 'Xidmət')],
     istirakcilar: [usaqlar[6], usaqlar[7]].filter(Boolean).map(p => istFromReg(p, '2026-05-02')),
     emekdaslar: [EMEKDASLAR[1], EMEKDASLAR[2]], terefdasIstirakcilar: [], konulluler: [],
     senedler: [], status: 'davam' },
   { id: 5, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2025, Şəki', yaradilma: '2025-02-01', baslama: '2025-03-10', bitme: '2025-03-20',
-    olke: 'Azərbaycan', yerler: ['Şəki ş.', 'Qax r.'], ehate: 'Regional', obyekt: 'Şəki şəhər 3 nömrəli məktəb', teskil: 'offline',
+    olke: 'Azərbaycan', yerler: ['Şəki'], ehate: ['Qax', 'Oğuz'], obyekt: 'Şəki şəhər 3 nömrəli məktəb', teskil: 'offline',
     maliyye: { terefdas: 1500 },
     sponsorlar: [], terefdaslar: [orgRow('1300987651', 'Əşya/material')],
     istirakcilar: [usaqlar[0], usaqlar[1], usaqlar[5]].filter(Boolean).map(p => istFromReg(p, '2025-03-10')),
@@ -1233,9 +1436,9 @@ let projects = [
 
 // Maliyyənin daxil etdiyi ödənişlər (Admin təsdiqi yoxdur: qaralama → təsdiqləndi)
 let expenses = [
-  { id: 1, layiheId: 3, istiqamet: 'Hədiyyə paketlərinin alınması', teyinat: 'Hədiyyə paketləri — 120 ədəd', tesvir: 'Uşaqlar üçün məktəb ləvazimatı və oyuncaq dəstləri', qebz: 'qebz_0108.pdf', tarix: '2026-09-20', icraci: 'Elvin Məmmədov', yasat: 3500, edv: 630, umumi: 4130, status: 'tesdiqlendi', tesdiqTarix: '2026-09-21' },
-  { id: 2, layiheId: 3, istiqamet: 'Nəqliyyat xərcləri', teyinat: 'Avtobus icarəsi (Gəncə)', tesvir: '2 günlük avtobus icarəsi', qebz: 'qebz_0112.pdf', tarix: '2026-10-02', icraci: 'Elvin Məmmədov', yasat: 900, edv: 162, umumi: 1062, status: 'tesdiqlendi', tesdiqTarix: '2026-10-03' },
-  { id: 3, layiheId: 3, istiqamet: 'Qonaqlama', teyinat: 'Yekun tədbir — qonaqlama', tesvir: '', qebz: '', tarix: '2026-10-15', icraci: 'Aygün Rəhimova', yasat: 600, edv: 108, umumi: 708, status: 'qaralama' },
+  { id: 1, layiheId: 3, teyinat: 'Hədiyyə paketləri — 120 ədəd', tesvir: 'Uşaqlar üçün məktəb ləvazimatı və oyuncaq dəstləri', qebz: 'qebz_0108.pdf', tarix: '2026-09-20', icraci: 'Elvin Məmmədov', yasat: 3500, edv: 630, umumi: 4130, status: 'tesdiqlendi', tesdiqTarix: '2026-09-21' },
+  { id: 2, layiheId: 3, teyinat: 'Avtobus icarəsi (Gəncə)', tesvir: '2 günlük avtobus icarəsi', qebz: 'qebz_0112.pdf', tarix: '2026-10-02', icraci: 'Elvin Məmmədov', yasat: 900, edv: 162, umumi: 1062, status: 'tesdiqlendi', tesdiqTarix: '2026-10-03' },
+  { id: 3, layiheId: 3, teyinat: 'Yekun tədbir — qonaqlama', tesvir: '', qebz: '', tarix: '2026-10-15', icraci: 'Aygün Rəhimova', yasat: 600, edv: 108, umumi: 708, status: 'qaralama' },
 ];
 
 let nextProjectId = 6;
@@ -1252,7 +1455,8 @@ const altListByParent = (pid) => projects.filter(p => p.tip === 'alt' && p.paren
 const teskilLabel = { offline: 'Offline', online: 'Online', hybrid: 'Hybrid' };
 const SRC = [{ k: 'fond', l: 'Fond' }, { k: 'sponsor', l: 'Sponsor' }, { k: 'terefdas', l: 'Tərəfdaş' }];
 const menbeler = (a) => SRC.filter(s => a.maliyye && a.maliyye[s.k] != null);
-const gedirMaliyyeye = (a) => !!(a.maliyye && (a.maliyye.fond != null || a.maliyye.sponsor != null));
+// Ödənişli (Fond, Sponsor və ya Tərəfdaş) layihəni Maliyyə, ödənişsiz layihəni Layihə rolu tamamlayır
+const gedirMaliyyeye = (a) => menbeler(a).length > 0;
 const maliyyeText = (a) => { const m = menbeler(a); return m.length ? m.map(s => `${s.l}: ${fmt(a.maliyye[s.k])} AZN`).join('; ') : 'Ödənişsiz'; };
 function maliyyeBadges(a){
   const m = menbeler(a);
@@ -1267,7 +1471,7 @@ const odenisBadge = (st) => st === 'tesdiqlendi' ? '<span class="badge badge-app
 const odenislerOf = (id) => expenses.filter(e => e.layiheId === id).sort((a, b) => a.id - b.id);
 const odenisNo = (e) => odenislerOf(e.layiheId).findIndex(x => x.id === e.id) + 1;
 const odenilib = (id) => odenislerOf(id).filter(e => e.status === 'tesdiqlendi').reduce((s, e) => s + (Number(e.umumi) || 0), 0);
-const planMebleg = (a) => (a.maliyye?.fond || 0) + (a.maliyye?.sponsor || 0);
+const planMebleg = (a) => (a.maliyye?.fond || 0) + (a.maliyye?.sponsor || 0) + (a.maliyye?.terefdas || 0);
 
 function showToast(text){
   const t = $('#toast');
@@ -1277,9 +1481,23 @@ function showToast(text){
   t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 function openModal(id){ $('#' + id).classList.add('active'); }
-function closeModal(id){ $('#' + id).classList.remove('active'); }
+function closeModal(id){
+  if(pageModal === id){ showWrap(screen); return; }
+  $('#' + id).classList.remove('active');
+}
+// Redaktə pəncərəsini modal əvəzinə səhifə kimi (ətraflı baxış görünüşündə) açır
+let pageModal = null;
+function openAsPage(id){
+  activateView('layihe');
+  const ov = $('#' + id);
+  $('#editSlot').appendChild(ov);
+  showWrap('edit');
+  pageModal = id;
+  ov.classList.add('active');
+  window.scrollTo(0, 0);
+}
 $all('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
-$all('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) ov.classList.remove('active'); }));
+$all('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov && pageModal !== ov.id) ov.classList.remove('active'); }));
 
 function confirmAction(title, text, action, btnText, btnClass){
   $('#confirmTitle').textContent = title;
@@ -1490,18 +1708,29 @@ $all('.nav-item').forEach(item => item.addEventListener('click', () => {
   if(item.dataset.view === 'layihe') showLayiheList();
 }));
 
-// Rol seçimi: Layihəçi layihələri yaradır və yekunlaşdırır; Maliyyə ödənişləri daxil edib təsdiqləyir və layihəni bitirir;
-// Admin yalnız baxır (ödənişlər Admin təsdiqi tələb etmir).
+// Rol seçimi: Layihə rolu layihələri yaradır və yekunlaşdırır; Maliyyə ödənişləri daxil edib təsdiqləyir və layihəni bitirir;
+// Rejimlər: Layihə rolu (ödənişsiz layihəni tamamlayır) və Maliyyə (ödənişli layihəni tamamlayır).
 $all('.role-toggle button').forEach(btn => btn.addEventListener('click', () => {
   role = btn.dataset.role;
   $all('.role-toggle button').forEach(b => b.classList.toggle('active', b === btn));
-  $('#roleName').innerHTML = role === 'admin' ? 'Admin <span>— yalnız baxış</span>'
-    : role === 'maliyye' ? 'Maliyyə <span>— ödənişləri daxil edir</span>'
-    : 'Layihəçi <span>— layihələri idarə edir</span>';
+  $('#roleName').textContent = role === 'maliyye' ? 'Maliyyə' : 'Layihə';
   renderAll();
 }));
 
+// Menyu (üst panel)
+$('#menuBtn').addEventListener('click', (e) => { e.stopPropagation(); $('#topMenu').classList.toggle('open'); });
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.mega') || e.target.closest('.nav-item, .role-toggle button')) $('#topMenu').classList.remove('open');
+});
+
 function showWrap(which){
+  if(which !== 'edit' && pageModal){
+    const ov = $('#' + pageModal);
+    ov.classList.remove('active');
+    document.body.insertBefore(ov, document.getElementById('qx'));
+    pageModal = null;
+  }
+  $('#editWrap').style.display = which === 'edit' ? '' : 'none';
   $('#layiheListWrap').style.display = which === 'list' ? '' : 'none';
   $('#esasDetailWrap').style.display = which === 'esas' ? '' : 'none';
   $('#altDetailWrap').style.display = which === 'alt' ? '' : 'none';
@@ -1512,6 +1741,7 @@ function showLayiheList(){
   renderLayiheTable();
 }
 $('#btnBackToLayihe').addEventListener('click', showLayiheList);
+$('#btnEditBack').addEventListener('click', () => { if(pageModal) closeModal(pageModal); });
 $('#btnBackToEsas').addEventListener('click', () => currentEsasId ? openEsasDetail(currentEsasId) : showLayiheList());
 function goToAlt(id){
   $all('.overlay.active').forEach(o => o.classList.remove('active'));
@@ -1534,11 +1764,14 @@ function renderLayiheTable(){
         <td>${fmtDate(p.yaranma)}</td>
         <td>${fmtDate(p.bitme)}</td>
         <td>${altListByParent(p.id).length}</td>
-        <td><div class="row-actions">
-          <button class="icon-btn" title="Bax" data-act="open-esas" data-id="${p.id}">${ICON.eye}</button>
-          <button class="icon-btn" title="Redaktə et" data-act="edit-esas" data-id="${p.id}">${ICON.edit}</button>
-          <button class="icon-btn danger" title="Sil" data-act="delete-esas" data-id="${p.id}">${ICON.trash}</button>
-        </div></td>
+        <td>${rowMenu([
+          ddItem('open-esas', p.id, ICON.eye, 'Ətraflı bax'),
+          ddItem('edit-esas', p.id, ICON.edit, 'Redaktə et'),
+          ddItem('history', p.id, ICON.hist, 'Tarixçə'),
+          ddItem('report', 'esas:' + p.id, ICON.dl, 'İxrac et'),
+          DD_SEP,
+          ddItem('delete-esas', p.id, ICON.trash, 'Sil', 'danger'),
+        ])}</td>
       </tr>`).join('') || `<tr><td colspan="8"><div class="empty">Hələ əsas layihə yoxdur</div></td></tr>`;
 }
 
@@ -1562,18 +1795,18 @@ function openEsasDetail(id){
   $('#esasDetailBadges').innerHTML = `<span class="badges"><span class="badge badge-blue">${esc(p.novu)}</span><span class="badge badge-blue">${esc(p.kateqoriya)}</span></span>`;
   const alts = altListByParent(p.id);
   const say = (st) => alts.filter(a => a.status === st).length;
+  $('#btnHistEsas').dataset.id = p.id;
   $('#esasDetailInfoCard').innerHTML = `
+    <h4>Əsas layihəyə ətraflı baxış</h4>
     <div class="info-grid">
-      <div class="info-item"><div class="k">Yaranma tarixi</div><div class="v">${fmtDate(p.yaranma)}</div></div>
-      <div class="info-item"><div class="k">Bitmə tarixi</div><div class="v">${fmtDate(p.bitme)}</div></div>
-      <div class="info-item"><div class="k">Kateqoriya</div><div class="v">${esc(p.kateqoriya)}</div></div>
-      <div class="info-item"><div class="k">Layihə növü</div><div class="v">${esc(p.novu)}</div></div>
-      <div class="info-item"><div class="k">Alt layihə sayı</div><div class="v">${alts.length}</div></div>
-      <div class="info-item"><div class="k">Statuslar</div><div class="v" style="font-weight:500;">Davam edir: ${say('davam')} · Maliyyədə: ${say('maliyyede')} · Tamamlandı: ${say('tamamlandi')}</div></div>
-    </div>
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-      <div class="k" style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;">Ətraflı məlumat</div>
-      <div style="font-size:13.5px;">${esc(p.melumat) || '—'}</div>
+      ${infoItem('Ad', esc(p.ad))}
+      ${infoItem('Kateqoriya', esc(p.kateqoriya))}
+      ${infoItem('Layihə növü', esc(p.novu))}
+      ${infoItem('Yaranma tarixi', fmtDate(p.yaranma))}
+      ${infoItem('Bitmə tarixi', fmtDate(p.bitme))}
+      ${infoItem('Alt layihə sayı', alts.length)}
+      ${infoItem('Statuslar', `Davam edir: ${say('davam')} · Maliyyədə: ${say('maliyyede')} · Tamamlandı: ${say('tamamlandi')}`)}
+      ${infoItem('Ətraflı məlumat', esc(p.melumat) || '—', !p.melumat)}
     </div>`;
   renderAltTable();
 }
@@ -1590,18 +1823,21 @@ function renderAltTable(){
         <td>${teskilLabel[a.teskil] || '—'}</td>
         <td>${maliyyeBadges(a)}</td>
         <td>${statusBadge(a.status)}</td>
-        <td><div class="row-actions">
-          <button class="icon-btn" title="Bax" data-act="open-alt" data-id="${a.id}">${ICON.eye}</button>
-          ${a.status === 'davam' ? `
-          <button class="icon-btn" title="Redaktə et" data-act="edit-alt" data-id="${a.id}">${ICON.edit}</button>
-          <button class="icon-btn danger" title="Sil" data-act="delete-alt" data-id="${a.id}">${ICON.trash}</button>` : ''}
-        </div></td>
+        <td>${rowMenu([
+          ddItem('open-alt', a.id, ICON.eye, 'Ətraflı bax'),
+          a.status !== 'tamamlandi' ? ddItem('edit-alt', a.id, ICON.edit, 'Redaktə et') : '',
+          ddItem('history', a.id, ICON.hist, 'Tarixçə'),
+          ddItem('report', 'alt:' + a.id, ICON.dl, 'İxrac et'),
+          a.status === 'davam' ? DD_SEP + ddItem('delete-alt', a.id, ICON.trash, 'Sil', 'danger') : '',
+        ])}</td>
       </tr>`).join('') || `<tr><td colspan="7"><div class="empty">Hələ alt layihə yoxdur</div></td></tr>`;
 }
 $('#btnNewAlt').addEventListener('click', () => openAltModal(null));
 
 function deleteAlt(id){
   confirmAction('Alt layihə silinsin?', 'Bu əməliyyat alt layihəni və ona bağlı bütün ödənişləri siyahıdan siləcək.', () => {
+    const a0 = projectById(id), par = a0 && projectById(a0.parentId);
+    if(par) addHistory(par, 'Alt layihə silindi', a0.ad);
     projects = projects.filter(p => p.id !== id);
     expenses = expenses.filter(e => e.layiheId !== id);
     if(screen === 'alt' && currentAltId === id){ screen = 'esas'; currentAltId = null; }
@@ -1627,7 +1863,7 @@ function openEsasModal(id){
   $('#fEsasTarix').value = p ? p.yaranma : '';
   $('#fEsasBitme').value = p ? (p.bitme || '') : '';
   $('#fEsasBitme').min = $('#fEsasTarix').value;
-  openModal('modalEsas');
+  id ? openAsPage('modalEsas') : openModal('modalEsas');
 }
 
 $('#btnSaveEsas').addEventListener('click', () => {
@@ -1644,10 +1880,15 @@ $('#btnSaveEsas').addEventListener('click', () => {
 
   const data = { ad, melumat, kateqoriya, novu, yaranma: tarix, bitme };
   if(editingEsasId){
-    Object.assign(projectById(editingEsasId), data);
-    showToast('Əsas layihə yeniləndi');
+    const p = projectById(editingEsasId);
+    const deyisiklik = diffText(ESAS_FIELDS, p, data);
+    Object.assign(p, data);
+    if(deyisiklik.length) addHistory(p, 'Redaktə edildi', deyisiklik);
+    showToast(deyisiklik.length ? 'Əsas layihə yeniləndi' : 'Dəyişiklik yoxdur');
   } else {
-    projects.push({ id: nextProjectId++, tip: 'esas', ...data });
+    const p = { id: nextProjectId++, tip: 'esas', ...data };
+    addHistory(p, 'Yaradıldı', 'Əsas layihə yaradıldı.');
+    projects.push(p);
     showToast('Əsas layihə əlavə edildi');
   }
   closeModal('modalEsas');
@@ -1659,12 +1900,12 @@ $('#btnSaveEsas').addEventListener('click', () => {
 //  ALT LAYİHƏ FORMU
 // =====================================================================
 let A = null; // formun müvəqqəti vəziyyəti
-const blankAlt = () => ({ yerler: [], istirakci: [], emekdas: [], terefdasIst: [], konullu: [], sponsor: [], terefdasOrg: [], senedler: [] });
+const blankAlt = () => ({ yerler: [], ehate: [], istirakci: [], imtina: [], emekdas: [], konullu: [], sponsor: [], terefdasOrg: [], senedler: [] });
 const blankOrg = () => ({ voen: '', ad: '', tohfe: 'Maliyyə' });
 const FIN_COL = { k: 'fin', l: 'FİN', ph: 'FİN', w: '110px', fin: true };
 const ORG_COLS = [
   { k: 'voen', l: 'VÖEN', ph: '10 rəqəm', w: '130px', voen: true },
-  { k: 'ad', l: 'Təşkilatın adı', ph: 'VÖEN-ə görə avtomatik və ya əllə yazın', w: '1fr' },
+  { k: 'ad', l: 'Təşkilatın adı (redaktə etmək olar)', ph: 'VÖEN-ə görə avtomatik gəlir, dəyişmək olar', w: '1fr' },
   { k: 'tohfe', l: 'Töhfə növü', w: '150px', opts: TOHFE },
 ];
 const REP = {
@@ -1674,10 +1915,15 @@ const REP = {
     { k: 'cins', l: 'Cins', ph: '—', ro: true, w: '72px' },
     { k: 'tevellud', l: 'Təvəllüd', ph: '—', ro: true, w: '100px', show: fmtDateOrEmpty },
     { k: 'yas', l: 'Yaş', ph: '—', ro: true, w: '56px' } ] },
-  terefdasIst: { box: 'repTerefdasIst', head: 'repTerefdasIstHead', empty: 'Tərəfdaş iştirakçı əlavə edilməyib', cols: [
-    FIN_COL, { k: 'ad', l: 'Ad Soyad', ph: 'avtomatik', ro: true, w: '1fr' } ] },
+  imtina: { box: 'repImtina', head: 'repImtinaHead', empty: 'İmtina edən iştirakçı yoxdur', cols: [
+    FIN_COL,
+    { k: 'ad', l: 'Ad Soyad', ph: 'avtomatik', ro: true, w: '1.3fr' },
+    { k: 'cins', l: 'Cins', ph: '—', ro: true, w: '72px' },
+    { k: 'tevellud', l: 'Təvəllüd', ph: '—', ro: true, w: '100px', show: fmtDateOrEmpty },
+    { k: 'sebeb', l: 'İmtina səbəbi', ph: 'Səbəb (istəyə görə)', w: '1.2fr' } ] },
   konullu: { box: 'repKonullu', head: 'repKonulluHead', empty: 'Könüllü əlavə edilməyib', cols: [
-    FIN_COL, { k: 'ad', l: 'Ad Soyad', ph: 'avtomatik', ro: true, w: '1fr' }, { k: 'qeyd', l: 'Qeyd', ph: 'Könüllü haqqında qeyd', w: '1.4fr' } ] },
+    FIN_COL, { k: 'seriya', l: 'Seriya', ph: 'AA1234567', w: '120px', seriya: true },
+    { k: 'ad', l: 'Ad Soyad', ph: 'bazadan və ya əllə', w: '1fr' }, { k: 'qeyd', l: 'Qeyd', ph: 'Könüllü haqqında qeyd', w: '1.3fr' } ] },
   sponsor: { box: 'repSponsor', head: 'repSponsorHead', empty: 'Sponsor əlavə edilməyib', cols: ORG_COLS },
   terefdasOrg: { box: 'repTerefdasOrg', head: 'repTerefdasOrgHead', empty: 'Tərəfdaş əlavə edilməyib', cols: ORG_COLS },
 };
@@ -1686,7 +1932,7 @@ function cellHtml(key, i, c, r){
   const id = `${key}:${i}:${c.k}`;
   if(c.opts) return `<select class="inp" data-rep="${id}">${c.opts.map(o => `<option ${r[c.k] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
   const val = c.show ? c.show(r[c.k]) : (r[c.k] ?? '');
-  const extra = (c.ro ? ' readonly tabindex="-1"' : '') + (c.fin ? ' maxlength="7" style="text-transform:uppercase;"' : '') + (c.voen ? ' maxlength="10" inputmode="numeric"' : '');
+  const extra = (c.ro ? ' readonly tabindex="-1"' : '') + (c.fin ? ' maxlength="7" style="text-transform:uppercase;"' : '') + (c.voen ? ' maxlength="10" inputmode="numeric"' : '') + (c.seriya ? ' maxlength="11" style="text-transform:uppercase;"' : '');
   return `<input class="inp" data-rep="${id}" value="${esc(val)}" placeholder="${esc(c.ph || '')}"${extra}>`;
 }
 function renderRep(key){
@@ -1710,6 +1956,7 @@ function onRepInput(el){
   let v = el.value;
   if(k === 'fin'){ v = v.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 7); if(el.value !== v) el.value = v; }
   if(k === 'voen'){ v = v.replace(/\D/g, '').slice(0, 10); if(el.value !== v) el.value = v; }
+  if(k === 'seriya'){ v = v.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 11); if(el.value !== v) el.value = v; }
   row[k] = v;
 
   if(k === 'fin'){
@@ -1717,18 +1964,22 @@ function onRepInput(el){
     if(dup){ showToast('Bu FİN artıq əlavə edilib'); row.fin = ''; el.value = ''; v = ''; }
     if(v.length === 7){
       const info = finLookup(v);
-      row.ad = info.ad;
+      if(key === 'konullu'){ const reg = AILELER.find(p => p.fin === v) || EMEKDASLAR.find(p => p.fin === v); if(reg) row.ad = reg.ad; }
+      else row.ad = info.ad;
+      if(key === 'imtina'){ row.cins = info.cins; row.tevellud = info.tevellud; }
       if(key === 'istirakci'){
         // Yaş təvəllüdə görə layihənin başlama tarixinə (yoxdursa bu günə) hesablanır və sabitlənir
         const ref = $('#fAltBaslama').value || todayISO();
         row.cins = info.cins; row.tevellud = info.tevellud; row.yas = yasHesabla(info.tevellud, ref); row.yasTarixi = ref;
       }
-    } else {
+    } else if(key !== 'konullu'){
       row.ad = '';
       if(key === 'istirakci'){ row.cins = ''; row.tevellud = ''; row.yas = ''; row.yasTarixi = ''; }
+      if(key === 'imtina'){ row.cins = ''; row.tevellud = ''; }
     }
     setCell(key, i, 'ad', row.ad);
-    if(key === 'istirakci'){ setCell(key, i, 'cins', row.cins); setCell(key, i, 'tevellud', fmtDateOrEmpty(row.tevellud)); setCell(key, i, 'yas', row.yas); }
+    if(key === 'istirakci' || key === 'imtina'){ setCell(key, i, 'cins', row.cins); setCell(key, i, 'tevellud', fmtDateOrEmpty(row.tevellud)); }
+    if(key === 'istirakci') setCell(key, i, 'yas', row.yas);
   }
   if(k === 'voen'){
     if(v.length === 10 && (!row.ad || row.adAuto)){ row.ad = voenLookup(v); row.adAuto = true; setCell(key, i, 'ad', row.ad); }
@@ -1762,8 +2013,14 @@ $('#btnExcelImport').addEventListener('click', () => {
   renderRep('istirakci');
   showToast(yeni.length + ' iştirakçı Excel vasitəsilə idxal olundu (nümunə)');
 });
+$('#btnImtinaImport').addEventListener('click', () => {
+  const yeni = usaqlar.filter(p => !A.imtina.some(r => r.fin === p.fin) && !A.istirakci.some(r => r.fin === p.fin)).slice(0, 2);
+  A.imtina = A.imtina.filter(r => r.fin).concat(yeni.map(p => ({ fin: p.fin, ad: p.ad, cins: p.cins, tevellud: p.tevellud, sebeb: '' })));
+  renderRep('imtina');
+  showToast(yeni.length + ' imtina edən iştirakçı Excel vasitəsilə idxal olundu (nümunə)');
+});
 
-// ---------- YAŞAT əməkdaşları (FİN ilə admin siyahısından) ----------
+// ---------- Fond əməkdaşları (FİN ilə admin siyahısından) ----------
 $('#emekdasHint').innerHTML = 'Nümunə FİN-lər: ' + EMEKDASLAR.map(e => `<code>${e.fin}</code> ${esc(e.ad)}`).join(', ');
 function renderEmekdas(){
   $('#emekdasChips').innerHTML = A.emekdas.length
@@ -1790,52 +2047,98 @@ $('#emekdasChips').addEventListener('click', e => {
 });
 
 // ---------- Ölkə və Şəhər/Rayon (çoxseçimli) ----------
-$('#fAltOlke').innerHTML = OLKELER.map(o => `<option>${o}</option>`).join('');
-function syncOlke(){
-  const az = $('#fAltOlke').value === 'Azərbaycan';
-  $('#msYer').style.display = az ? '' : 'none';
-  $('#fAltYerText').style.display = az ? 'none' : '';
+const OLKE_YENI = '__yeni__';
+function renderOlkeOptions(sel){
+  $('#fAltOlke').innerHTML = olkeler().map(o => `<option>${esc(o)}</option>`).join('') + `<option value="${OLKE_YENI}">+ Yeni ölkə əlavə et…</option>`;
+  $('#fAltOlke').value = sel || 'Azərbaycan';
+  $('#fAltOlke').dataset.prev = $('#fAltOlke').value;
 }
-$('#fAltOlke').addEventListener('change', syncOlke);
+function syncOlke(){ $('#olkeAddRow').style.display = 'none'; }
+$('#fAltOlke').addEventListener('change', () => {
+  const sel = $('#fAltOlke');
+  if(sel.value === OLKE_YENI){
+    sel.value = sel.dataset.prev || 'Azərbaycan';
+    $('#olkeAddRow').style.display = ''; $('#fOlkeYeni').value = ''; $('#fOlkeYeni').focus();
+    return;
+  }
+  if(sel.value !== sel.dataset.prev){ A.yerler = []; A.ehate = []; MS_LIST.forEach(m => m.render()); }
+  sel.dataset.prev = sel.value;
+});
+function addOlke(){
+  const ad = $('#fOlkeYeni').value.trim();
+  if(!ad){ $('#fOlkeYeni').focus(); return; }
+  const var_ = olkeler().find(o => o.toLocaleLowerCase('az') === ad.toLocaleLowerCase('az'));
+  if(!var_){ yerElave[ad] = yerElave[ad] || []; saveYerElave(); showToast(`"${ad}" ölkələr siyahısına əlavə edildi`); }
+  A.yerler = []; A.ehate = [];
+  renderOlkeOptions(var_ || ad); MS_LIST.forEach(m => m.render());
+  $('#olkeAddRow').style.display = 'none';
+}
+$('#btnOlkeAdd').addEventListener('click', addOlke);
+$('#fOlkeYeni').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addOlke(); } if(e.key === 'Escape') $('#olkeAddRow').style.display = 'none'; });
+$('#btnOlkeCancel').addEventListener('click', () => { $('#olkeAddRow').style.display = 'none'; });
 
-function renderYerDrop(){
-  const q = $('#msYerSearch').value.trim().toLocaleLowerCase('az');
-  const html = AZ_YERLER.map(g => {
-    const items = g.items.filter(it => !q || it.toLocaleLowerCase('az').includes(q));
-    if(!items.length) return '';
-    return `<div class="ms-group">${g.qrup}</div>` + items.map(it => `<label class="ms-opt"><input type="checkbox" value="${esc(it)}" ${A.yerler.includes(it) ? 'checked' : ''}> ${esc(it)}</label>`).join('');
-  }).join('');
-  $('#msYerDrop').innerHTML = html || '<div class="ms-none">Uyğun nəticə yoxdur</div>';
-}
-function renderYerChips(){
-  const box = $('#msYer .ms-box'), search = $('#msYerSearch');
-  box.querySelectorAll('.chip').forEach(c => c.remove());
-  A.yerler.forEach((y, i) => {
-    const c = document.createElement('span'); c.className = 'chip';
-    c.innerHTML = `${esc(y)}<button type="button" class="chip-x" title="Sil" data-yer-remove="${i}">×</button>`;
-    box.insertBefore(c, search);
+// Çoxseçimli şəhər/rayon siyahısı (Şəhər/Rayon və Əhatə dairəsi) — axtarış, "Hamısını seç", siyahıya yeni ad əlavə etmə
+function makeMs(id, stateKey){
+  const root = $('#ms' + id), search = $('#ms' + id + 'Search'), drop = $('#ms' + id + 'Drop'), box = root.querySelector('.ms-box');
+  const q = () => search.value.trim();
+  function renderDrop(){
+    const t = q().toLocaleLowerCase('az');
+    const groups = yerQruplari($('#fAltOlke').value)
+      .map(g => ({ qrup: g.qrup, items: g.items.filter(it => !t || it.toLocaleLowerCase('az').includes(t)) }))
+      .filter(g => g.items.length);
+    const visible = groups.flatMap(g => g.items);
+    const allOn = visible.length && visible.every(it => A[stateKey].includes(it));
+    const exact = yerQruplari($('#fAltOlke').value).some(g => g.items.some(it => it.toLocaleLowerCase('az') === t));
+    let html = visible.length ? `<label class="ms-opt ms-all"><input type="checkbox" data-ms-all ${allOn ? 'checked' : ''}> <b>Hamısını seç</b>${t ? ' <span class="ms-count">(axtarışa uyğun ' + visible.length + ')</span>' : ''}</label>` : '';
+    html += groups.map(g => `<div class="ms-group">${esc(g.qrup)}</div>` + g.items.map(it => `<label class="ms-opt"><input type="checkbox" value="${esc(it)}" ${A[stateKey].includes(it) ? 'checked' : ''}> ${esc(it)}</label>`).join('')).join('');
+    if(q() && !exact) html += `<div class="ms-opt ms-add" data-ms-add>+ “${esc(q())}” siyahıya əlavə et</div>`;
+    drop.innerHTML = html || '<div class="ms-none">Siyahı boşdur — axtarışa ad yazıb əlavə edin</div>';
+  }
+  function renderChips(){
+    box.querySelectorAll('.chip').forEach(c => c.remove());
+    A[stateKey].forEach((y, i) => {
+      const c = document.createElement('span'); c.className = 'chip';
+      c.innerHTML = `${esc(y)}<button type="button" class="chip-x" title="Sil" data-ms-remove="${i}">×</button>`;
+      box.insertBefore(c, search);
+    });
+    search.placeholder = A[stateKey].length ? '' : 'Axtar və seç…';
+  }
+  const render = () => { renderChips(); if(root.classList.contains('open')) renderDrop(); };
+  box.addEventListener('click', e => {
+    const x = e.target.closest('[data-ms-remove]');
+    if(x){ e.stopPropagation(); A[stateKey].splice(Number(x.dataset.msRemove), 1); render(); return; }
+    MS_LIST.forEach(m => m.root !== root && m.root.classList.remove('open'));
+    root.classList.add('open'); renderDrop(); search.focus();
   });
-  search.placeholder = A.yerler.length ? '' : 'Axtar və seç…';
+  search.addEventListener('input', () => { root.classList.add('open'); renderDrop(); });
+  search.addEventListener('keydown', e => {
+    if(e.key === 'Backspace' && !search.value && A[stateKey].length){ A[stateKey].pop(); render(); }
+    if(e.key === 'Escape' || e.key === 'Tab') root.classList.remove('open');
+    if(e.key === 'Enter'){ e.preventDefault(); const add = drop.querySelector('[data-ms-add]'); if(add) add.click(); }
+  });
+  drop.addEventListener('change', e => {
+    const cb = e.target; if(cb.type !== 'checkbox') return;
+    if(cb.hasAttribute('data-ms-all')){
+      const vis = [...drop.querySelectorAll('input[value]')].map(i => i.value);
+      A[stateKey] = cb.checked ? [...new Set([...A[stateKey], ...vis])] : A[stateKey].filter(y => !vis.includes(y));
+      renderChips(); renderDrop(); return;
+    }
+    if(cb.checked){ if(!A[stateKey].includes(cb.value)) A[stateKey].push(cb.value); }
+    else A[stateKey] = A[stateKey].filter(y => y !== cb.value);
+    renderChips(); renderDrop();
+  });
+  drop.addEventListener('click', e => {
+    if(!e.target.closest('[data-ms-add]')) return;
+    const ad = q(), olke = $('#fAltOlke').value;
+    (yerElave[olke] = yerElave[olke] || []).push(ad); saveYerElave();
+    if(!A[stateKey].includes(ad)) A[stateKey].push(ad);
+    search.value = ''; renderChips(); renderDrop();
+    showToast(`"${ad}" ${olke} siyahısına əlavə edildi`);
+  });
+  return { root, render, reset: () => { search.value = ''; root.classList.remove('open'); renderChips(); } };
 }
-$('#msYer .ms-box').addEventListener('click', e => {
-  const x = e.target.closest('[data-yer-remove]');
-  if(x){ e.stopPropagation(); A.yerler.splice(Number(x.dataset.yerRemove), 1); renderYerChips(); renderYerDrop(); return; }
-  $('#msYer').classList.add('open'); renderYerDrop(); $('#msYerSearch').focus();
-});
-$('#msYerSearch').addEventListener('input', () => { $('#msYer').classList.add('open'); renderYerDrop(); });
-$('#msYerSearch').addEventListener('keydown', e => {
-  if(e.key === 'Backspace' && !e.target.value && A.yerler.length){ A.yerler.pop(); renderYerChips(); renderYerDrop(); }
-  if(e.key === 'Escape' || e.key === 'Tab') $('#msYer').classList.remove('open');
-});
-$('#msYerDrop').addEventListener('change', e => {
-  const cb = e.target; if(cb.type !== 'checkbox') return;
-  if(cb.checked){ if(!A.yerler.includes(cb.value)) A.yerler.push(cb.value); }
-  else A.yerler = A.yerler.filter(y => y !== cb.value);
-  renderYerChips();
-});
-document.addEventListener('click', e => { if(!e.target.closest('#msYer')) $('#msYer').classList.remove('open'); });
-
-$('#fAltEhate').addEventListener('change', () => { toggleDiger('#fAltEhate', '#fAltEhateDiger'); if($('#fAltEhate').value === DIGER) $('#fAltEhateDiger').focus(); });
+const MS_LIST = [makeMs('Yer', 'yerler'), makeMs('Ehate', 'ehate')];
+document.addEventListener('click', e => { MS_LIST.forEach(m => { if(!m.root.contains(e.target)) m.root.classList.remove('open'); }); });
 
 // ---------- Layihə ödənişi (Fond / Sponsor / Tərəfdaş) ----------
 const SRC_INPUT = { fond: '#fSrcFond', sponsor: '#fSrcSponsor', terefdas: '#fSrcTerefdas' };
@@ -1856,15 +2159,12 @@ function syncSrc(){
   if(sp && !A.sponsor.length){ A.sponsor.push(blankOrg()); renderRep('sponsor'); }
   if(tf && !A.terefdasOrg.length){ A.terefdasOrg.push(blankOrg()); renderRep('terefdasOrg'); }
   const note = $('#altMaliyyeNote');
-  if('fond' in s || sp){
+  if(Object.keys(s).length){
     note.className = 'info-note warn';
-    note.innerHTML = 'Fond və ya Sponsor seçildiyi üçün layihə yekunlaşdırılandan sonra (<b>“Təsdiq et və maliyyəyə göndər”</b>) ödənişlər üçün <b>Maliyyəyə</b> göndəriləcək.';
-  } else if(tf){
-    note.className = 'info-note';
-    note.innerHTML = 'Yalnız Tərəfdaş seçilib — layihə Maliyyəyə göndərilmir. Layihəçi <b>“Layihəni bitir”</b> düyməsi ilə tamamlayır.';
+    note.innerHTML = 'Layihə <b>ödənişlidir</b> — Layihə rolu <b>“Təsdiq et və maliyyəyə göndər”</b> ilə Maliyyəyə göndərir, ödənişləri daxil edib layihəni <b>Maliyyə</b> tamamlayır.';
   } else {
     note.className = 'info-note';
-    note.innerHTML = 'Mənbə seçilməyib — layihə <b>ödənişsizdir</b>. Layihəçi <b>“Layihəni bitir”</b> düyməsi ilə tamamlayır.';
+    note.innerHTML = 'Mənbə seçilməyib — layihə <b>ödənişsizdir</b>. Layihə rolu <b>“Layihəni bitir”</b> düyməsi ilə tamamlayır.';
   }
 }
 $all('#srcList input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
@@ -1873,7 +2173,12 @@ $all('#srcList input[type=checkbox]').forEach(cb => cb.addEventListener('change'
 }));
 
 // ---------- Sənədlər ----------
+// Əvvəlcə növ seçilir ("Digər" olanda növ əllə yazılır), sonra fayl yüklənir; yüklənmiş sənədə baxmaq, yenidən yükləmək və silmək olar
 let replacingDoc = null;
+const docNovSecim = () => {
+  const v = $('#fDocNov').value;
+  return v === 'Digər' ? $('#fDocNovDiger').value.trim() : v;
+};
 function renderSenedler(){
   const box = $('#repSenedler');
   if(!A.senedler.length){ box.innerHTML = '<div class="repeater-empty">Fayl yüklənməyib</div>'; return; }
@@ -1881,28 +2186,40 @@ function renderSenedler(){
     <div class="repeater-row" style="align-items:center;">
       ${ICON.file}
       <div style="flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(r.ad)}">${esc(r.ad)}</div>
-      <select class="inp" style="width:140px;" data-doc-nov="${i}" title="Sənədin növü">
-        ${['Müqavilə', 'Digər'].map(o => `<option ${r.nov === o ? 'selected' : ''}>${o}</option>`).join('')}
-      </select>
+      <span class="badge badge-gray" title="Sənədin növü">${esc(r.nov || 'Digər')}</span>
+      <button type="button" class="btn btn-outline btn-xs" data-doc-view="${i}">${ICON.eye} Bax</button>
       <button type="button" class="btn btn-outline btn-xs" data-doc-replace="${i}">Yenidən yüklə</button>
       <button type="button" class="btn btn-red btn-xs" data-doc-remove="${i}">Sil</button>
     </div>`).join('');
 }
-$('#repSenedler').addEventListener('change', e => { const s = e.target.closest('[data-doc-nov]'); if(s) A.senedler[Number(s.dataset.docNov)].nov = s.value; });
+$('#fDocNov').addEventListener('change', () => {
+  const d = $('#fDocNov').value === 'Digər';
+  $('#fDocNovDiger').style.display = d ? '' : 'none';
+  $('#fDocNov').classList.remove('invalid'); $('#fDocNovDiger').classList.remove('invalid');
+  if(d) $('#fDocNovDiger').focus();
+});
+$('#fDocNovDiger').addEventListener('input', () => $('#fDocNovDiger').classList.remove('invalid'));
+function resetDocNov(){ $('#fDocNov').value = ''; $('#fDocNovDiger').value = ''; $('#fDocNovDiger').style.display = 'none'; $('#fDocNov').classList.remove('invalid'); $('#fDocNovDiger').classList.remove('invalid'); }
 $('#repSenedler').addEventListener('click', e => {
-  const rep = e.target.closest('[data-doc-replace]'), rem = e.target.closest('[data-doc-remove]');
+  const v = e.target.closest('[data-doc-view]'), rep = e.target.closest('[data-doc-replace]'), rem = e.target.closest('[data-doc-remove]');
+  if(v){ const d = A.senedler[Number(v.dataset.docView)]; viewFile('Sənəd — ' + d.ad, d); }
   if(rep){ replacingDoc = Number(rep.dataset.docReplace); $('#fAltFileReplace').click(); }
   if(rem){ const i = Number(rem.dataset.docRemove); const ad = A.senedler[i].ad; A.senedler.splice(i, 1); renderSenedler(); showToast('Sənəd silindi: ' + ad); }
 });
-$('#altFileDrop').addEventListener('click', () => $('#fAltFile').click());
+$('#altFileDrop').addEventListener('click', () => {
+  if(!$('#fDocNov').value){ $('#fDocNov').classList.add('invalid'); $('#fDocNov').focus(); showToast('Əvvəlcə sənədin növünü seçin'); return; }
+  if(!docNovSecim()){ $('#fDocNovDiger').classList.add('invalid'); $('#fDocNovDiger').focus(); showToast('Sənədin növünü əllə yazın'); return; }
+  $('#fAltFile').click();
+});
+const fileInfo = (f) => ({ ad: f.name, url: URL.createObjectURL(f), tip: f.type || '' });
 $('#fAltFile').addEventListener('change', () => {
   const f = $('#fAltFile').files[0];
-  if(f){ A.senedler.push({ ad: f.name, nov: 'Digər' }); renderSenedler(); }
+  if(f){ A.senedler.push({ ...fileInfo(f), nov: docNovSecim() || 'Digər' }); renderSenedler(); resetDocNov(); showToast('Sənəd əlavə edildi: ' + f.name); }
   $('#fAltFile').value = '';
 });
 $('#fAltFileReplace').addEventListener('change', () => {
   const f = $('#fAltFileReplace').files[0];
-  if(f && replacingDoc !== null && A.senedler[replacingDoc]){ A.senedler[replacingDoc].ad = f.name; renderSenedler(); showToast('Sənəd yeniləndi: ' + f.name); }
+  if(f && replacingDoc !== null && A.senedler[replacingDoc]){ Object.assign(A.senedler[replacingDoc], fileInfo(f)); renderSenedler(); showToast('Sənəd yeniləndi: ' + f.name); }
   replacingDoc = null; $('#fAltFileReplace').value = '';
 });
 
@@ -1914,7 +2231,7 @@ $('#fAltBitme').addEventListener('input', recalcAltMuddet);
 // ---------- Modalı açmaq / yadda saxlamaq ----------
 function openAltModal(id){
   const a = id ? projectById(id) : null;
-  if(a && a.status !== 'davam'){ showToast('Yekunlaşdırılmış layihəni redaktə etmək olmaz'); return; }
+  if(a && a.status === 'tamamlandi'){ showToast('Tamamlanmış layihəni redaktə etmək olmaz'); return; }
   editingAltId = id;
   A = blankAlt();
   $('#fAltParent').innerHTML = esasList().map(p => `<option value="${p.id}">${esc(p.ad)}</option>`).join('') || `<option value="">Əvvəlcə əsas layihə yaradın</option>`;
@@ -1924,11 +2241,11 @@ function openAltModal(id){
   $('#fAltBaslama').value = a ? (a.baslama || '') : '';
   $('#fAltBitme').value = a ? (a.bitme || '') : '';
   $('#fAltBitme').min = $('#fAltBaslama').value;
-  const olke = a && OLKELER.includes(a.olke) ? a.olke : 'Azərbaycan';
-  $('#fAltOlke').value = olke;
-  A.yerler = a && olke === 'Azərbaycan' ? [...(a.yerler || [])] : [];
-  $('#fAltYerText').value = a && olke !== 'Azərbaycan' ? (a.yerler || []).join(', ') : '';
-  setSecim('#fAltEhate', '#fAltEhateDiger', a ? (a.ehate || '') : '');
+  const olke = a && a.olke ? a.olke : 'Azərbaycan';
+  if(a && a.olke && !olkeler().includes(a.olke)){ yerElave[a.olke] = []; saveYerElave(); }
+  renderOlkeOptions(olke);
+  A.yerler = a ? asArr(a.yerler).map(yerAd) : [];
+  A.ehate = a ? asArr(a.ehate).map(yerAd) : [];
   $('#fAltObyekt').value = a ? (a.obyekt || '') : '';
   $('#fAltTeskil').value = a ? (a.teskil || 'offline') : 'offline';
   $all('#srcList .src-row').forEach(r => {
@@ -1941,16 +2258,15 @@ function openAltModal(id){
     A.terefdasOrg = (a.terefdaslar || []).map(r => ({ ...r }));
     A.istirakci = (a.istirakcilar || []).map(r => ({ ...r }));
     A.emekdas = (a.emekdaslar || []).map(r => ({ ...r }));
-    A.terefdasIst = (a.terefdasIstirakcilar || []).map(r => ({ ...r }));
+    A.imtina = (a.imtinaEdenler || []).map(r => ({ ...r }));
     A.konullu = (a.konulluler || []).map(r => ({ ...r }));
     A.senedler = (a.senedler || []).map(r => ({ ...r }));
   }
   $('#fEmekdasFin').value = ''; $('#fEmekdasFin').classList.remove('invalid');
-  $('#msYerSearch').value = ''; $('#msYer').classList.remove('open');
   Object.keys(REP).forEach(renderRep);
-  renderEmekdas(); renderSenedler(); renderYerChips();
+  renderEmekdas(); renderSenedler(); resetDocNov(); MS_LIST.forEach(m => m.reset());
   syncOlke(); syncSrc(); recalcAltMuddet();
-  openModal('modalAlt');
+  id ? openAsPage('modalAlt') : openModal('modalAlt');
   $('#modalAlt .modal-body').scrollTop = 0;
 }
 
@@ -1963,9 +2279,7 @@ $('#btnSaveAlt').addEventListener('click', () => {
   if(baslama && bitme && bitme < baslama){ showToast('Bitmə tarixi başlama tarixindən əvvəl ola bilməz'); return; }
 
   const olke = $('#fAltOlke').value;
-  const yerler = olke === 'Azərbaycan' ? [...A.yerler] : $('#fAltYerText').value.split(',').map(s => s.trim()).filter(Boolean);
-  const ehate = getSecim('#fAltEhate', '#fAltEhateDiger');
-  if($('#fAltEhate').value === DIGER && !ehate){ showToast('"Digər" əhatə dairəsini əllə yazın'); $('#fAltEhateDiger').focus(); return; }
+  const yerler = [...A.yerler], ehate = [...A.ehate];
 
   const src = srcState(), maliyye = {};
   for(const s of SRC){
@@ -1984,6 +2298,8 @@ $('#btnSaveAlt').addEventListener('click', () => {
     if(rows.some(r => !r.ad)){ showToast(`${label}: təşkilatın adını daxil edin`); return; }
   }
   const finOk = (r) => r.fin && r.fin.length === 7;
+  const adsizKonullu = A.konullu.find(r => finOk(r) && !(r.ad || '').trim());
+  if(adsizKonullu){ showToast(`Könüllü ${adsizKonullu.fin}: bazada tapılmadı — ad soyadı əllə yazın`); return; }
   const strip = ({ adAuto, ...r }) => r;
   const data = {
     parentId, ad, baslama, bitme, olke, yerler, ehate,
@@ -1991,21 +2307,126 @@ $('#btnSaveAlt').addEventListener('click', () => {
     maliyye, sponsorlar, terefdaslar,
     istirakcilar: A.istirakci.filter(finOk).map(strip),
     emekdaslar: A.emekdas.map(r => ({ ...r })),
-    terefdasIstirakcilar: A.terefdasIst.filter(finOk).map(strip),
-    konulluler: A.konullu.filter(finOk).map(r => ({ fin: r.fin, ad: r.ad, qeyd: (r.qeyd || '').trim() })),
+    imtinaEdenler: A.imtina.filter(finOk).map(r => ({ fin: r.fin, ad: r.ad, cins: r.cins, tevellud: r.tevellud, sebeb: (r.sebeb || '').trim() })),
+    konulluler: A.konullu.filter(finOk).map(r => ({ fin: r.fin, seriya: r.seriya || '', ad: (r.ad || '').trim(), qeyd: (r.qeyd || '').trim() })),
     senedler: A.senedler.map(r => ({ ...r })),
   };
   if(editingAltId){
-    Object.assign(projectById(editingAltId), data);
-    showToast('Alt layihə yeniləndi');
+    const a = projectById(editingAltId);
+    if(a.status === 'tamamlandi'){ showToast('Tamamlanmış layihəni redaktə etmək olmaz'); return; }
+    if(a.status === 'maliyyede' && !Object.keys(maliyye).length){ showToast('Layihə Maliyyədədir — ödəniş mənbəyini tamamilə silmək olmaz'); return; }
+    const deyisiklik = diffAlt(a, data);
+    Object.assign(a, data);
+    if(deyisiklik.length) addHistory(a, 'Redaktə edildi', deyisiklik);
+    showToast(deyisiklik.length ? 'Alt layihə yeniləndi' : 'Dəyişiklik yoxdur');
   } else {
-    projects.push({ id: nextProjectId++, tip: 'alt', yaradilma: todayISO(), status: 'davam', ...data });
+    const a = { id: nextProjectId++, tip: 'alt', yaradilma: todayISO(), status: 'davam', ...data };
+    addHistory(a, 'Yaradıldı', 'Alt layihə yaradıldı.');
+    const par = projectById(parentId); if(par) addHistory(par, 'Alt layihə əlavə edildi', a.ad);
+    projects.push(a);
     showToast('Alt layihə əlavə edildi');
   }
   closeModal('modalAlt');
   renderAll();
 });
 
+
+// ---------- Sətir menyusu (☰▾) ----------
+const DD_SEP = '<div class="dd-sep"></div>';
+const ddItem = (act, id, icon, label, cls) => `<button type="button" class="dd-item ${cls || ''}" data-act="${act}" data-id="${id}">${icon || ''}${label}</button>`;
+const rowMenu = (items) => `<div class="dd"><button type="button" class="dd-btn" title="Əməliyyatlar">${ICON.menu}</button><div class="dd-menu">${items.filter(Boolean).join('')}</div></div>`;
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.dd-btn'), open = document.querySelector('.dd.open');
+  if(btn){
+    const dd = btn.parentElement, willOpen = !dd.classList.contains('open');
+    if(open && open !== dd) open.classList.remove('open');
+    dd.classList.toggle('open', willOpen);
+    if(willOpen){
+      const r = btn.getBoundingClientRect(), m = dd.querySelector('.dd-menu');
+      m.style.left = Math.max(8, r.right - m.offsetWidth) + 'px';
+      m.style.top = (r.bottom + m.offsetHeight + 8 > innerHeight ? Math.max(8, r.top - m.offsetHeight - 4) : r.bottom + 4) + 'px';
+    }
+    return;
+  }
+  if(open) open.classList.remove('open');
+});
+window.addEventListener('scroll', () => { const o = document.querySelector('.dd.open'); if(o) o.classList.remove('open'); }, true);
+
+// ---------- Tarixçə (əsas və alt layihə) ----------
+// Kim: giriş etmiş istifadəçi; Rol: hazırkı rol (Layihə / Maliyyə)
+const kimdir = () => { const u = window.QX_USER; return u ? String(u.name).toLocaleUpperCase('az') : 'NAMƏLUM İSTİFADƏÇİ'; };
+const rolAdi = () => role === 'maliyye' ? 'Maliyyə' : 'Layihə';
+const nowStamp = () => { const d = new Date(), z = (x) => String(x).padStart(2, '0'); return `${z(d.getDate())}.${z(d.getMonth() + 1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`; };
+const listOf = (arr, fn) => (arr || []).map(fn).filter(Boolean);
+const orgStr = (r) => `${r.ad}${r.voen ? ' (' + r.voen + ')' : ''} — ${r.tohfe}`;
+const finStr = (r) => `${r.ad || ''} (${r.fin})`;
+const ESAS_FIELDS = [
+  { l: 'Ad', v: (a) => a.ad },
+  { l: 'Ətraflı məlumat', v: (a) => a.melumat },
+  { l: 'Kateqoriya', v: (a) => a.kateqoriya },
+  { l: 'Layihə növü', v: (a) => a.novu },
+  { l: 'Yaranma tarixi', v: (a) => fmtDateOrEmpty(a.yaranma) },
+  { l: 'Bitmə tarixi', v: (a) => fmtDateOrEmpty(a.bitme) },
+];
+const HIST_FIELDS = [
+  { l: 'Əsas layihə', v: (a) => { const p = projectById(a.parentId); return p ? p.ad : ''; } },
+  { l: 'Ad', v: (a) => a.ad },
+  { l: 'Başlama tarixi', v: (a) => fmtDateOrEmpty(a.baslama) },
+  { l: 'Bitmə tarixi', v: (a) => fmtDateOrEmpty(a.bitme) },
+  { l: 'Ölkə', v: (a) => a.olke },
+  { l: 'Şəhər/Rayon', list: (a) => asArr(a.yerler) },
+  { l: 'Əhatə dairəsi', list: (a) => asArr(a.ehate) },
+  { l: 'Müəssisə/obyekt', v: (a) => a.obyekt },
+  { l: 'Təşkil forması', v: (a) => teskilLabel[a.teskil] || a.teskil },
+  { l: 'Layihə ödənişi', v: (a) => maliyyeText(a) },
+  { l: 'Sponsorlar', list: (a) => listOf(a.sponsorlar, orgStr) },
+  { l: 'Sosial tərəfdaşlar', list: (a) => listOf(a.terefdaslar, orgStr) },
+  { l: 'İştirakçılar', list: (a) => listOf(a.istirakcilar, finStr) },
+  { l: 'İmtina edən iştirakçılar', list: (a) => listOf(a.imtinaEdenler, r => finStr(r) + (r.sebeb ? ' — ' + r.sebeb : '')) },
+  { l: 'Fond əməkdaşları', list: (a) => listOf(a.emekdaslar, r => r.ad) },
+  { l: 'Könüllülər', list: (a) => listOf(a.konulluler, r => finStr(r) + (r.seriya ? ' [' + r.seriya + ']' : '') + (r.qeyd ? ' — ' + r.qeyd : '')) },
+  { l: 'Sənədlər', list: (a) => listOf(a.senedler, r => `${r.ad} [${r.nov || 'Digər'}]`) },
+];
+// Dəyişən sahələri mətn sətirləri kimi qaytarır: "Ad: köhnə → yeni"
+function diffText(fields, oldA, newA){
+  const out = [], q = (v) => v ? `"${v}"` : 'boş';
+  for(const f of fields){
+    if(f.list){
+      const o = f.list(oldA), n = f.list(newA);
+      const elave = n.filter(x => !o.includes(x)), cixan = o.filter(x => !n.includes(x));
+      const hisse = [];
+      if(elave.length) hisse.push('əlavə edildi — ' + elave.join(', '));
+      if(cixan.length) hisse.push('silindi — ' + cixan.join(', '));
+      if(hisse.length) out.push(`${f.l}: ${hisse.join('; ')}`);
+    } else {
+      const o = String(f.v(oldA) ?? ''), n = String(f.v(newA) ?? '');
+      if(o !== n) out.push(`${f.l}: ${q(o)} → ${q(n)}`);
+    }
+  }
+  return out;
+}
+const diffAlt = (oldA, newA) => diffText(HIST_FIELDS, oldA, newA);
+const odenisQeyd = (e) => `Ödəniş ${odenisNo(e)} — ${e.teyinat} — ${fmt(e.umumi)} AZN`;
+function addHistory(obj, emel, qeyd){
+  (obj.tarixce = obj.tarixce || []).push({ emel, qeyd: Array.isArray(qeyd) ? qeyd.join('\n') : (qeyd || ''), rol: rolAdi(), kim: kimdir(), vaxt: nowStamp() });
+}
+function openHistory(id){
+  const p = projectById(id); if(!p) return;
+  const h = p.tarixce || [];
+  $('#histSub').textContent = `Əməliyyatların Siyahısı — ${p.ad}`;
+  $('#histBody').innerHTML = h.length
+    ? h.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.emel)}</td><td class="qeyd">${esc(x.qeyd) || '—'}</td><td>${esc(x.rol)}</td><td>${esc(x.kim)}</td><td>${esc(x.vaxt).replace(' ', '<br>')}</td></tr>`).join('')
+    : '<tr><td colspan="6"><div class="empty sm">Tarixçə boşdur</div></td></tr>';
+  openModal('modalHist');
+}
+// Nümunə layihələr üçün ilkin tarixçə
+projects.forEach(p => {
+  if(p.tarixce) return;
+  const kim = 'NÜMUNƏ MƏLUMAT', t = [{ emel: 'Yaradıldı', qeyd: p.tip === 'esas' ? 'Əsas layihə yaradıldı.' : 'Alt layihə yaradıldı.', rol: 'Layihə', kim, vaxt: fmtDate(p.tip === 'esas' ? p.yaranma : p.yaradilma) }];
+  if(p.status === 'maliyyede' || (p.status === 'tamamlandi' && gedirMaliyyeye(p))) t.push({ emel: 'Maliyyəyə göndərildi', qeyd: p.yekunQeyd || '', rol: 'Layihə', kim, vaxt: fmtDate(p.yekunTarix) });
+  if(p.status === 'tamamlandi') t.push({ emel: 'Tamamlandı', qeyd: gedirMaliyyeye(p) ? '' : (p.yekunQeyd || ''), rol: gedirMaliyyeye(p) ? 'Maliyyə' : 'Layihə', kim, vaxt: fmtDate(p.tamamlanma) });
+  p.tarixce = t;
+});
 
 // =====================================================================
 //  ALT LAYİHƏ SƏHİFƏSİ
@@ -2016,13 +2437,13 @@ const inReg = (fin) => AILELER.some(p => p.fin === fin);
 
 function paymentActions(e){
   const a = projectById(e.layiheId);
-  let h = `<button class="icon-btn" title="Bax" data-act="view-expense" data-id="${e.id}">${ICON.eye}</button>`;
-  if(role === 'maliyye' && a && a.status === 'maliyyede' && e.status !== 'tesdiqlendi'){
-    h += `<button class="icon-btn ok" title="Ödənişi təsdiqlə" data-act="approve-payment" data-id="${e.id}">${ICON.check}</button>
-          <button class="icon-btn" title="Redaktə et" data-act="edit-expense" data-id="${e.id}">${ICON.edit}</button>
-          <button class="icon-btn danger" title="Sil" data-act="delete-expense" data-id="${e.id}">${ICON.trash}</button>`;
-  }
-  return `<div class="row-actions">${h}</div>`;
+  const can = role === 'maliyye' && a && a.status === 'maliyyede' && e.status !== 'tesdiqlendi';
+  return rowMenu([
+    ddItem('view-expense', e.id, ICON.eye, 'Ətraflı bax'),
+    can ? ddItem('approve-payment', e.id, ICON.check, 'Ödənişi təsdiqlə', 'ok') : '',
+    can ? ddItem('edit-expense', e.id, ICON.edit, 'Redaktə et') : '',
+    can ? DD_SEP + ddItem('delete-expense', e.id, ICON.trash, 'Sil', 'danger') : '',
+  ]);
 }
 const qebzLink = (e) => e.qebz ? `<span class="link" data-act="view-receipt" data-id="${e.id}">${esc(e.qebz)}</span>` : '<span class="v muted-v">— yüklənməyib</span>';
 
@@ -2041,12 +2462,14 @@ function openAltDetail(id){
   $('#detailTitle').textContent = a.ad;
   $('#detailBadges').innerHTML = `<span class="badges">${statusBadge(a.status)} ${maliyyeBadges(a)} <span class="badge badge-gray">${teskilLabel[a.teskil] || '—'}</span></span>`;
 
-  let acts = `<button class="btn btn-outline btn-sm" data-act="report" data-id="alt:${a.id}">${ICON.dl} Hesabat yüklə</button>`;
+  let acts = `<button class="btn btn-export btn-sm" data-act="report" data-id="alt:${a.id}"><span class="ic">${ICON.dl}</span><span class="tx">İxrac et</span></button>
+    <button class="btn btn-ghost btn-sm" data-act="history" data-id="${a.id}">${ICON.hist} Tarixçə</button>`;
   if(a.status === 'davam'){
     acts += `<button class="btn btn-ghost btn-sm" data-act="edit-alt" data-id="${a.id}">${ICON.edit} Redaktə et</button>`;
     if(role === 'layiheci') acts += `<button class="btn btn-green btn-sm" data-act="finalize" data-id="${a.id}">${ICON.check} ${gedirMaliyyeye(a) ? 'Təsdiq et və maliyyəyə göndər' : 'Layihəni bitir'}</button>`;
-    else acts += `<span class="role-hint">Yekunlaşdırma — Layihəçi rejimində</span>`;
+    else acts += `<span class="role-hint">Yekunlaşdırma — Layihə rolunda</span>`;
   } else if(a.status === 'maliyyede'){
+    acts += `<button class="btn btn-ghost btn-sm" data-act="edit-alt" data-id="${a.id}">${ICON.edit} Redaktə et</button>`;
     if(role === 'maliyye') acts += `<button class="btn btn-primary btn-sm" data-act="add-payment" data-id="${a.id}">+ Ödəniş əlavə et</button>
       <button class="btn btn-green btn-sm" data-act="finish-fin" data-id="${a.id}">${ICON.check} Layihəni bitir</button>`;
     else acts += `<span class="role-hint">Ödənişləri Maliyyə daxil edir</span>`;
@@ -2061,7 +2484,7 @@ function openAltDetail(id){
 
   let html = `
     <div class="info-card">
-      <h4>Ümumi məlumat</h4>
+      <h4>Alt layihəyə ətraflı baxış</h4>
       <div class="info-grid">
         ${infoItem('Əsas layihə', parent ? esc(parent.ad) : '—')}
         ${infoItem('Yaradılma tarixi', fmtDate(a.yaradilma))}
@@ -2076,8 +2499,8 @@ function openAltDetail(id){
       <h4>Məkan</h4>
       <div class="info-grid">
         ${infoItem('Ölkə', esc(a.olke) || '—')}
-        ${infoItem('Şəhər/Rayon', chipsOr(a.yerler, y => `<span class="chip">${esc(y)}</span>`))}
-        ${infoItem('Əhatə dairəsi', esc(a.ehate) || '—', !a.ehate)}
+        ${infoItem('Şəhər/Rayon', chipsOr(asArr(a.yerler), y => `<span class="chip">${esc(y)}</span>`))}
+        ${infoItem('Əhatə dairəsi', chipsOr(asArr(a.ehate), y => `<span class="chip">${esc(y)}</span>`))}
         ${infoItem('İcra olunan müəssisə/obyekt', esc(a.obyekt) || '—', !a.obyekt)}
         ${infoItem('Təşkil forması', teskilLabel[a.teskil] || '—')}
       </div>
@@ -2086,7 +2509,7 @@ function openAltDetail(id){
       <h4>Layihə ödənişi</h4>
       <div class="info-grid">
         ${SRC.map(s => infoItem(s.l, m[s.k] != null ? fmt(m[s.k]) + ' AZN' : '—', m[s.k] == null)).join('')}
-        ${infoItem('Maliyyəyə gedir', gedirMaliyyeye(a) ? 'Bəli (Fond/Sponsor)' : 'Xeyr')}
+        ${infoItem('Maliyyəyə gedir', gedirMaliyyeye(a) ? 'Bəli (ödənişli)' : 'Xeyr (ödənişsiz)')}
       </div>
       ${(a.sponsorlar || []).length || (a.terefdaslar || []).length ? `
       <div class="two-col section-gap">
@@ -2100,28 +2523,28 @@ function openAltDetail(id){
         ${ist.map(r => `<tr><td>${esc(r.fin)}</td><td>${inReg(r.fin) ? `<span class="link" data-act="person" data-id="${esc(r.fin)}">${esc(r.ad)}</span>` : esc(r.ad)}</td><td>${esc(r.cins)}</td><td>${fmtDate(r.tevellud)}</td><td>${r.yas !== '' && r.yas != null ? r.yas : '—'}</td></tr>`).join('')}
       </tbody></table></div>` : '<span class="v muted-v">İştirakçı yoxdur</span>'}
     </div>
-    <div class="two-col" style="margin-bottom:18px;">
-      <div class="info-card">
-        <h4>YAŞAT əməkdaşları <span class="count">${(a.emekdaslar || []).length}</span></h4>
-        ${chipsOr(a.emekdaslar, e => `<span class="chip blue">${esc(e.ad)} · ${esc(e.vezife || '')}</span>`)}
-      </div>
-      <div class="info-card">
-        <h4>Tərəfdaş iştirakçılar <span class="count">${(a.terefdasIstirakcilar || []).length}</span></h4>
-        ${chipsOr(a.terefdasIstirakcilar, r => `<span class="chip">${esc(r.ad || r.fin)}</span>`)}
-      </div>
+    <div class="info-card">
+      <h4>İmtina edən iştirakçılar <span class="count">${(a.imtinaEdenler || []).length}</span></h4>
+      ${(a.imtinaEdenler || []).length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>FİN</th><th>Ad Soyad</th><th>Cins</th><th>Təvəllüd</th><th>İmtina səbəbi</th></tr></thead><tbody>
+        ${a.imtinaEdenler.map(r => `<tr><td>${esc(r.fin)}</td><td>${esc(r.ad)}</td><td>${esc(r.cins) || '—'}</td><td>${fmtDate(r.tevellud)}</td><td>${esc(r.sebeb) || '—'}</td></tr>`).join('')}
+      </tbody></table></div>` : '<span class="v muted-v">İmtina edən yoxdur</span>'}
+    </div>
+    <div class="info-card">
+      <h4>Fond əməkdaşları <span class="count">${(a.emekdaslar || []).length}</span></h4>
+      ${chipsOr(a.emekdaslar, e => `<span class="chip blue">${esc(e.ad)} · ${esc(e.vezife || '')}</span>`)}
     </div>
     <div class="info-card">
       <h4>Könüllülər <span class="count">${(a.konulluler || []).length}</span></h4>
-      ${(a.konulluler || []).length ? `<table class="mini-table"><thead><tr><th>FİN</th><th>Ad Soyad</th><th>Qeyd</th></tr></thead><tbody>
-        ${a.konulluler.map(r => `<tr><td>${esc(r.fin)}</td><td>${esc(r.ad)}</td><td>${esc(r.qeyd) || '—'}</td></tr>`).join('')}</tbody></table>` : '<span class="v muted-v">Könüllü yoxdur</span>'}
+      ${(a.konulluler || []).length ? `<table class="mini-table"><thead><tr><th>FİN</th><th>Seriya</th><th>Ad Soyad</th><th>Qeyd</th></tr></thead><tbody>
+        ${a.konulluler.map(r => `<tr><td>${esc(r.fin)}</td><td>${esc(r.seriya) || '—'}</td><td>${esc(r.ad)}</td><td>${esc(r.qeyd) || '—'}</td></tr>`).join('')}</tbody></table>` : '<span class="v muted-v">Könüllü yoxdur</span>'}
     </div>
     <div class="info-card">
       <h4>Sənədlər <span class="count">${(a.senedler || []).length}</span></h4>
-      ${(a.senedler || []).length ? `<div style="display:flex;flex-direction:column;gap:6px;">${a.senedler.map(d => `<div style="display:flex;align-items:center;gap:8px;">${ICON.file}<span>${esc(d.ad)}</span><span class="badge badge-gray">${esc(d.nov || 'Digər')}</span></div>`).join('')}</div>` : '<span class="v muted-v">Sənəd yoxdur</span>'}
+      ${(a.senedler || []).length ? `<div class="file-box">${a.senedler.map((d, i) => `<div class="file-card"><div class="thumb">${ICON.file}</div><div class="nm" title="${esc(d.ad)}">${esc(d.ad)}</div><span class="badge badge-gray">${esc(d.nov || 'Digər')}</span><div style="margin-top:8px;"><button type="button" class="btn btn-outline btn-xs" data-act="view-doc" data-id="${a.id}:${i}">${ICON.eye} Bax</button></div></div>`).join('')}</div>` : '<div class="file-box empty-box">Fayllar</div>'}
     </div>`;
 
   if(a.yekunQeyd){
-    html += `<div class="info-card"><h4>Yekun qeydlər <span class="count">Layihəçi · ${fmtDate(a.yekunTarix)}</span></h4><div class="yekun-box">${esc(a.yekunQeyd)}</div></div>`;
+    html += `<div class="info-card"><h4>Yekun qeydlər <span class="count">Layihə · ${fmtDate(a.yekunTarix)}</span></h4><div class="yekun-box">${esc(a.yekunQeyd)}</div></div>`;
   }
 
   if(gedirMaliyyeye(a)){
@@ -2131,11 +2554,11 @@ function openAltDetail(id){
     <div class="info-card">
       <h4>Ödənişlər <span class="count">${list.length} qeyd</span></h4>
       <div class="money-strip">
-        ${infoItem('Fond + Sponsor', fmt(plan) + ' AZN')}
+        ${infoItem('Plan məbləği', fmt(plan) + ' AZN')}
         ${infoItem('Ödənilib (təsdiqlənmiş)', fmt(paid) + ' AZN')}
         ${infoItem('Təsdiqlənməyən', list.filter(e => e.status !== 'tesdiqlendi').length)}
       </div>
-      ${list.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>№</th><th>Təyinat</th><th>Qəbz</th><th>Tarix</th><th class="num">Məbləğ</th><th>Status</th><th style="text-align:right;">Əməliyyat</th></tr></thead><tbody>
+      ${list.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>№</th><th>Təyinat</th><th>Qəbz</th><th>Tarix</th><th class="num">Məbləğ</th><th>Status</th><th style="width:90px;">Əməliyyat</th></tr></thead><tbody>
         ${list.map((e, i) => `<tr><td>Ödəniş ${i + 1}</td><td>${esc(e.teyinat)}</td><td>${qebzLink(e)}</td><td>${fmtDate(e.tarix)}</td><td class="num">${fmt(e.umumi)}</td><td>${odenisBadge(e.status)}</td><td>${paymentActions(e)}</td></tr>`).join('')}
       </tbody></table></div>` : `<div class="empty sm">${a.status === 'davam' ? 'Layihə Maliyyəyə göndəriləndən sonra ödənişlər burada görünəcək.' : 'Hələ ödəniş daxil edilməyib.'}</div>`}
     </div>`;
@@ -2147,13 +2570,13 @@ function openAltDetail(id){
 let yekunId = null;
 function openYekun(id){
   const a = projectById(id); if(!a || a.status !== 'davam') return;
-  if(role !== 'layiheci'){ showToast('Layihəni yalnız Layihəçi yekunlaşdıra bilər'); return; }
+  if(role !== 'layiheci'){ showToast('Layihəni yalnız Layihə rolu yekunlaşdıra bilər'); return; }
   yekunId = id;
   const fin = gedirMaliyyeye(a);
   $('#yekunTitle').textContent = fin ? 'Təsdiq et və maliyyəyə göndər' : 'Layihəni bitir';
   $('#yekunInfo').className = 'info-note' + (fin ? ' warn' : '');
   $('#yekunInfo').innerHTML = fin
-    ? `Layihə ödənişlər üçün <b>Maliyyəyə</b> göndəriləcək (${esc(maliyyeText(a))}). Bundan sonra layihə məlumatları redaktə edilə bilməz; Maliyyə ödənişləri daxil edib layihəni bitirəcək.`
+    ? `Layihə ödənişlər üçün <b>Maliyyəyə</b> göndəriləcək (${esc(maliyyeText(a))}). Layihə tamamlanana qədər məlumatları redaktə etmək olar; Maliyyə ödənişləri daxil edib layihəni bitirəcək.`
     : 'Layihə Maliyyəyə göndərilmir və <b>“Tamamlandı”</b> statusuna keçəcək. Bundan sonra layihə məlumatları redaktə edilə bilməz.';
   $('#btnYekunConfirm').textContent = fin ? 'Təsdiq et və göndər' : 'Layihəni bitir';
   $('#fYekunQeyd').value = a.yekunQeyd || '';
@@ -2166,8 +2589,8 @@ $('#btnYekunConfirm').addEventListener('click', () => {
   const t = $('#fYekunQeyd').value.trim();
   if(!t){ $('#fYekunQeyd').classList.add('invalid'); showToast('Yekun qeydləri yazın'); return; }
   a.yekunQeyd = t; a.yekunTarix = todayISO();
-  if(gedirMaliyyeye(a)){ a.status = 'maliyyede'; showToast('Layihə Maliyyəyə göndərildi'); }
-  else { a.status = 'tamamlandi'; a.tamamlanma = todayISO(); showToast('Layihə tamamlandı'); }
+  if(gedirMaliyyeye(a)){ a.status = 'maliyyede'; addHistory(a, 'Maliyyəyə göndərildi', t); showToast('Layihə Maliyyəyə göndərildi'); }
+  else { a.status = 'tamamlandi'; a.tamamlanma = todayISO(); addHistory(a, 'Tamamlandı', t); showToast('Layihə tamamlandı'); }
   closeModal('modalYekun');
   renderAll();
 });
@@ -2180,6 +2603,7 @@ function finishByMaliyye(id){
   if(list.some(e => e.status !== 'tesdiqlendi')){ showToast('Əvvəlcə bütün ödənişləri təsdiqləyin və ya təsdiqlənməyənləri silin'); return; }
   confirmAction('Layihə bitirilsin?', `Təsdiqlənmiş ${list.length} ödəniş, cəmi ${fmt(odenilib(id))} AZN. Layihə “Tamamlandı” statusuna keçəcək və yeni ödəniş əlavə etmək mümkün olmayacaq.`, () => {
     a.status = 'tamamlandi'; a.tamamlanma = todayISO();
+    addHistory(a, 'Tamamlandı', `Təsdiqlənmiş ${list.length} ödəniş, cəmi ${fmt(odenilib(id))} AZN.`);
     renderAll(); showToast('Layihə tamamlandı');
   }, 'Bəli, bitir', 'btn-green');
 }
@@ -2194,22 +2618,22 @@ function renderXercView(){
   $('#xercProjCount').textContent = projs.length;
   $('#xercCount').textContent = expenses.length;
   $('#adminNoteText').textContent = role === 'maliyye'
-    ? 'Maliyyə rejimi: Layihəçinin göndərdiyi layihələr üzrə ödənişləri (təyinat, təsvir, məbləğ, tarix, qəbz) daxil edin. Hər ödənişdən sonra “Ödənişi təsdiqlə”, sonuncu ödənişdən sonra isə “Layihəni bitir” düyməsini basın. Admin təsdiqi tələb olunmur.'
-    : role === 'admin'
-      ? 'Admin rejimi yalnız baxış üçündür — ödənişlər Admin təsdiqi tələb etmir, Maliyyə özü təsdiqləyir.'
-      : 'Bu bölmə yalnız məlumat üçündür. Fond və ya Sponsor seçilən layihə “Təsdiq et və maliyyəyə göndər” ilə buraya düşür; ödənişləri Maliyyə daxil edir.';
+    ? 'Maliyyə rejimi: Layihə rolunun göndərdiyi layihələr üzrə ödənişləri (təyinat, təsvir, məbləğ, tarix, qəbz) daxil edin. Hər ödənişdən sonra “Ödənişi təsdiqlə”, sonuncu ödənişdən sonra isə “Layihəni bitir” düyməsini basın.'
+    : 'Bu bölmə yalnız məlumat üçündür. Ödənişli layihə “Təsdiq et və maliyyəyə göndər” ilə buraya düşür; ödənişləri daxil edib layihəni Maliyyə tamamlayır.';
   $('#btnNewXerc').style.display = role === 'maliyye' ? '' : 'none';
 
   $('#xercProjBody').innerHTML = projs.map(a => {
     const list = odenislerOf(a.id), parent = projectById(a.parentId);
     const tesdiq = list.filter(e => e.status === 'tesdiqlendi').length;
     const m = a.maliyye || {};
-    const menbe = [m.fond != null ? `Fond: ${fmt(m.fond)}` : '', m.sponsor != null ? `Sponsor: ${fmt(m.sponsor)}` : ''].filter(Boolean).join('<br>');
-    let acts = `<button class="icon-btn" title="Layihəyə bax" data-act="go-alt" data-id="${a.id}">${ICON.eye}</button>`;
-    if(role === 'maliyye' && a.status === 'maliyyede'){
-      acts += `<button class="btn btn-outline btn-xs" data-act="add-payment" data-id="${a.id}">+ Ödəniş</button>
-               <button class="btn btn-green btn-xs" data-act="finish-fin" data-id="${a.id}">Layihəni bitir</button>`;
-    }
+    const menbe = menbeler(a).map(s => `${s.l}: ${fmt(m[s.k])}`).join('<br>');
+    const canPay = role === 'maliyye' && a.status === 'maliyyede';
+    const acts = rowMenu([
+      ddItem('go-alt', a.id, ICON.eye, 'Layihəyə bax'),
+      ddItem('history', a.id, ICON.hist, 'Tarixçə'),
+      canPay ? DD_SEP + ddItem('add-payment', a.id, ICON.plus, 'Ödəniş əlavə et') : '',
+      canPay ? ddItem('finish-fin', a.id, ICON.check, 'Layihəni bitir', 'ok') : '',
+    ]);
     return `<tr>
       <td>#${pad4(a.id)}</td>
       <td><span class="link" data-act="go-alt" data-id="${a.id}">${esc(a.ad)}</span><span class="sub">${parent ? esc(parent.ad) : ''}</span></td>
@@ -2218,7 +2642,7 @@ function renderXercView(){
       <td class="num">${fmt(odenilib(a.id))}</td>
       <td>${tesdiq} / ${list.length} təsdiqlənib</td>
       <td>${statusBadge(a.status)}</td>
-      <td><div class="row-actions" style="align-items:center;">${acts}</div></td>
+      <td>${acts}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="8"><div class="empty sm">Maliyyəyə göndərilmiş layihə yoxdur</div></td></tr>`;
 
@@ -2227,7 +2651,6 @@ function renderXercView(){
     return `<tr>
       <td>#${pad4(e.id)}</td>
       <td>${p ? esc(p.ad) : '—'} <span class="badge badge-blue" style="margin-left:4px;">Ödəniş ${odenisNo(e)}</span></td>
-      <td>${esc(e.istiqamet) || '—'}</td>
       <td>${esc(e.teyinat)}</td>
       <td>${qebzLink(e)}</td>
       <td>${fmtDate(e.tarix)}</td>
@@ -2236,7 +2659,7 @@ function renderXercView(){
       <td>${odenisBadge(e.status)}</td>
       <td>${paymentActions(e)}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="10"><div class="empty sm">Hələ ödəniş qeydi yoxdur</div></td></tr>`;
+  }).join('') || `<tr><td colspan="9"><div class="empty sm">Hələ ödəniş qeydi yoxdur</div></td></tr>`;
 }
 
 function updateBadge(){
@@ -2256,12 +2679,11 @@ function openXercModal(id, projId){
   editingExpenseId = id; selectedFile = null; $('#fXercQebz').value = '';
   const list = altList().filter(p => p.status === 'maliyyede');
   $('#fXercLayihe').innerHTML = list.map(p => `<option value="${p.id}">${esc(p.ad)}</option>`).join('') || '<option value="">Maliyyəyə göndərilmiş layihə yoxdur</option>';
-  $('#xercNoHint').textContent = list.length ? '' : 'Layihəçi “Təsdiq et və maliyyəyə göndər” etdikdən sonra layihə burada görünəcək.';
+  $('#xercNoHint').textContent = list.length ? '' : 'Layihə rolu “Təsdiq et və maliyyəyə göndər” etdikdən sonra layihə burada görünəcək.';
   $('#fXercLayihe').disabled = !!e;
   if(e){
     $('#modalXercTitle').textContent = `Ödəniş ${odenisNo(e)} — redaktə`;
     $('#fXercLayihe').value = e.layiheId;
-    $('#fXercIstiqamet').value = e.istiqamet || '';
     $('#fXercTeyinat').value = e.teyinat || '';
     $('#fXercTesvir').value = e.tesvir || '';
     $('#fXercTarix').value = e.tarix || '';
@@ -2272,7 +2694,7 @@ function openXercModal(id, projId){
   } else {
     $('#modalXercTitle').textContent = 'Yeni ödəniş';
     if(projId) $('#fXercLayihe').value = projId;
-    ['fXercIstiqamet', 'fXercTeyinat', 'fXercTesvir', 'fXercTarix', 'fXercIcraci', 'fXercYasat', 'fXercEdv', 'fXercUmumi'].forEach(k => $('#' + k).value = '');
+    ['fXercTeyinat', 'fXercTesvir', 'fXercTarix', 'fXercIcraci', 'fXercYasat', 'fXercEdv', 'fXercUmumi'].forEach(k => $('#' + k).value = '');
   }
   $('#fileDropText').textContent = e && e.qebz ? e.qebz : 'Qəbzi seçmək üçün klikləyin (PDF/JPG/PNG)';
   $('#fileDrop').classList.toggle('has-file', !!(e && e.qebz));
@@ -2303,7 +2725,6 @@ function saveXerc(approve){
   if(approve && !qebz){ showToast('Ödənişi təsdiqləmək üçün qəbzi yükləyin'); return; }
   const data = {
     layiheId, teyinat, qebz, umumi,
-    istiqamet: $('#fXercIstiqamet').value.trim(),
     tesvir: $('#fXercTesvir').value.trim(),
     tarix: $('#fXercTarix').value,
     icraci: $('#fXercIcraci').value.trim(),
@@ -2315,6 +2736,8 @@ function saveXerc(approve){
   if(e) Object.assign(e, data);
   else { rec = { id: nextExpenseId++, status: 'qaralama', ...data }; expenses.push(rec); }
   if(approve){ rec.status = 'tesdiqlendi'; rec.tesdiqTarix = todayISO(); }
+  const lp = projectById(layiheId);
+  if(lp) addHistory(lp, approve ? (e ? 'Ödəniş redaktə edildi və təsdiqləndi' : 'Ödəniş əlavə edildi və təsdiqləndi') : (e ? 'Ödəniş redaktə edildi' : 'Ödəniş əlavə edildi'), odenisQeyd(rec));
   closeModal('modalXerc');
   renderAll();
   showToast(approve ? 'Ödəniş təsdiqləndi' : 'Ödəniş yadda saxlanıldı (hələ təsdiqlənməyib)');
@@ -2326,10 +2749,13 @@ function approvePayment(id){
   const e = expenses.find(x => x.id === id); if(!e) return;
   if(!e.qebz){ showToast('Təsdiq üçün əvvəlcə ödəniş qəbzini yükləyin'); openXercModal(id); return; }
   e.status = 'tesdiqlendi'; e.tesdiqTarix = todayISO();
+  const lp = projectById(e.layiheId); if(lp) addHistory(lp, 'Ödəniş təsdiqləndi', odenisQeyd(e));
   renderAll(); showToast('Ödəniş təsdiqləndi');
 }
 function deleteExpense(id){
   confirmAction('Ödəniş silinsin?', 'Bu təsdiqlənməmiş ödəniş qeydi həmişəlik silinəcək.', () => {
+    const e0 = expenses.find(x => x.id === id), lp = e0 && projectById(e0.layiheId);
+    if(lp) addHistory(lp, 'Ödəniş silindi', odenisQeyd(e0));
     expenses = expenses.filter(e => e.id !== id);
     renderAll(); showToast('Ödəniş silindi');
   });
@@ -2341,7 +2767,6 @@ function viewExpense(id){
     <div class="form-grid">
       <div class="form-field"><label>Layihə</label><div>${p ? esc(p.ad) : '—'}</div></div>
       <div class="form-field"><label>Ödəniş nömrəsi</label><div>Ödəniş ${odenisNo(e)}</div></div>
-      <div class="form-field"><label>İstiqamət</label><div>${esc(e.istiqamet) || '—'}</div></div>
       <div class="form-field"><label>Ödənişin təyinatı</label><div>${esc(e.teyinat)}</div></div>
       <div class="form-field full"><label>Detallı təsvir</label><div>${esc(e.tesvir) || '—'}</div></div>
       <div class="form-field"><label>Ödəniş qəbzi</label><div>${qebzLink(e)}</div></div>
@@ -2353,6 +2778,21 @@ function viewExpense(id){
       <div class="form-field"><label>Status</label><div>${odenisBadge(e.status)}${e.tesdiqTarix ? ` <span style="color:var(--muted);font-size:12px;">${fmtDate(e.tesdiqTarix)}</span>` : ''}</div></div>
     </div>`;
   openModal('modalView');
+}
+function viewFile(title, d){
+  $('#receiptTitle').textContent = title;
+  const url = d.url, tip = d.tip || '', ad = d.ad || '';
+  const isPdf = tip.includes('pdf') || /\.pdf$/i.test(ad), isImg = tip.startsWith('image/') || /\.(png|jpe?g)$/i.test(ad);
+  if(url && isPdf) $('#receiptBody').innerHTML = `<embed src="${url}" type="application/pdf" style="width:100%;height:70vh;border:none;display:block;">`;
+  else if(url && isImg) $('#receiptBody').innerHTML = `<img src="${url}" style="width:100%;display:block;" alt="">`;
+  else if(url) $('#receiptBody').innerHTML = `<div class="empty" style="padding:40px 20px;">Bu fayl növü (${esc(ad.split('.').pop().toUpperCase())}) üçün brauzerdə ön izləmə mümkün deyil.<br><a href="${url}" download="${esc(ad)}" style="color:var(--blue);font-weight:600;">${esc(ad)} — yüklə və aç</a></div>`;
+  else $('#receiptBody').innerHTML = `<div class="empty" style="padding:40px 20px;">Bu nümunə qeyddir — real fayl yüklənməyib (<b>${esc(ad)}</b>). Yüklədiyiniz sənədlər burada göstəriləcək.</div>`;
+  openModal('modalReceipt');
+}
+function viewDoc(key){
+  const [pid, i] = String(key).split(':').map(Number);
+  const a = projectById(pid), d = a && (a.senedler || [])[i];
+  if(d) viewFile('Sənəd — ' + d.ad, d);
 }
 function viewReceipt(id){
   const e = expenses.find(x => x.id === id); if(!e) return;
@@ -2389,7 +2829,7 @@ function personProjects(fin){
     const ist = (a.istirakcilar || []).find(r => r.fin === fin);
     if(ist) out.push({ a, parent, rol: 'İştirakçı', yas: ist.yas });
     if((a.konulluler || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'Könüllü', yas: '' });
-    if((a.terefdasIstirakcilar || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'Tərəfdaş iştirakçı', yas: '' });
+    if((a.imtinaEdenler || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'İmtina edib', yas: '' });
   });
   return out.sort((x, y) => (x.a.baslama || '') < (y.a.baslama || '') ? -1 : 1);
 }
@@ -2429,7 +2869,7 @@ function renderAile(){
       <td>${sinifText(s)}</td>
       <td>${esc(p.region)}</td>
       <td>${n ? `<span class="badge badge-blue">${n}</span>` : '<span style="color:var(--muted);">0</span>'}</td>
-      <td><div class="row-actions"><button class="icon-btn" title="Layihə tarixçəsi" data-act="person" data-id="${esc(p.fin)}">${ICON.eye}</button></div></td>
+      <td>${rowMenu([ddItem('person', esc(p.fin), ICON.eye, 'Layihə tarixçəsi')])}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="11"><div class="empty sm">Filtrə uyğun nəticə yoxdur</div></td></tr>`;
 }
@@ -2506,8 +2946,8 @@ const REPORT_COLS = [
   { g: 'Alt layihə', k: 'a_yekun', l: 'Yekun qeydlər', v: alt(a => a.yekunQeyd || '') },
 
   { g: 'Məkan', k: 'a_olke', l: 'Ölkə', v: alt(a => a.olke) },
-  { g: 'Məkan', k: 'a_yer', l: 'Şəhər/Rayon', v: alt(a => (a.yerler || []).join('; ')) },
-  { g: 'Məkan', k: 'a_ehate', l: 'Əhatə dairəsi', v: alt(a => a.ehate || '') },
+  { g: 'Məkan', k: 'a_yer', l: 'Şəhər/Rayon', v: alt(a => asArr(a.yerler).join('; ')) },
+  { g: 'Məkan', k: 'a_ehate', l: 'Əhatə dairəsi', v: alt(a => asArr(a.ehate).join('; ')) },
   { g: 'Məkan', k: 'a_obyekt', l: 'İcra olunan müəssisə/obyekt', v: alt(a => a.obyekt || '') },
   { g: 'Məkan', k: 'a_teskil', l: 'Təşkil forması', v: alt(a => teskilLabel[a.teskil] || '') },
 
@@ -2524,10 +2964,11 @@ const REPORT_COLS = [
   { g: 'İştirakçılar', k: 'a_istQadin', l: 'Qadın', v: alt(a => (a.istirakcilar || []).filter(r => r.cins === 'Qadın').length) },
   { g: 'İştirakçılar', k: 'a_istOrta', l: 'Orta yaş', v: alt(a => { const y = (a.istirakcilar || []).map(r => Number(r.yas)).filter(n => !isNaN(n)); return y.length ? Math.round(y.reduce((s, n) => s + n, 0) / y.length * 10) / 10 : ''; }) },
   { g: 'İştirakçılar', k: 'a_ist', l: 'İştirakçılar (FİN — ad — cins — yaş)', v: alt(a => (a.istirakcilar || []).map(r => `${r.fin} — ${r.ad} — ${r.cins} — ${r.yas}`).join('; ')) },
-  { g: 'İştirakçılar', k: 'a_emekdas', l: 'YAŞAT əməkdaşları', v: alt(a => (a.emekdaslar || []).map(e => e.ad + (e.vezife ? ` (${e.vezife})` : '')).join('; ')) },
-  { g: 'İştirakçılar', k: 'a_terefdasIst', l: 'Tərəfdaş iştirakçılar', v: alt(a => (a.terefdasIstirakcilar || []).map(r => `${r.fin} — ${r.ad}`).join('; ')) },
+  { g: 'İştirakçılar', k: 'a_imtinaSay', l: 'İmtina edənlərin sayı', v: alt(a => (a.imtinaEdenler || []).length) },
+  { g: 'İştirakçılar', k: 'a_imtina', l: 'İmtina edənlər (FİN — ad — səbəb)', v: alt(a => (a.imtinaEdenler || []).map(r => [r.fin, r.ad, r.sebeb].filter(Boolean).join(' — ')).join('; ')) },
+  { g: 'İştirakçılar', k: 'a_emekdas', l: 'Fond əməkdaşları', v: alt(a => (a.emekdaslar || []).map(e => e.ad + (e.vezife ? ` (${e.vezife})` : '')).join('; ')) },
   { g: 'İştirakçılar', k: 'a_konulluSay', l: 'Könüllü sayı', v: alt(a => (a.konulluler || []).length) },
-  { g: 'İştirakçılar', k: 'a_konullu', l: 'Könüllülər (ad — qeyd)', v: alt(a => (a.konulluler || []).map(r => r.ad + (r.qeyd ? ' — ' + r.qeyd : '')).join('; ')) },
+  { g: 'İştirakçılar', k: 'a_konullu', l: 'Könüllülər (FİN — seriya — ad — qeyd)', v: alt(a => (a.konulluler || []).map(r => [r.fin, r.seriya, r.ad, r.qeyd].filter(Boolean).join(' — ')).join('; ')) },
 
   { g: 'Sənədlər', k: 'a_senedSay', l: 'Sənəd sayı', v: alt(a => (a.senedler || []).length) },
   { g: 'Sənədlər', k: 'a_sened', l: 'Sənədlər (ad — növ)', v: alt(a => (a.senedler || []).map(d => `${d.ad} — ${d.nov || 'Digər'}`).join('; ')) },
@@ -2537,6 +2978,35 @@ const REPORT_COLS = [
   { g: 'Maliyyə ödənişləri', k: 'a_odList', l: 'Ödənişlər (№ — tarix — təyinat — məbləğ — status)', v: alt(a => odenislerOf(a.id).map((e, i) => `Ödəniş ${i + 1} — ${fmtDate(e.tarix)} — ${e.teyinat} — ${fmt(e.umumi)} AZN — ${e.status === 'tesdiqlendi' ? 'Təsdiqləndi' : 'Təsdiqlənməyib'}`).join('; ')) },
 ];
 const repChecked = new Set(REPORT_COLS.map(c => c.k));
+
+const odStatus = (e) => e.status === 'tesdiqlendi' ? 'Təsdiqləndi' : 'Təsdiqlənməyib';
+// Excel-də hər siyahı ayrıca vərəqdədir: hər element bir sətir, hər sahə ayrı sütun
+const orgCols = { headers: ['VÖEN', 'Təşkilatın adı', 'Töhfə növü'], row: (o) => [o.voen || '', o.ad || '', o.tohfe || ''] };
+const DETAIL_SHEETS = {
+  a_yer:        { name: 'Şəhər-Rayon', items: (a) => asArr(a.yerler).map(y => ({ y })), headers: ['Şəhər/Rayon'], row: (r) => [r.y] },
+  a_ehate:      { name: 'Əhatə dairəsi', items: (a) => asArr(a.ehate).map(y => ({ y })), headers: ['Əhatə olunan şəhər/rayon'], row: (r) => [r.y] },
+  a_sponsorlar: { name: 'Sponsorlar', items: (a) => a.sponsorlar || [], ...orgCols },
+  a_terefdaslar:{ name: 'Sosial tərəfdaşlar', items: (a) => a.terefdaslar || [], ...orgCols },
+  a_ist:        { name: 'İştirakçılar', items: (a) => a.istirakcilar || [], headers: ['FİN', 'Ad Soyad', 'Cins', 'Təvəllüd', 'Yaş (layihə vaxtı)'],
+                  row: (r) => [r.fin || '', r.ad || '', r.cins || '', fmtDateOrEmpty(r.tevellud), r.yas === '' || r.yas == null ? '' : Number(r.yas)] },
+  a_imtina:     { name: 'İmtina edənlər', items: (a) => a.imtinaEdenler || [], headers: ['FİN', 'Ad Soyad', 'Cins', 'Təvəllüd', 'İmtina səbəbi'],
+                  row: (r) => [r.fin || '', r.ad || '', r.cins || '', fmtDateOrEmpty(r.tevellud), r.sebeb || ''] },
+  a_emekdas:    { name: 'Fond əməkdaşları', items: (a) => a.emekdaslar || [], headers: ['FİN', 'Ad Soyad', 'Vəzifə'], row: (r) => [r.fin || '', r.ad || '', r.vezife || ''] },
+  a_konullu:    { name: 'Könüllülər', items: (a) => a.konulluler || [], headers: ['FİN', 'Seriya', 'Ad Soyad', 'Qeyd'], row: (r) => [r.fin || '', r.seriya || '', r.ad || '', r.qeyd || ''] },
+  a_sened:      { name: 'Sənədlər', items: (a) => a.senedler || [], headers: ['Sənədin adı', 'Növ'], row: (d) => [d.ad || '', d.nov || 'Digər'] },
+  a_odList:     { name: 'Ödənişlər', items: (a) => odenislerOf(a.id),
+                  headers: ['Ödəniş №', 'Ödənişin təyinatı', 'Təsvir', 'Ödəniş qəbzi', 'Ödəmə tarixi', 'İcraçı', 'YAŞAT (AZN)', 'ƏDV (AZN)', 'Ümumi (AZN)', 'Status', 'Təsdiq tarixi'],
+                  row: (e, i) => ['Ödəniş ' + (i + 1), e.teyinat || '', e.tesvir || '', e.qebz || '', fmtDateOrEmpty(e.tarix), e.icraci || '',
+                                  Number(e.yasat) || 0, Number(e.edv) || 0, Number(e.umumi) || 0, odStatus(e), fmtDateOrEmpty(e.tesdiqTarix)] },
+};
+function detailSheets(pairs, keys){
+  const LINK = ['Əsas layihə', 'Alt layihə №', 'Alt layihə'];
+  return keys.map(k => {
+    const d = DETAIL_SHEETS[k], rows = [];
+    pairs.forEach(r => { if(!r.a) return; d.items(r.a).forEach((it, i) => rows.push([r.e ? r.e.ad : '', '#' + pad4(r.a.id), r.a.ad, ...d.row(it, i)])); });
+    return { name: d.name, headers: [...LINK, ...d.headers], rows };
+  });
+}
 
 function reportPairs(scope){
   const pairs = [];
@@ -2571,7 +3041,7 @@ function syncRepGroups(){
 }
 function syncRepHint(){
   const n = reportPairs($('#fRepScope').value).length;
-  $('#repRowHint').textContent = `Hesabatda ${n} sətir olacaq — hər alt layihə bir sətir.`;
+  $('#repRowHint').textContent = `Hesabatda ${n} sətir olacaq — hər alt layihə bir sətir. Excel-də hər siyahı (iştirakçılar, ödənişlər, sənədlər və s.) ayrıca vərəqdə, hər sahə ayrı sütunda olur.`;
 }
 $('#repCols').addEventListener('change', e => {
   const c = e.target.closest('[data-rep-col]'), g = e.target.closest('[data-rep-group]');
@@ -2603,13 +3073,24 @@ $('#btnRepDownload').addEventListener('click', () => {
   const scope = $('#fRepScope').value;
   const pairs = reportPairs(scope);
   if(!pairs.length){ showToast('Bu seçim üzrə məlumat yoxdur'); return; }
-  const headers = cols.map(c => c.l);
-  const rows = pairs.map(r => cols.map(c => { const v = c.v(r); return v === undefined || v === null ? '' : v; }));
   const format = $all('input[name="repFmt"]').find(r => r.checked).value;
   const title = 'Layihələr üzrə hesabat — ' + scopeTitle(scope);
   const base = 'hesabat_' + (scope === 'all' ? 'butun_layiheler' : scope.replace(':', '_'));
+  const cellVal = (c, r) => { const v = c.v(r); return v === undefined || v === null ? '' : v; };
   closeModal('modalHesabat');
-  exportData(format, base, title, headers, rows);
+  if(format === 'xlsx'){
+    // Əsas vərəq — tək dəyərli sütunlar; siyahılar — ayrıca vərəqlərdə
+    const mainCols = cols.filter(c => !DETAIL_SHEETS[c.k]);
+    const listKeys = cols.filter(c => DETAIL_SHEETS[c.k]).map(c => c.k);
+    const sheets = [];
+    if(mainCols.length) sheets.push({ name: 'Layihələr', headers: mainCols.map(c => c.l), rows: pairs.map(r => mainCols.map(c => cellVal(c, r))) });
+    sheets.push(...detailSheets(pairs, listKeys));
+    const name = base + '_' + todayISO();
+    downloadBlob(name + '.xlsx', XL.build(sheets));
+    showToast('Fayl yükləndi: ' + name + '.xlsx');
+    return;
+  }
+  exportData(format, base, title, cols.map(c => c.l), pairs.map(r => cols.map(c => cellVal(c, r))));
 });
 
 // =====================================================================
@@ -2621,6 +3102,7 @@ const ACTIONS = {
   'delete-esas': (id) => deleteEsas(id),
   'open-alt': (id) => openAltDetail(id),
   'edit-alt': (id) => openAltModal(id),
+  'history': (id) => openHistory(id),
   'delete-alt': (id) => deleteAlt(id),
   'finalize': (id) => openYekun(id),
   'add-payment': (id) => openXercModal(null, id),
@@ -2630,6 +3112,7 @@ const ACTIONS = {
   'delete-expense': (id) => deleteExpense(id),
   'view-expense': (id) => viewExpense(id),
   'view-receipt': (id) => viewReceipt(id),
+  'view-doc': (key) => viewDoc(key),
   'go-alt': (id) => goToAlt(id),
   'report': (scope) => openReport(scope),
   'person': (fin) => openPerson(fin),
@@ -2989,7 +3472,8 @@ renderAll();
   });
 
   function enter(token, user){
-    S.token = token; S.user = user;
+    S.token = token; S.user = user; window.QX_USER = user;
+    var tu = document.getElementById('topUser'); if (tu) tu.textContent = user.name;
     show($('qx-login'), false); show($('qx-bar'), true);
     var av = $('qx-user-av'); av.textContent = initials(user.name);
     av.style.background = 'hsl(' + hue(user.login) + ',55%,45%)';
@@ -2999,7 +3483,8 @@ renderAll();
 
   function signOut(silent){
     if (S.token && !silent) run('logout', S.token).catch(function(){});
-    S.token = null; S.user = null; S.notes = []; clearSession();
+    S.token = null; S.user = null; window.QX_USER = null;
+    var tu = document.getElementById('topUser'); if (tu) tu.textContent = ''; S.notes = []; clearSession();
     setMode(false); closePop(); closeComp(); togglePanel(false); show($('qx-menu'), false);
     show($('qx-bar'), false); show($('qx-login'), true); renderPins(); $('qx-l').focus();
   }
