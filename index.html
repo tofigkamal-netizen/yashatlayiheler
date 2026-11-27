@@ -472,6 +472,9 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   .hist-table td.qeyd{white-space:pre-line;line-height:1.55;}
   .hist-table tbody tr:hover{background:transparent;}
 
+  .badge-kat-s{background:#5b6b82;color:#fff;}
+  .badge-kat-y{background:#b5651d;color:#fff;}
+  .hist-table td.qeyd b{font-weight:600;}
   /* Redaktə — ətraflı baxış kimi səhifədə (sol — ad, sağ — xana) */
   #editWrap .overlay{position:static;display:block;background:none;padding:0;overflow:visible;z-index:auto;}
   #editWrap .modal{max-width:none;box-shadow:none;border-radius:0;}
@@ -528,7 +531,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         </div>
         <div class="nav-item" data-view="aile">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
-          Şəhid ailələri
+          İştirakçılar
         </div>
       </div>
     </div>
@@ -720,21 +723,25 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       </div>
     </div>
 
-    <!-- ŞƏHİD AİLƏLƏRİ -->
+    <!-- İŞTİRAKÇILAR (şəhid ailələri və yaralılar) -->
     <div class="view" id="view-aile">
+      <div id="aileListWrap">
       <div class="toolbar">
         <div>
-          <h1 class="page-title">Şəhid ailələrinin Siyahısı</h1>
-          <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="aileCount">0</b> (cəmi <span id="aileTotal">0</span>) · <span style="color:var(--muted);">nümunə məlumatlar</span></div>
+          <h1 class="page-title">İştirakçılar - Şəhid ailələri və yaralılar</h1>
+          <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="aileCount">0</b> (cəmi <span id="aileTotal">0</span>) · <span style="color:var(--muted);font-size:13px;">nümunə məlumatlar</span></div>
         </div>
         <div class="toolbar-actions">
-          <button class="btn btn-outline" data-aile-export="xlsx">⬇ Excel</button>
-          <button class="btn btn-outline" data-aile-export="csv">⬇ CSV</button>
+          <button class="btn btn-export" data-aile-export="xlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
+          <button class="btn btn-ghost" data-aile-export="csv">CSV</button>
         </div>
       </div>
       <div class="card">
         <div class="filters">
           <div class="form-field"><label>Axtarış</label><input type="text" id="flAxtar" placeholder="Ad, FİN və ya şəhidin adı"></div>
+          <div class="form-field"><label>Kateqoriya</label>
+            <select id="flKat"><option value="">Hamısı</option><option>Şəhid ailəsi</option><option>Yaralı</option></select>
+          </div>
           <div class="form-field"><label>Qohumluq</label>
             <select id="flQohum"><option value="">Hamısı</option><option>Övlad</option><option>Həyat yoldaşı</option><option>Ana</option><option>Ata</option></select>
           </div>
@@ -746,6 +753,9 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           </div>
           <div class="form-field"><label>Sinif</label><select id="flSinif"></select></div>
           <div class="form-field"><label>Region</label><select id="flRegion"></select></div>
+          <div class="form-field"><label>Layihə iştirakı</label>
+            <select id="flIstirak"><option value="">Hamısı</option><option value="var">Layihədə iştirak edib</option><option value="yox">Heç bir layihədə iştirak etməyib</option></select>
+          </div>
           <div class="form-field" style="justify-content:flex-end;"><button class="btn btn-ghost" id="btnFilterReset">Filtrləri sıfırla</button></div>
         </div>
         <div class="table-scroll">
@@ -754,8 +764,9 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
               <tr>
                 <th>FİN</th>
                 <th>Ad Soyad</th>
+                <th>Kateqoriya</th>
                 <th>Qohumluq</th>
-                <th>Şəhid</th>
+                <th>Şəhid / Əlillik</th>
                 <th>Cins</th>
                 <th>Təvəllüd</th>
                 <th>Yaş</th>
@@ -768,6 +779,25 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
             <tbody id="aileTableBody"></tbody>
           </table>
         </div>
+      </div>
+      </div>
+
+      <!-- İŞTİRAKÇI — ətraflı baxış -->
+      <div id="personWrap" style="display:none;">
+        <div class="detail-back" id="btnBackToAile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          İştirakçılara qayıt
+        </div>
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title" id="personTitle">—</h2>
+            <div class="detail-meta"><span id="personBadges"></span></div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-export btn-sm" id="btnPersonXlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
+          </div>
+        </div>
+        <div id="personBody"></div>
       </div>
     </div>
 
@@ -951,7 +981,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 
       <div class="form-section">
         <div class="form-section-title">İştirakçılar</div>
-        <div class="form-section-sub">FİN daxil edin — ad soyad, cins və təvəllüd vəsiqə məlumatından gəlir. Yaş təvəllüdə görə layihənin başlama tarixinə hesablanır və sabitlənir (növbəti illərdə dəyişmir).</div>
+        <div class="form-section-sub">İştirakçılar bazasından (şəhid ailələri və yaralılar) FİN ilə əlavə olunur — ad soyad, cins və təvəllüd avtomatik gəlir. Mövcud layihədən iştirakçını silərkən səbəb yazılır və iştirakçının tarixçəsinə düşür. Yaş təvəllüdə görə layihənin başlama tarixinə hesablanır və sabitlənir (növbəti illərdə dəyişmir).</div>
         <div id="repIstirakciHead"></div>
         <div class="repeater" id="repIstirakci"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1032,7 +1062,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body" style="padding:0;">
       <div class="table-scroll">
         <table class="hist-table">
-          <thead><tr><th style="width:50px;">#</th><th>Əməliyyat</th><th>Qeyd</th><th>Rol</th><th>İstifadəçi</th><th>Tarix</th></tr></thead>
+          <thead id="histHead"><tr><th style="width:50px;">#</th><th>Əməliyyat</th><th>Qeyd</th><th>Rol</th><th>İstifadəçi</th><th>Tarix</th></tr></thead>
           <tbody id="histBody"></tbody>
         </table>
       </div>
@@ -1207,20 +1237,25 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   </div>
 </div>
 
-<!-- MODAL: Şəxs — layihə tarixçəsi -->
-<div class="overlay" id="modalPerson">
-  <div class="modal wide">
+<!-- MODAL: İştirakçını layihədən silmə (səbəb məcburidir) -->
+<div class="overlay" id="modalIstSil">
+  <div class="modal" style="max-width:520px;">
     <div class="modal-header">
-      <h3 id="personTitle">—</h3>
-      <button class="modal-close" data-close="modalPerson">
+      <h3>İştirakçını layihədən sil</h3>
+      <button class="modal-close" data-close="modalIstSil">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="modal-body" id="personBody"></div>
+    <div class="modal-body">
+      <div class="info-note warn" id="istSilInfo" style="margin:0 0 14px;"></div>
+      <div class="form-field">
+        <label>Silinmə səbəbi <span class="opt">(məcburi — iştirakçının tarixçəsinə yazılır)</span></label>
+        <textarea id="fIstSilSebeb" placeholder="Məs: ailə iştirakdan imtina etdi, səhvən əlavə olunmuşdu…" style="min-height:80px;"></textarea>
+      </div>
+    </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" id="btnPersonXlsx">⬇ Excel</button>
-      <button class="btn btn-outline" id="btnPersonCsv">⬇ CSV</button>
-      <button class="btn btn-ghost" data-close="modalPerson">Bağla</button>
+      <button class="btn btn-ghost" data-close="modalIstSil">Ləğv et</button>
+      <button class="btn btn-danger-solid" id="btnIstSilConfirm">Sil</button>
     </div>
   </div>
 </div>
@@ -1372,6 +1407,22 @@ const AILELER = (() => {
   return list;
 })();
 
+// Yaralılar — nümunə reyestr (şəhid ailələri ilə birlikdə "İştirakçılar" bazasını təşkil edir)
+AILELER.forEach(p => { p.kateqoriya = 'Şəhid ailəsi'; });
+(() => {
+  const rnd = mulberry32(20261127);
+  const adlar = ['Ramin Həsənov','Elvin Quliyev','Samir Əliyev','Kənan Məmmədov','Fuad Rzayev','Nicat Abbasov','Ülvi Kərimov','Vüqar İsmayılov','Rauf Babayev','Tərlan Cəfərov','Murad Səfərov','Emil Orucov','Cavid Nəsirov','Seymur Hüseynov'];
+  const reg = ['Bakı, Xətai','Bakı, Binəqədi','Gəncə','Sumqayıt','Mingəçevir','Ağdam','Füzuli','Tərtər','Bərdə','Şəmkir','Lənkəran','Quba','Şəki','Goranboy'];
+  const qrup = ['I qrup','II qrup','III qrup','Əlillik yoxdur'];
+  const CH = '0123456789ABCDEFGHJKLMNPRSTUVXYZ', used = new Set(AILELER.map(p => p.fin));
+  const fin = () => { let s; do { s = ''; for(let i = 0; i < 7; i++) s += CH[Math.floor(rnd() * CH.length)]; } while(used.has(s)); used.add(s); return s; };
+  adlar.forEach((ad, i) => {
+    const d = new Date(2026, 5, 1); d.setFullYear(d.getFullYear() - (22 + Math.floor(rnd() * 18))); d.setDate(d.getDate() - Math.floor(rnd() * 360));
+    AILELER.push({ fin: fin(), ad, cins: 'Kişi', tevellud: localISO(d), region: reg[i], kateqoriya: 'Yaralı', qohumluq: '', sehid: '', elillik: qrup[Math.floor(rnd() * qrup.length)] });
+  });
+})();
+const regPerson = (fin) => AILELER.find(p => p.fin === fin);
+
 // FİN-dən ad/cins/təvəllüd "gətirən" demo funksiya: əvvəlcə reyestrdə axtarır, tapılmasa FİN-ə görə deterministik nümunə qaytarır
 const demoAdlar = ['Kamran Əliyev','Günel Həsənova','Tural Bayramov','Səbinə Quliyeva','Orxan Məmmədov','Leyla İsmayılova','Rüstəm Vəliyev','Aynur Səfərova'];
 function finLookup(fin){
@@ -1398,7 +1449,7 @@ let editingEsasId = null, editingAltId = null, editingExpenseId = null;
 let pendingConfirm = null;
 
 const usaqlar = AILELER.filter(p => p.qohumluq === 'Övlad');
-const istFromReg = (p, ref) => ({ fin: p.fin, ad: p.ad, cins: p.cins, tevellud: p.tevellud, yas: yasHesabla(p.tevellud, ref), yasTarixi: ref });
+const istFromReg = (p, ref) => ({ fin: p.fin, ad: p.ad, kat: p.kateqoriya, cins: p.cins, tevellud: p.tevellud, yas: yasHesabla(p.tevellud, ref), yasTarixi: ref });
 const orgRow = (voen, tohfe) => ({ voen, ad: voenLookup(voen), tohfe });
 
 let projects = [
@@ -1463,7 +1514,7 @@ function maliyyeBadges(a){
   if(!m.length) return '<span class="badge badge-gray">Ödənişsiz</span>';
   return '<span class="badges">' + m.map(s => `<span class="badge badge-blue">${s.l}</span>`).join('') + '</span>';
 }
-const STATUS = { davam: { l: 'Davam edir', c: 'badge-blue' }, maliyyede: { l: 'Maliyyədə', c: 'badge-pending' }, tamamlandi: { l: 'Tamamlandı', c: 'badge-approved' } };
+const STATUS = { davam: { l: 'Davam edir', c: 'badge-blue' }, maliyyede: { l: 'Maliyyədə', c: 'badge-pending' }, tamamlandi: { l: 'Tamamlandı', c: 'badge-approved' }, silinib: { l: 'Layihə silinib', c: 'badge-gray' } };
 const statusLabel = (st) => (STATUS[st] || STATUS.davam).l;
 const statusBadge = (st) => { const s = STATUS[st] || STATUS.davam; return `<span class="badge ${s.c}">${s.l}</span>`; };
 const odenisBadge = (st) => st === 'tesdiqlendi' ? '<span class="badge badge-approved">✓ Təsdiqləndi</span>' : '<span class="badge badge-pending">Təsdiqlənməyib</span>';
@@ -1706,6 +1757,7 @@ function activateView(v){
 $all('.nav-item').forEach(item => item.addEventListener('click', () => {
   activateView(item.dataset.view);
   if(item.dataset.view === 'layihe') showLayiheList();
+  if(item.dataset.view === 'aile') showAileList();
 }));
 
 // Rol seçimi: Layihə rolu layihələri yaradır və yekunlaşdırır; Maliyyə ödənişləri daxil edib təsdiqləyir və layihəni bitirir;
@@ -1838,6 +1890,7 @@ function deleteAlt(id){
   confirmAction('Alt layihə silinsin?', 'Bu əməliyyat alt layihəni və ona bağlı bütün ödənişləri siyahıdan siləcək.', () => {
     const a0 = projectById(id), par = a0 && projectById(a0.parentId);
     if(par) addHistory(par, 'Alt layihə silindi', a0.ad);
+    (a0.istirakcilar || []).forEach(r => addPersonHist(r.fin, 'Layihə silindi', a0, 'Layihə sistemdən silindi.', { yas: r.yas }));
     projects = projects.filter(p => p.id !== id);
     expenses = expenses.filter(e => e.layiheId !== id);
     if(screen === 'alt' && currentAltId === id){ screen = 'esas'; currentAltId = null; }
@@ -1900,7 +1953,7 @@ $('#btnSaveEsas').addEventListener('click', () => {
 //  ALT LAYİHƏ FORMU
 // =====================================================================
 let A = null; // formun müvəqqəti vəziyyəti
-const blankAlt = () => ({ yerler: [], ehate: [], istirakci: [], imtina: [], emekdas: [], konullu: [], sponsor: [], terefdasOrg: [], senedler: [] });
+const blankAlt = () => ({ silinme: {}, yerler: [], ehate: [], istirakci: [], imtina: [], emekdas: [], konullu: [], sponsor: [], terefdasOrg: [], senedler: [] });
 const blankOrg = () => ({ voen: '', ad: '', tohfe: 'Maliyyə' });
 const FIN_COL = { k: 'fin', l: 'FİN', ph: 'FİN', w: '110px', fin: true };
 const ORG_COLS = [
@@ -1912,6 +1965,7 @@ const REP = {
   istirakci: { box: 'repIstirakci', head: 'repIstirakciHead', empty: 'İştirakçı əlavə edilməyib', cols: [
     FIN_COL,
     { k: 'ad', l: 'Ad Soyad', ph: 'avtomatik', ro: true, w: '1.5fr' },
+    { k: 'kat', l: 'Kateqoriya', ph: '—', ro: true, w: '110px' },
     { k: 'cins', l: 'Cins', ph: '—', ro: true, w: '72px' },
     { k: 'tevellud', l: 'Təvəllüd', ph: '—', ro: true, w: '100px', show: fmtDateOrEmpty },
     { k: 'yas', l: 'Yaş', ph: '—', ro: true, w: '56px' } ] },
@@ -1968,18 +2022,27 @@ function onRepInput(el){
       else row.ad = info.ad;
       if(key === 'imtina'){ row.cins = info.cins; row.tevellud = info.tevellud; }
       if(key === 'istirakci'){
+        // İştirakçı yalnız İştirakçılar bazasından (şəhid ailələri və yaralılar) gəlir
+        const reg = regPerson(v);
+        if(!reg){
+          showToast('Bu FİN İştirakçılar bazasında (şəhid ailələri və yaralılar) tapılmadı');
+          row.ad = ''; row.kat = ''; row.cins = ''; row.tevellud = ''; row.yas = ''; row.yasTarixi = '';
+          ['ad', 'kat', 'cins', 'tevellud', 'yas'].forEach(c => setCell(key, i, c, ''));
+          return;
+        }
+        Object.assign(info, { ad: reg.ad, cins: reg.cins, tevellud: reg.tevellud }); row.ad = reg.ad; row.kat = reg.kateqoriya;
         // Yaş təvəllüdə görə layihənin başlama tarixinə (yoxdursa bu günə) hesablanır və sabitlənir
         const ref = $('#fAltBaslama').value || todayISO();
         row.cins = info.cins; row.tevellud = info.tevellud; row.yas = yasHesabla(info.tevellud, ref); row.yasTarixi = ref;
       }
     } else if(key !== 'konullu'){
       row.ad = '';
-      if(key === 'istirakci'){ row.cins = ''; row.tevellud = ''; row.yas = ''; row.yasTarixi = ''; }
+      if(key === 'istirakci'){ row.kat = ''; row.cins = ''; row.tevellud = ''; row.yas = ''; row.yasTarixi = ''; }
       if(key === 'imtina'){ row.cins = ''; row.tevellud = ''; }
     }
     setCell(key, i, 'ad', row.ad);
     if(key === 'istirakci' || key === 'imtina'){ setCell(key, i, 'cins', row.cins); setCell(key, i, 'tevellud', fmtDateOrEmpty(row.tevellud)); }
-    if(key === 'istirakci') setCell(key, i, 'yas', row.yas);
+    if(key === 'istirakci'){ setCell(key, i, 'yas', row.yas); setCell(key, i, 'kat', row.kat); }
   }
   if(k === 'voen'){
     if(v.length === 10 && (!row.ad || row.adAuto)){ row.ad = voenLookup(v); row.adAuto = true; setCell(key, i, 'ad', row.ad); }
@@ -1995,6 +2058,8 @@ Object.keys(REP).forEach(key => {
   box.addEventListener('click', e => {
     const b = e.target.closest('[data-rep-remove]'); if(!b) return;
     const [k, i] = b.dataset.repRemove.split(':');
+    const row = A[k][Number(i)], orig = editingAltId ? projectById(editingAltId) : null;
+    if(k === 'istirakci' && row && orig && (orig.istirakcilar || []).some(r => r.fin === row.fin)){ askIstSil(Number(i)); return; }
     A[k].splice(Number(i), 1); renderRep(k);
   });
 });
@@ -2005,6 +2070,24 @@ $all('[data-repeater-add]').forEach(btn => btn.addEventListener('click', () => {
   const inputs = $all(`#${REP[key].box} .repeater-row:last-child input:not([readonly])`);
   if(inputs[0]) inputs[0].focus();
 }));
+
+// İştirakçını mövcud layihədən silmə — səbəb məcburidir
+let istSilIndex = null;
+function askIstSil(i){
+  const r = A.istirakci[i]; istSilIndex = i;
+  $('#istSilInfo').innerHTML = `<b>${esc(r.ad)}</b> (${esc(r.fin)}) layihədən silinəcək. Səbəb həm layihənin, həm də iştirakçının tarixçəsinə yazılacaq (yadda saxladıqdan sonra).`;
+  $('#fIstSilSebeb').value = ''; $('#fIstSilSebeb').classList.remove('invalid');
+  openModal('modalIstSil'); $('#fIstSilSebeb').focus();
+}
+$('#btnIstSilConfirm').addEventListener('click', () => {
+  const sebeb = $('#fIstSilSebeb').value.trim();
+  if(!sebeb){ $('#fIstSilSebeb').classList.add('invalid'); showToast('Silinmə səbəbini yazın'); return; }
+  const r = A.istirakci[istSilIndex]; if(!r) return;
+  A.silinme[r.fin] = sebeb;
+  A.istirakci.splice(istSilIndex, 1); renderRep('istirakci');
+  closeModal('modalIstSil'); istSilIndex = null;
+  showToast('İştirakçı silindi — dəyişiklik "Yadda saxla" ilə qeydə alınacaq');
+});
 
 $('#btnExcelImport').addEventListener('click', () => {
   const ref = $('#fAltBaslama').value || todayISO();
@@ -2298,6 +2381,8 @@ $('#btnSaveAlt').addEventListener('click', () => {
     if(rows.some(r => !r.ad)){ showToast(`${label}: təşkilatın adını daxil edin`); return; }
   }
   const finOk = (r) => r.fin && r.fin.length === 7;
+  const bazadaYox = A.istirakci.find(r => r.fin && !regPerson(r.fin));
+  if(bazadaYox){ showToast(`İştirakçı ${bazadaYox.fin || ''}: İştirakçılar bazasında tapılmadı — sətri silin və ya FİN-i düzəldin`); return; }
   const adsizKonullu = A.konullu.find(r => finOk(r) && !(r.ad || '').trim());
   if(adsizKonullu){ showToast(`Könüllü ${adsizKonullu.fin}: bazada tapılmadı — ad soyadı əllə yazın`); return; }
   const strip = ({ adAuto, ...r }) => r;
@@ -2316,14 +2401,17 @@ $('#btnSaveAlt').addEventListener('click', () => {
     if(a.status === 'tamamlandi'){ showToast('Tamamlanmış layihəni redaktə etmək olmaz'); return; }
     if(a.status === 'maliyyede' && !Object.keys(maliyye).length){ showToast('Layihə Maliyyədədir — ödəniş mənbəyini tamamilə silmək olmaz'); return; }
     const deyisiklik = diffAlt(a, data);
+    const kohneIst = a.istirakcilar || [];
     Object.assign(a, data);
     if(deyisiklik.length) addHistory(a, 'Redaktə edildi', deyisiklik);
+    logIstirak(a, kohneIst, a.istirakcilar || [], A.silinme);
     showToast(deyisiklik.length ? 'Alt layihə yeniləndi' : 'Dəyişiklik yoxdur');
   } else {
     const a = { id: nextProjectId++, tip: 'alt', yaradilma: todayISO(), status: 'davam', ...data };
     addHistory(a, 'Yaradıldı', 'Alt layihə yaradıldı.');
     const par = projectById(parentId); if(par) addHistory(par, 'Alt layihə əlavə edildi', a.ad);
     projects.push(a);
+    logIstirak(a, [], a.istirakcilar || [], {});
     showToast('Alt layihə əlavə edildi');
   }
   closeModal('modalAlt');
@@ -2414,6 +2502,7 @@ function openHistory(id){
   const p = projectById(id); if(!p) return;
   const h = p.tarixce || [];
   $('#histSub').textContent = `Əməliyyatların Siyahısı — ${p.ad}`;
+  $('#histHead').innerHTML = '<tr><th style="width:50px;">#</th><th>Əməliyyat</th><th>Qeyd</th><th>Rol</th><th>İstifadəçi</th><th>Tarix</th></tr>';
   $('#histBody').innerHTML = h.length
     ? h.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.emel)}</td><td class="qeyd">${esc(x.qeyd) || '—'}</td><td>${esc(x.rol)}</td><td>${esc(x.kim)}</td><td>${esc(x.vaxt).replace(' ', '<br>')}</td></tr>`).join('')
     : '<tr><td colspan="6"><div class="empty sm">Tarixçə boşdur</div></td></tr>';
@@ -2810,7 +2899,7 @@ function viewReceipt(id){
 }
 
 // =====================================================================
-//  ŞƏHİD AİLƏLƏRİ
+//  İŞTİRAKÇILAR (şəhid ailələri və yaralılar)
 // =====================================================================
 const aileYas = (p) => yasHesabla(p.tevellud, todayISO());
 function aileSinif(p){
@@ -2822,6 +2911,34 @@ function aileSinif(p){
 }
 const SINIF_SUF = { 1: 'ci', 2: 'ci', 3: 'cü', 4: 'cü', 5: 'ci', 6: 'cı', 7: 'ci', 8: 'ci', 9: 'cu', 10: 'cu', 11: 'ci' };
 const sinifText = (s) => !s ? '—' : (/^\d+$/.test(s) ? `${s}-${SINIF_SUF[s]} sinif` : s);
+const katBadge = (k) => k ? `<span class="badge ${k === 'Yaralı' ? 'badge-kat-y' : 'badge-kat-s'}">${esc(k)}</span>` : '—';
+const sehidVeyaElillik = (p) => p.kateqoriya === 'Yaralı' ? (p.elillik ? 'Əlillik: ' + p.elillik : '—') : (p.sehid || '—');
+
+// ---------- İştirakçının tarixçəsi: hansı layihəyə nə vaxt əlavə edilib / silinib ----------
+const PERSON_HIST = {};
+function addPersonHist(fin, emel, a, qeyd, extra){
+  if(!fin) return;
+  const par = a ? projectById(a.parentId) : null;
+  const snap = a ? { esas: par ? par.ad : '', alt: a.ad, baslama: a.baslama || '', bitme: a.bitme || '' } : {};
+  (PERSON_HIST[fin] = PERSON_HIST[fin] || []).push({ emel, layiheId: a ? a.id : null, layihe: a ? (par ? par.ad + ' / ' : '') + a.ad : '', qeyd: qeyd || '', rol: rolAdi(), kim: kimdir(), vaxt: nowStamp(), ...snap, ...(extra || {}) });
+}
+// Layihənin iştirakçı siyahısı dəyişəndə: əlavə olunanlar və silinənlər (səbəb ilə) həm iştirakçının, həm layihənin tarixçəsinə yazılır
+function logIstirak(a, kohne, yeni, sebebler){
+  const kF = kohne.map(r => r.fin), yF = yeni.map(r => r.fin);
+  yeni.filter(r => !kF.includes(r.fin)).forEach(r => addPersonHist(r.fin, 'Layihəyə əlavə edildi', a, `İştirakçı kimi əlavə edildi (yaş: ${r.yas === '' || r.yas == null ? '—' : r.yas}).`));
+  kohne.filter(r => !yF.includes(r.fin)).forEach(r => {
+    const sebeb = (sebebler && sebebler[r.fin]) || 'Səbəb qeyd edilməyib';
+    addPersonHist(r.fin, 'Layihədən silindi', a, 'Səbəb: ' + sebeb, { sebeb, yas: r.yas });
+    addHistory(a, 'İştirakçı silindi', `${r.ad} (${r.fin}) — Səbəb: ${sebeb}`);
+  });
+}
+// Nümunə layihələrin iştirakçıları üçün ilkin tarixçə
+altList().forEach(a => (a.istirakcilar || []).forEach(r => {
+  const par = projectById(a.parentId);
+  (PERSON_HIST[r.fin] = PERSON_HIST[r.fin] || []).push({ emel: 'Layihəyə əlavə edildi', layiheId: a.id, layihe: (par ? par.ad + ' / ' : '') + a.ad, qeyd: 'İştirakçı kimi əlavə edildi.', rol: 'Layihə', kim: 'NÜMUNƏ MƏLUMAT', vaxt: fmtDate(a.yaradilma) });
+}));
+const elaveTarixi = (fin, layiheId) => { const h = (PERSON_HIST[fin] || []).filter(x => x.layiheId === layiheId && x.emel === 'Layihəyə əlavə edildi'); return h.length ? h[h.length - 1].vaxt : '—'; };
+
 function personProjects(fin){
   const out = [];
   altList().forEach(a => {
@@ -2829,26 +2946,44 @@ function personProjects(fin){
     const ist = (a.istirakcilar || []).find(r => r.fin === fin);
     if(ist) out.push({ a, parent, rol: 'İştirakçı', yas: ist.yas });
     if((a.konulluler || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'Könüllü', yas: '' });
-    if((a.imtinaEdenler || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'İmtina edib', yas: '' });
+    if((a.imtinaEdenler || []).some(r => r.fin === fin)) out.push({ a, parent, rol: 'İştirakdan imtina', yas: '' });
+  });
+  // Layihədən silinən iştirakçı üçün layihə siyahıda qalır ("İştirakdan imtina"); layihə özü silinibsə də sətir qalır
+  const son = {};
+  (PERSON_HIST[fin] || []).forEach(e => { if(e.layiheId != null) son[e.layiheId] = e; });
+  Object.values(son).forEach(e => {
+    if(out.some(x => x.a.id === e.layiheId)) return;
+    if(e.emel !== 'Layihədən silindi' && e.emel !== 'Layihə silindi') return;
+    const real = projectById(e.layiheId);
+    const a = real || { id: e.layiheId, ad: e.alt || e.layihe, baslama: e.baslama || '', bitme: e.bitme || '', status: 'silinib' };
+    const parent = real ? projectById(real.parentId) : (e.esas ? { ad: e.esas } : null);
+    out.push(e.emel === 'Layihədən silindi'
+      ? { a, parent, rol: 'İştirakdan imtina', yas: e.yas ?? '', sebeb: e.sebeb || e.qeyd.replace(/^Səbəb: /, ''), silinib: !real }
+      : { a, parent, rol: 'İştirak edib', yas: e.yas ?? '', silinib: true });
   });
   return out.sort((x, y) => (x.a.baslama || '') < (y.a.baslama || '') ? -1 : 1);
 }
+
+// ---------- Siyahı ----------
 $('#flSinif').innerHTML = '<option value="">Hamısı</option><option>Məktəbəqədər</option>' + Array.from({ length: 11 }, (_, i) => `<option value="${i + 1}">${sinifText(String(i + 1))}</option>`).join('') + '<option>Məzun</option>';
 $('#flRegion').innerHTML = '<option value="">Hamısı</option>' + [...new Set(AILELER.map(p => p.region))].sort((a, b) => a.localeCompare(b, 'az')).map(r => `<option>${esc(r)}</option>`).join('');
+const FL_TEXT = ['flAxtar', 'flYasMin', 'flYasMax'], FL_SEL = ['flKat', 'flQohum', 'flCins', 'flSinif', 'flRegion', 'flIstirak'];
 function filteredAile(){
   const q = $('#flAxtar').value.trim().toLocaleLowerCase('az');
-  const qoh = $('#flQohum').value, cins = $('#flCins').value, sinif = $('#flSinif').value, reg = $('#flRegion').value;
+  const kat = $('#flKat').value, qoh = $('#flQohum').value, cins = $('#flCins').value, sinif = $('#flSinif').value, reg = $('#flRegion').value, ist = $('#flIstirak').value;
   const mn = $('#flYasMin').value === '' ? null : Number($('#flYasMin').value);
   const mx = $('#flYasMax').value === '' ? null : Number($('#flYasMax').value);
   return AILELER.filter(p => {
     const y = aileYas(p);
-    if(q && !(p.ad + ' ' + p.fin + ' ' + p.sehid).toLocaleLowerCase('az').includes(q)) return false;
+    if(q && !(p.ad + ' ' + p.fin + ' ' + (p.sehid || '')).toLocaleLowerCase('az').includes(q)) return false;
+    if(kat && p.kateqoriya !== kat) return false;
     if(qoh && p.qohumluq !== qoh) return false;
     if(cins && p.cins !== cins) return false;
     if(reg && p.region !== reg) return false;
     if(sinif && aileSinif(p) !== sinif) return false;
     if(mn !== null && y < mn) return false;
     if(mx !== null && y > mx) return false;
+    if(ist){ const n = personProjects(p.fin).length; if(ist === 'var' ? !n : n) return false; }
     return true;
   });
 }
@@ -2861,65 +2996,112 @@ function renderAile(){
     return `<tr>
       <td>${esc(p.fin)}</td>
       <td><span class="link" data-act="person" data-id="${esc(p.fin)}">${esc(p.ad)}</span></td>
-      <td>${esc(p.qohumluq)}</td>
-      <td>${esc(p.sehid)}</td>
+      <td>${katBadge(p.kateqoriya)}</td>
+      <td>${esc(p.qohumluq) || '—'}</td>
+      <td>${esc(sehidVeyaElillik(p))}</td>
       <td>${esc(p.cins)}</td>
       <td>${fmtDate(p.tevellud)}</td>
       <td>${aileYas(p)}</td>
       <td>${sinifText(s)}</td>
       <td>${esc(p.region)}</td>
       <td>${n ? `<span class="badge badge-blue">${n}</span>` : '<span style="color:var(--muted);">0</span>'}</td>
-      <td>${rowMenu([ddItem('person', esc(p.fin), ICON.eye, 'Layihə tarixçəsi')])}</td>
+      <td>${rowMenu([ddItem('person', esc(p.fin), ICON.eye, 'Ətraflı bax'), ddItem('person-hist', esc(p.fin), ICON.hist, 'Tarixçə')])}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="11"><div class="empty sm">Filtrə uyğun nəticə yoxdur</div></td></tr>`;
+  }).join('') || `<tr><td colspan="12"><div class="empty sm">Filtrə uyğun nəticə yoxdur</div></td></tr>`;
 }
 // Mətn xanaları "input", seçimlər "change" ilə — blur zamanı təkrar render klikləri udmasın
-['flAxtar', 'flYasMin', 'flYasMax'].forEach(id => $('#' + id).addEventListener('input', renderAile));
-['flQohum', 'flCins', 'flSinif', 'flRegion'].forEach(id => $('#' + id).addEventListener('change', renderAile));
+FL_TEXT.forEach(id => $('#' + id).addEventListener('input', renderAile));
+FL_SEL.forEach(id => $('#' + id).addEventListener('change', renderAile));
 $('#btnFilterReset').addEventListener('click', () => {
-  ['flAxtar', 'flYasMin', 'flYasMax'].forEach(id => $('#' + id).value = '');
-  ['flQohum', 'flCins', 'flSinif', 'flRegion'].forEach(id => $('#' + id).selectedIndex = 0);
+  FL_TEXT.forEach(id => $('#' + id).value = '');
+  FL_SEL.forEach(id => $('#' + id).selectedIndex = 0);
   renderAile();
 });
 $all('[data-aile-export]').forEach(b => b.addEventListener('click', () => {
-  const headers = ['FİN', 'Ad Soyad', 'Qohumluq', 'Şəhid', 'Cins', 'Təvəllüd', 'Yaş', 'Sinif', 'Region', 'Layihə sayı', 'Layihələr'];
-  const rows = filteredAile().map(p => {
+  const list = filteredAile();
+  const headers = ['FİN', 'Ad Soyad', 'Kateqoriya', 'Qohumluq', 'Şəhid', 'Əlillik', 'Cins', 'Təvəllüd', 'Yaş', 'Sinif', 'Region', 'Layihə sayı', 'Layihələr'];
+  const rows = list.map(p => {
     const pr = personProjects(p.fin);
-    return [p.fin, p.ad, p.qohumluq, p.sehid, p.cins, fmtDate(p.tevellud), aileYas(p), aileSinif(p), p.region, pr.length, pr.map(x => x.a.ad).join('; ')];
+    return [p.fin, p.ad, p.kateqoriya, p.qohumluq || '', p.sehid || '', p.elillik || '', p.cins, fmtDate(p.tevellud), aileYas(p), aileSinif(p), p.region, pr.length, pr.map(x => x.a.ad).join('; ')];
   });
-  exportData(b.dataset.aileExport, 'sehid_aileleri', 'Şəhid ailələri', headers, rows);
+  if(b.dataset.aileExport === 'xlsx'){
+    // Excel: iştirakçılar və onların layihələri ayrı vərəqlərdə
+    const lrows = [];
+    list.forEach(p => personProjects(p.fin).forEach(x => lrows.push([p.fin, p.ad, x.parent ? x.parent.ad : '', x.a.ad, fmtDateOrEmpty(x.a.baslama), fmtDateOrEmpty(x.a.bitme), x.rol, x.yas === '' || x.yas == null ? '' : Number(x.yas), elaveTarixi(p.fin, x.a.id), statusLabel(x.a.status)])));
+    const hrows = [];
+    list.forEach(p => (PERSON_HIST[p.fin] || []).forEach(h => hrows.push([p.fin, p.ad, h.emel, h.layihe, h.qeyd, h.rol, h.kim, h.vaxt])));
+    const name = 'istirakcilar_' + todayISO();
+    downloadBlob(name + '.xlsx', XL.build([
+      { name: 'İştirakçılar', headers: headers.slice(0, -1), rows: rows.map(r => r.slice(0, -1)) },
+      { name: 'Layihələr', headers: ['FİN', 'Ad Soyad', 'Əsas layihə', 'Alt layihə', 'Başlama', 'Bitmə', 'Rol', 'Yaş (layihə vaxtı)', 'Əlavə edilmə tarixi', 'Status'], rows: lrows },
+      { name: 'Tarixçə', headers: ['FİN', 'Ad Soyad', 'Əməliyyat', 'Layihə', 'Qeyd', 'Rol', 'İstifadəçi', 'Tarix'], rows: hrows },
+    ]));
+    showToast('Fayl yükləndi: ' + name + '.xlsx');
+  } else exportData('csv', 'istirakcilar', 'İştirakçılar', headers, rows);
 }));
 
-// ---------- Şəxs — layihə tarixçəsi ----------
+// ---------- İştirakçı — ətraflı baxış (layihələr və tarixçə) ----------
 let personFin = null;
-function personRows(fin){
-  return personProjects(fin).map(x => [x.parent ? x.parent.ad : '', x.a.ad, fmtDateOrEmpty(x.a.baslama), fmtDateOrEmpty(x.a.bitme), x.rol, x.yas === '' || x.yas == null ? '' : Number(x.yas), statusLabel(x.a.status)]);
+function showAileWrap(which){
+  $('#aileListWrap').style.display = which === 'list' ? '' : 'none';
+  $('#personWrap').style.display = which === 'person' ? '' : 'none';
 }
-const PERSON_HEAD = ['Əsas layihə', 'Alt layihə', 'Başlama', 'Bitmə', 'Rol', 'Yaş (layihə vaxtı)', 'Status'];
+function showAileList(){ personFin = null; showAileWrap('list'); renderAile(); }
+$('#btnBackToAile').addEventListener('click', showAileList);
 function openPerson(fin){
-  const p = AILELER.find(x => x.fin === fin); if(!p) return;
+  const p = regPerson(fin); if(!p) return;
   personFin = fin;
-  const hist = personProjects(fin), s = aileSinif(p);
+  activateView('aile'); showAileWrap('person');
+  const hist = personProjects(fin), s = aileSinif(p), yar = p.kateqoriya === 'Yaralı';
   $('#personTitle').textContent = p.ad;
+  $('#personBadges').innerHTML = `<span class="badges">${katBadge(p.kateqoriya)}${hist.length ? ` <span class="badge badge-blue">${hist.length} layihə</span>` : ''}</span>`;
   $('#personBody').innerHTML = `
-    <div class="info-grid" style="margin-bottom:18px;">
-      ${infoItem('FİN', esc(p.fin))}
-      ${infoItem('Qohumluq', esc(p.qohumluq))}
-      ${infoItem('Şəhid', esc(p.sehid))}
-      ${infoItem('Cins', esc(p.cins))}
-      ${infoItem('Təvəllüd', fmtDate(p.tevellud))}
-      ${infoItem('Yaş (bu gün)', aileYas(p))}
-      ${infoItem('Sinif', sinifText(s))}
-      ${infoItem('Region', esc(p.region))}
+    <div class="info-card">
+      <h4>İştirakçıya ətraflı baxış</h4>
+      <div class="info-grid">
+        ${infoItem('FİN', esc(p.fin))}
+        ${infoItem('Ad Soyad', esc(p.ad))}
+        ${infoItem('Kateqoriya', katBadge(p.kateqoriya))}
+        ${yar ? infoItem('Əlillik', esc(p.elillik) || '—') : infoItem('Qohumluq', esc(p.qohumluq))}
+        ${yar ? '' : infoItem('Şəhid', esc(p.sehid))}
+        ${infoItem('Cins', esc(p.cins))}
+        ${infoItem('Təvəllüd', fmtDate(p.tevellud))}
+        ${infoItem('Yaş (bu gün)', aileYas(p))}
+        ${yar ? '' : infoItem('Sinif', sinifText(s))}
+        ${infoItem('Region', esc(p.region))}
+      </div>
     </div>
-    <h4 style="margin:0 0 8px;font-size:13.5px;">Layihə tarixçəsi <span style="color:var(--muted);font-weight:500;">(${hist.length})</span></h4>
-    ${hist.length ? `<div class="card table-scroll"><table class="mini-table"><thead><tr><th>Əsas layihə</th><th>Alt layihə</th><th>Tarix</th><th>Rol</th><th>Yaş (layihə vaxtı)</th><th>Status</th></tr></thead><tbody>
-      ${hist.map(x => `<tr><td>${x.parent ? esc(x.parent.ad) : '—'}</td><td><span class="link" data-act="go-alt" data-id="${x.a.id}">${esc(x.a.ad)}</span></td><td>${fmtDate(x.a.baslama)} — ${fmtDate(x.a.bitme)}</td><td>${x.rol}</td><td>${x.yas === '' || x.yas == null ? '—' : x.yas}</td><td>${statusBadge(x.a.status)}</td></tr>`).join('')}
-    </tbody></table></div>` : '<div class="empty sm">Hələ heç bir layihədə iştirak etməyib</div>'}`;
-  openModal('modalPerson');
+    <div class="info-card">
+      <h4>Layihələr <span class="count">${hist.length} layihə</span></h4>
+      ${hist.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>Əsas layihə</th><th>Alt layihə</th><th>Tarix aralığı</th><th>Rol</th><th>Yaş (layihə vaxtı)</th><th>Əlavə edilmə tarixi</th><th>Status</th><th style="width:110px;"></th></tr></thead><tbody>
+        ${hist.map(x => `<tr><td>${x.parent ? esc(x.parent.ad) : '—'}</td><td>${projectById(x.a.id) ? `<span class="link" data-act="go-alt" data-id="${x.a.id}">${esc(x.a.ad)}</span>` : esc(x.a.ad)}</td><td>${fmtDate(x.a.baslama)} — ${fmtDate(x.a.bitme)}</td><td>${x.rol === 'İştirakçı' ? 'İştirak edib' : esc(x.rol)}${x.sebeb ? `<span class="sub">Səbəb: ${esc(x.sebeb)}</span>` : ''}</td><td>${x.yas === '' || x.yas == null ? '—' : x.yas}</td><td>${x.rol === 'İştirakçı' || x.rol === 'İştirakdan imtina' || x.silinib ? esc(elaveTarixi(fin, x.a.id)) : '—'}</td><td>${statusBadge(x.a.status)}</td><td><button type="button" class="btn btn-ghost btn-xs" data-person-hist="${x.a.id}">${ICON.hist} Tarixçə</button></td></tr>`).join('')}
+      </tbody></table></div>` : '<span class="v muted-v">Hələ heç bir layihədə iştirak etməyib</span>'}
+    </div>`;
+  window.scrollTo(0, 0);
 }
-$('#btnPersonXlsx').addEventListener('click', () => { const p = AILELER.find(x => x.fin === personFin); if(p) exportData('xlsx', 'istirak_' + p.fin, 'İştirak tarixçəsi', PERSON_HEAD, personRows(p.fin)); });
-$('#btnPersonCsv').addEventListener('click', () => { const p = AILELER.find(x => x.fin === personFin); if(p) exportData('csv', 'istirak_' + p.fin, 'İştirak tarixçəsi', PERSON_HEAD, personRows(p.fin)); });
+// İştirakçının tarixçəsi — pəncərədə (layihə tarixçəsi ilə eyni dizayn)
+function openPersonHist(fin, layiheId){
+  const p = regPerson(fin); if(!p) return;
+  const h = (PERSON_HIST[fin] || []).filter(x => !layiheId || x.layiheId === layiheId);
+  const la = layiheId ? projectById(layiheId) : null;
+  $('#histSub').textContent = `Əməliyyatların Siyahısı — ${p.ad} (${p.fin})` + (la ? ` · ${la.ad}` : '');
+  $('#histHead').innerHTML = '<tr><th style="width:50px;">#</th><th>Əməliyyat</th><th>Layihə</th><th>Qeyd</th><th>Rol</th><th>İstifadəçi</th><th>Tarix</th></tr>';
+  $('#histBody').innerHTML = h.length
+    ? h.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.emel)}</td><td>${x.layiheId && projectById(x.layiheId) ? `<span class="link" data-act="go-alt" data-id="${x.layiheId}">${esc(x.layihe)}</span>` : esc(x.layihe) || '—'}</td><td class="qeyd">${esc(x.qeyd) || '—'}</td><td>${esc(x.rol)}</td><td>${esc(x.kim)}</td><td>${esc(x.vaxt).replace(' ', '<br>')}</td></tr>`).join('')
+    : '<tr><td colspan="7"><div class="empty sm">Tarixçə boşdur</div></td></tr>';
+  openModal('modalHist');
+}
+$('#personBody').addEventListener('click', e => { const b = e.target.closest('[data-person-hist]'); if(b) openPersonHist(personFin, Number(b.dataset.personHist)); });
+$('#btnPersonXlsx').addEventListener('click', () => {
+  const p = regPerson(personFin); if(!p) return;
+  const name = 'istirakci_' + p.fin + '_' + todayISO();
+  downloadBlob(name + '.xlsx', XL.build([
+    { name: 'Layihələr', headers: ['Əsas layihə', 'Alt layihə', 'Başlama', 'Bitmə', 'Rol', 'Yaş (layihə vaxtı)', 'Əlavə edilmə tarixi', 'Status'],
+      rows: personProjects(p.fin).map(x => [x.parent ? x.parent.ad : '', x.a.ad, fmtDateOrEmpty(x.a.baslama), fmtDateOrEmpty(x.a.bitme), x.rol, x.yas === '' || x.yas == null ? '' : Number(x.yas), elaveTarixi(p.fin, x.a.id), statusLabel(x.a.status)]) },
+    { name: 'Tarixçə', headers: ['Əməliyyat', 'Layihə', 'Qeyd', 'Rol', 'İstifadəçi', 'Tarix'], rows: (PERSON_HIST[p.fin] || []).map(h => [h.emel, h.layihe, h.qeyd, h.rol, h.kim, h.vaxt]) },
+  ]));
+  showToast('Fayl yükləndi: ' + name + '.xlsx');
+});
 
 // =====================================================================
 //  HESABATLAR — bütün layihələr / tək layihə, istənilən sütunlar, Excel / CSV / PDF
@@ -3116,6 +3298,7 @@ const ACTIONS = {
   'go-alt': (id) => goToAlt(id),
   'report': (scope) => openReport(scope),
   'person': (fin) => openPerson(fin),
+  'person-hist': (fin) => openPersonHist(fin),
 };
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -3131,6 +3314,7 @@ document.addEventListener('click', (e) => {
 // =====================================================================
 function renderAll(){
   renderLayiheTable();
+  if(personFin && $('#personWrap').style.display !== 'none') openPerson(personFin);
   renderXercView();
   renderAile();
   updateBadge();
