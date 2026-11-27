@@ -398,6 +398,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   .role-pill{background:rgba(255,255,255,.14);padding:4px 10px;border-radius:3px;font-size:12px;}
   .top-user{font-weight:600;text-transform:uppercase;}
   .db-status{font-size:12px;color:#c9d4e6;white-space:nowrap;}
+  .file-warn{background:#dc3545;color:#fff;padding:10px 22px;font-size:13.5px;text-align:center;position:sticky;top:0;z-index:45;}
   .db-status.ok{color:#7fd6a0;} .db-status.saving{color:#ffd27a;} .db-status.err{color:#ff9a9a;}
 
   .main{height:auto;overflow:visible;padding:10px 4px 110px;}
@@ -737,6 +738,10 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <div class="toolbar-actions">
           <button class="btn btn-export" data-aile-export="xlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
           <button class="btn btn-ghost" data-aile-export="csv">CSV</button>
+          <button class="btn btn-primary" id="btnNewReg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Yeni iştirakçı
+          </button>
         </div>
       </div>
       <div class="card">
@@ -797,6 +802,10 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
             <div class="detail-meta"><span id="personBadges"></span></div>
           </div>
           <div class="toolbar-actions">
+            <button class="btn btn-ghost btn-sm" id="btnEditReg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Redaktə et
+            </button>
             <button class="btn btn-export btn-sm" id="btnPersonXlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
           </div>
         </div>
@@ -1240,6 +1249,35 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   </div>
 </div>
 
+<!-- MODAL: İştirakçı (baza) — yeni / redaktə -->
+<div class="overlay" id="modalReg">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="regTitle">Yeni iştirakçı</h3>
+      <button class="modal-close" data-close="modalReg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field"><label>FİN <span class="opt">(məcburi, 7 simvol)</span></label><input type="text" id="fRegFin" maxlength="7" style="text-transform:uppercase;"></div>
+        <div class="form-field"><label>Ad Soyad <span class="opt">(məcburi)</span></label><input type="text" id="fRegAd"></div>
+        <div class="form-field"><label>Kateqoriya</label><select id="fRegKat"><option>Şəhid ailəsi</option><option>Yaralı</option></select></div>
+        <div class="form-field reg-s"><label>Qohumluq</label><select id="fRegQohum"><option>Övlad</option><option>Həyat yoldaşı</option><option>Ana</option><option>Ata</option><option>Digər</option></select></div>
+        <div class="form-field reg-s"><label>Şəhid</label><input type="text" id="fRegSehid" placeholder="Şəhidin adı soyadı"></div>
+        <div class="form-field reg-y" style="display:none;"><label>Əlillik</label><select id="fRegElillik"><option>Əlillik yoxdur</option><option>I qrup</option><option>II qrup</option><option>III qrup</option></select></div>
+        <div class="form-field"><label>Cins</label><select id="fRegCins"><option>Kişi</option><option>Qadın</option></select></div>
+        <div class="form-field"><label>Təvəllüd <span class="opt">(məcburi)</span></label><input type="date" id="fRegTevellud"></div>
+        <div class="form-field full"><label>Region</label><input type="text" id="fRegRegion" list="regRegionList" placeholder="Məs: Gəncə"><datalist id="regRegionList"></datalist></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalReg">Ləğv et</button>
+      <button class="btn btn-primary" id="btnSaveReg">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: İştirakçını layihədən silmə (səbəb məcburidir) -->
 <div class="overlay" id="modalIstSil">
   <div class="modal" style="max-width:520px;">
@@ -1451,7 +1489,8 @@ let currentEsasId = null, currentAltId = null;
 let editingEsasId = null, editingAltId = null, editingExpenseId = null;
 let pendingConfirm = null;
 
-const usaqlar = AILELER.filter(p => p.qohumluq === 'Övlad');
+const usaqlar = AILELER.filter(p => p.qohumluq === 'Övlad'); // yalnız nümunə layihələr üçün (ilkin)
+const usaqList = () => AILELER.filter(p => p.qohumluq === 'Övlad');
 const istFromReg = (p, ref) => ({ fin: p.fin, ad: p.ad, kat: p.kateqoriya, cins: p.cins, tevellud: p.tevellud, yas: yasHesabla(p.tevellud, ref), yasTarixi: ref });
 const orgRow = (voen, tohfe) => ({ voen, ad: voenLookup(voen), tohfe });
 
@@ -1632,7 +1671,7 @@ function enhanceDate(input){
   text.addEventListener('blur', () => { if(text.value && !dmyToIso(text.value)) text.classList.add('invalid'); });
   btn.addEventListener('click', () => { try { input.showPicker(); } catch(e) { text.focus(); } });
 }
-['fEsasTarix', 'fEsasBitme', 'fAltBaslama', 'fAltBitme', 'fXercTarix'].forEach(id => enhanceDate(document.getElementById(id)));
+['fEsasTarix', 'fEsasBitme', 'fAltBaslama', 'fAltBitme', 'fXercTarix', 'fRegTevellud'].forEach(id => enhanceDate(document.getElementById(id)));
 
 // =====================================================================
 //  İXRAC: Excel (.xlsx), CSV, PDF (çap)
@@ -2094,20 +2133,21 @@ $('#btnIstSilConfirm').addEventListener('click', () => {
 
 $('#btnExcelImport').addEventListener('click', () => {
   const ref = $('#fAltBaslama').value || todayISO();
-  const yeni = usaqlar.filter(p => !A.istirakci.some(r => r.fin === p.fin)).slice(0, 3);
+  const yeni = usaqList().filter(p => !A.istirakci.some(r => r.fin === p.fin)).slice(0, 3);
   A.istirakci = A.istirakci.filter(r => r.fin).concat(yeni.map(p => istFromReg(p, ref)));
   renderRep('istirakci');
   showToast(yeni.length + ' iştirakçı Excel vasitəsilə idxal olundu (nümunə)');
 });
 $('#btnImtinaImport').addEventListener('click', () => {
-  const yeni = usaqlar.filter(p => !A.imtina.some(r => r.fin === p.fin) && !A.istirakci.some(r => r.fin === p.fin)).slice(0, 2);
+  const yeni = usaqList().filter(p => !A.imtina.some(r => r.fin === p.fin) && !A.istirakci.some(r => r.fin === p.fin)).slice(0, 2);
   A.imtina = A.imtina.filter(r => r.fin).concat(yeni.map(p => ({ fin: p.fin, ad: p.ad, cins: p.cins, tevellud: p.tevellud, sebeb: '' })));
   renderRep('imtina');
   showToast(yeni.length + ' imtina edən iştirakçı Excel vasitəsilə idxal olundu (nümunə)');
 });
 
 // ---------- Fond əməkdaşları (FİN ilə admin siyahısından) ----------
-$('#emekdasHint').innerHTML = 'Nümunə FİN-lər: ' + EMEKDASLAR.map(e => `<code>${e.fin}</code> ${esc(e.ad)}`).join(', ');
+const renderEmekdasHint = () => { $('#emekdasHint').innerHTML = 'Fond əməkdaşları (Excel-də "Fond əməkdaşları" vərəqi): ' + EMEKDASLAR.map(e => `<code>${esc(e.fin)}</code> ${esc(e.ad)}`).join(', '); };
+renderEmekdasHint();
 function renderEmekdas(){
   $('#emekdasChips').innerHTML = A.emekdas.length
     ? A.emekdas.map((e, i) => `<span class="chip blue">${esc(e.ad)} <span style="opacity:.7;">· ${esc(e.vezife)}</span><button type="button" class="chip-x" title="Sil" data-emk-remove="${i}">×</button></span>`).join('')
@@ -2969,7 +3009,13 @@ function personProjects(fin){
 
 // ---------- Siyahı ----------
 $('#flSinif').innerHTML = '<option value="">Hamısı</option><option>Məktəbəqədər</option>' + Array.from({ length: 11 }, (_, i) => `<option value="${i + 1}">${sinifText(String(i + 1))}</option>`).join('') + '<option>Məzun</option>';
-$('#flRegion').innerHTML = '<option value="">Hamısı</option>' + [...new Set(AILELER.map(p => p.region))].sort((a, b) => a.localeCompare(b, 'az')).map(r => `<option>${esc(r)}</option>`).join('');
+function refreshRegionFilter(){
+  const cur = $('#flRegion').value;
+  $('#flRegion').innerHTML = '<option value="">Hamısı</option>' + [...new Set(AILELER.map(p => p.region).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'az')).map(r => `<option>${esc(r)}</option>`).join('');
+  $('#flRegion').value = cur;
+}
+refreshRegionFilter();
+function refreshRegistryUi(){ refreshRegionFilter(); renderEmekdasHint(); }
 const FL_TEXT = ['flAxtar', 'flYasMin', 'flYasMax'], FL_SEL = ['flKat', 'flQohum', 'flCins', 'flSinif', 'flRegion', 'flIstirak'];
 function filteredAile(){
   const q = $('#flAxtar').value.trim().toLocaleLowerCase('az');
@@ -3095,6 +3141,60 @@ function openPersonHist(fin, layiheId){
   openModal('modalHist');
 }
 $('#personBody').addEventListener('click', e => { const b = e.target.closest('[data-person-hist]'); if(b) openPersonHist(personFin, Number(b.dataset.personHist)); });
+// ---------- İştirakçılar bazası: yeni iştirakçı / redaktə ----------
+let editingRegFin = null;
+const REG_FIELDS = [['ad', 'Ad Soyad'], ['kateqoriya', 'Kateqoriya'], ['qohumluq', 'Qohumluq'], ['sehid', 'Şəhid'], ['elillik', 'Əlillik'], ['cins', 'Cins'], ['tevellud', 'Təvəllüd'], ['region', 'Region']];
+function syncRegKat(){
+  const y = $('#fRegKat').value === 'Yaralı';
+  $all('#modalReg .reg-s').forEach(el => el.style.display = y ? 'none' : '');
+  $all('#modalReg .reg-y').forEach(el => el.style.display = y ? '' : 'none');
+}
+$('#fRegKat').addEventListener('change', syncRegKat);
+$('#fRegFin').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''); e.target.classList.remove('invalid'); });
+function openRegModal(fin){
+  const p = fin ? regPerson(fin) : null;
+  editingRegFin = p ? p.fin : null;
+  $('#regTitle').textContent = p ? 'İştirakçını redaktə et' : 'Yeni iştirakçı';
+  $('#fRegFin').value = p ? p.fin : ''; $('#fRegFin').readOnly = !!p;
+  $('#fRegAd').value = p ? p.ad : '';
+  $('#fRegKat').value = p ? (p.kateqoriya || 'Şəhid ailəsi') : 'Şəhid ailəsi';
+  $('#fRegQohum').value = p && p.qohumluq ? p.qohumluq : 'Övlad';
+  $('#fRegSehid').value = p ? (p.sehid || '') : '';
+  $('#fRegElillik').value = p && p.elillik ? p.elillik : 'Əlillik yoxdur';
+  $('#fRegCins').value = p ? (p.cins || 'Kişi') : 'Kişi';
+  $('#fRegTevellud').value = p ? (p.tevellud || '') : '';
+  $('#fRegRegion').value = p ? (p.region || '') : '';
+  $('#regRegionList').innerHTML = [...new Set(AILELER.map(x => x.region).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'az')).map(r => `<option value="${esc(r)}">`).join('');
+  ['fRegFin', 'fRegAd'].forEach(id => $('#' + id).classList.remove('invalid'));
+  syncRegKat(); openModal('modalReg'); (p ? $('#fRegAd') : $('#fRegFin')).focus();
+}
+$('#btnNewReg').addEventListener('click', () => openRegModal(null));
+$('#btnEditReg').addEventListener('click', () => { if(personFin) openRegModal(personFin); });
+$('#btnSaveReg').addEventListener('click', () => {
+  const fin = $('#fRegFin').value.trim().toUpperCase(), ad = $('#fRegAd').value.trim(), kat = $('#fRegKat').value, yar = kat === 'Yaralı';
+  if(fin.length !== 7){ $('#fRegFin').classList.add('invalid'); showToast('FİN 7 simvol olmalıdır'); return; }
+  if(!editingRegFin && regPerson(fin)){ $('#fRegFin').classList.add('invalid'); showToast('Bu FİN artıq bazada var'); return; }
+  if(!ad){ $('#fRegAd').classList.add('invalid'); showToast('Ad soyadı yazın'); return; }
+  if(!$('#fRegTevellud').value){ showToast('Təvəllüdü daxil edin'); return; }
+  const data = { fin, ad, kateqoriya: kat, qohumluq: yar ? '' : $('#fRegQohum').value, sehid: yar ? '' : $('#fRegSehid').value.trim(),
+    elillik: yar ? $('#fRegElillik').value : '', cins: $('#fRegCins').value, tevellud: $('#fRegTevellud').value, region: $('#fRegRegion').value.trim() };
+  if(editingRegFin){
+    const p = regPerson(editingRegFin), ferq = [];
+    REG_FIELDS.forEach(([k, l]) => { const o = k === 'tevellud' ? fmtDateOrEmpty(p[k]) : (p[k] || ''), n = k === 'tevellud' ? fmtDateOrEmpty(data[k]) : (data[k] || ''); if(o !== n) ferq.push(`${l}: "${o}" → "${n}"`); });
+    Object.assign(p, data);
+    if(ferq.length) addPersonHist(fin, 'Məlumat redaktə edildi', null, ferq.join('\n'));
+    showToast(ferq.length ? 'İştirakçı yeniləndi' : 'Dəyişiklik yoxdur');
+  } else {
+    AILELER.push(data);
+    addPersonHist(fin, 'Bazaya əlavə edildi', null, `${kat}${yar ? '' : ' — ' + data.qohumluq}`);
+    showToast('İştirakçı bazaya əlavə edildi');
+  }
+  closeModal('modalReg');
+  refreshRegionFilter();
+  if(personFin === fin) openPerson(fin);
+  renderAll();
+});
+
 $('#btnPersonXlsx').addEventListener('click', () => {
   const p = regPerson(personFin); if(!p) return;
   const name = 'istirakci_' + p.fin + '_' + todayISO();
@@ -3327,27 +3427,138 @@ function renderAll(){
 }
 
 // =====================================================================
-//  MƏLUMAT BAZASI
-//  Lokal: python server.py → layiheler.xlsx;  onlayn: Apps Script → Google Sheet (eyni vərəqlər).
-//  Girişdən sonra bütün məlumat bazadan yüklənir; hər dəyişiklikdən sonra yalnız dəyişən
-//  qeydlər (layihə, ödəniş, iştirakçı tarixçəsi, parametr) avtomatik bazaya yazılır.
+//  MƏLUMAT BAZASI — Excel / Google Sheet-də kiçik relyasiyalı baza
+//  Lokal: start.bat (python server.py) → layiheler.xlsx;  onlayn: Apps Script → Google Sheet (eyni vərəqlər).
+//  Hər detal ayrıca vərəqdə, hər sahə ayrıca sütunda saxlanılır. Hər vərəqin 1-ci sütunu "sahib" açarıdır
+//  (layihə ID, ödəniş ID, FİN, ölkə). Dəyişiklik olanda yalnız dəyişən sahibin sətirləri yenidən yazılır.
 // =====================================================================
 const IS_LOCALHOST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const T = {
+  esas:     ['Əsas layihələr', ['ID', 'Ad', 'Ətraflı məlumat', 'Kateqoriya', 'Layihə növü', 'Yaranma tarixi', 'Bitmə tarixi']],
+  alt:      ['Alt layihələr', ['ID', 'Əsas layihə ID', 'Ad', 'Yaradılma tarixi', 'Başlama tarixi', 'Bitmə tarixi', 'Ölkə', 'Təşkil forması', 'İcra olunan müəssisə/obyekt',
+                               'Fond (AZN)', 'Sponsor (AZN)', 'Tərəfdaş (AZN)', 'Status', 'Yekunlaşdırma tarixi', 'Yekun qeydlər', 'Tamamlanma tarixi']],
+  mekan:    ['Layihə məkanları', ['Alt layihə ID', 'Növ', 'Şəhər/Rayon']],
+  teskilat: ['Sponsor və tərəfdaşlar', ['Alt layihə ID', 'Növ', 'VÖEN', 'Təşkilatın adı', 'Töhfə növü']],
+  ist:      ['Layihə iştirakçıları', ['Alt layihə ID', 'FİN', 'Ad Soyad', 'Kateqoriya', 'Cins', 'Təvəllüd', 'Yaş (layihə vaxtı)', 'Yaşın hesablandığı tarix']],
+  imtina:   ['İmtina edənlər', ['Alt layihə ID', 'FİN', 'Ad Soyad', 'Cins', 'Təvəllüd', 'İmtina səbəbi']],
+  emk:      ['Layihə əməkdaşları', ['Alt layihə ID', 'FİN', 'Ad Soyad', 'Vəzifə']],
+  konullu:  ['Könüllülər', ['Alt layihə ID', 'FİN', 'Seriya', 'Ad Soyad', 'Qeyd']],
+  sened:    ['Sənədlər', ['Alt layihə ID', 'Sənədin adı', 'Növ']],
+  ltarix:   ['Layihə tarixçəsi', ['Layihə ID', '№', 'Əməliyyat', 'Qeyd', 'Rol', 'İstifadəçi', 'Tarix']],
+  odenis:   ['Ödənişlər', ['ID', 'Layihə ID', 'Ödənişin təyinatı', 'Təsvir', 'Ödəniş qəbzi', 'Ödəmə tarixi', 'İcraçı', 'YAŞAT (AZN)', 'ƏDV (AZN)', 'Ümumi (AZN)', 'Status', 'Təsdiq tarixi']],
+  reg:      ['İştirakçılar', ['FİN', 'Ad Soyad', 'Kateqoriya', 'Qohumluq', 'Şəhid', 'Əlillik', 'Cins', 'Təvəllüd', 'Region']],
+  itarix:   ['İştirakçı tarixçəsi', ['FİN', '№', 'Əməliyyat', 'Layihə ID', 'Əsas layihə', 'Alt layihə', 'Başlama', 'Bitmə', 'Yaş', 'Səbəb', 'Qeyd', 'Rol', 'İstifadəçi', 'Tarix']],
+  fondEmk:  ['Fond əməkdaşları', ['FİN', 'Ad Soyad', 'Vəzifə']],
+  yer:      ['Əlavə ölkə və şəhərlər', ['Ölkə', 'Şəhər/Rayon']],
+};
+// --- çevirmələr ---
+const dbD = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}.${m[2]}.${m[1]}` : String(iso || ''); };
+const dbIso = (v) => { v = String(v ?? '').trim(); let m = v.match(/^(\d{2})\.(\d{2})\.(\d{4})/); if(m) return `${m[3]}-${m[2]}-${m[1]}`; m = v.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : v; };
+const dbS = (v) => v == null ? '' : String(v);
+const dbN = (v) => v === '' || v == null || isNaN(Number(v)) ? null : Number(v);
+const dbV = (v) => v == null ? '' : v;
+const dbGroup = (rows) => { const m = {}; rows.forEach(r => { const k = dbS(r[0]); (m[k] = m[k] || []).push(r); }); return m; };
+const TESKIL_INV = Object.fromEntries(Object.entries(teskilLabel).map(([k, v]) => [v, k]));
+const STATUS_INV = Object.fromEntries(Object.entries(STATUS).map(([k, v]) => [v.l, k]));
+const OD_ST = { tesdiqlendi: 'Təsdiqləndi', qaralama: 'Təsdiqlənməyib' }, OD_ST_INV = { 'Təsdiqləndi': 'tesdiqlendi', 'Təsdiqlənməyib': 'qaralama' };
+const splitLayihe = (h) => h.esas != null || h.alt != null ? [h.esas || '', h.alt || ''] : (() => { const s = dbS(h.layihe), i = s.indexOf(' / '); return i < 0 ? ['', s] : [s.slice(0, i), s.slice(i + 3)]; })();
+const histRows = (p) => (p.tarixce || []).map((h, i) => [p.id, i + 1, dbS(h.emel), dbS(h.qeyd), dbS(h.rol), dbS(h.kim), dbS(h.vaxt)]);
+
+// Hər növ üçün: hansı vərəqlərə yazılır və obyekt → sətirlər
+const KINDS = {
+  esas: { t: ['esas', 'ltarix'], rows: (p) => ({
+    esas: [[p.id, dbS(p.ad), dbS(p.melumat), dbS(p.kateqoriya), dbS(p.novu), dbD(p.yaranma), dbD(p.bitme)]], ltarix: histRows(p) }) },
+  alt: { t: ['alt', 'mekan', 'teskilat', 'ist', 'imtina', 'emk', 'konullu', 'sened', 'ltarix'], rows: (a) => {
+    const m = a.maliyye || {}, id = a.id;
+    return {
+      alt: [[id, dbV(a.parentId), dbS(a.ad), dbD(a.yaradilma), dbD(a.baslama), dbD(a.bitme), dbS(a.olke), teskilLabel[a.teskil] || dbS(a.teskil), dbS(a.obyekt),
+             dbV(m.fond), dbV(m.sponsor), dbV(m.terefdas), statusLabel(a.status), dbD(a.yekunTarix), dbS(a.yekunQeyd), dbD(a.tamamlanma)]],
+      mekan: [...asArr(a.yerler).map(y => [id, 'Şəhər/Rayon', y]), ...asArr(a.ehate).map(y => [id, 'Əhatə dairəsi', y])],
+      teskilat: [...(a.sponsorlar || []).map(o => [id, 'Sponsor', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)]), ...(a.terefdaslar || []).map(o => [id, 'Tərəfdaş', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)])],
+      ist: (a.istirakcilar || []).map(r => [id, dbS(r.fin), dbS(r.ad), dbS(r.kat || (regPerson(r.fin) || {}).kateqoriya), dbS(r.cins), dbD(r.tevellud), dbV(r.yas), dbD(r.yasTarixi)]),
+      imtina: (a.imtinaEdenler || []).map(r => [id, dbS(r.fin), dbS(r.ad), dbS(r.cins), dbD(r.tevellud), dbS(r.sebeb)]),
+      emk: (a.emekdaslar || []).map(r => [id, dbS(r.fin), dbS(r.ad), dbS(r.vezife)]),
+      konullu: (a.konulluler || []).map(r => [id, dbS(r.fin), dbS(r.seriya), dbS(r.ad), dbS(r.qeyd)]),
+      sened: (a.senedler || []).map(d => [id, dbS(d.ad), dbS(d.nov)]),
+      ltarix: histRows(a),
+    }; } },
+  odenis: { t: ['odenis'], rows: (e) => ({ odenis: [[e.id, dbV(e.layiheId), dbS(e.teyinat), dbS(e.tesvir), dbS(e.qebz), dbD(e.tarix), dbS(e.icraci),
+                                                      dbV(e.yasat), dbV(e.edv), dbV(e.umumi), OD_ST[e.status] || dbS(e.status), dbD(e.tesdiqTarix)]] }) },
+  reg: { t: ['reg'], rows: (p) => ({ reg: [[dbS(p.fin), dbS(p.ad), dbS(p.kateqoriya), dbS(p.qohumluq), dbS(p.sehid), dbS(p.elillik), dbS(p.cins), dbD(p.tevellud), dbS(p.region)]] }) },
+  itarix: { t: ['itarix'], rows: (list, fin) => ({ itarix: list.map((h, i) => { const [es, al] = splitLayihe(h);
+    return [fin, i + 1, dbS(h.emel), dbV(h.layiheId), es, al, dbD(h.baslama), dbD(h.bitme), dbV(h.yas), dbS(h.sebeb), dbS(h.qeyd), dbS(h.rol), dbS(h.kim), dbS(h.vaxt)]; }) }) },
+  fondEmk: { t: ['fondEmk'], rows: (e) => ({ fondEmk: [[dbS(e.fin), dbS(e.ad), dbS(e.vezife)]] }) },
+  yer: { t: ['yer'], rows: (list, olke) => ({ yer: (list || []).length ? list.map(c => [olke, c]) : [[olke, '']] }) },
+};
+function dbEntities(){
+  const out = [];
+  projects.forEach(p => out.push([p.tip === 'esas' ? 'esas' : 'alt', String(p.id), p]));
+  expenses.forEach(e => out.push(['odenis', String(e.id), e]));
+  AILELER.forEach(p => out.push(['reg', p.fin, p]));
+  Object.keys(PERSON_HIST).forEach(f => out.push(['itarix', f, PERSON_HIST[f]]));
+  EMEKDASLAR.forEach(e => out.push(['fondEmk', e.fin, e]));
+  Object.keys(yerElave).forEach(o => out.push(['yer', o, yerElave[o]]));
+  return out;
+}
+function dbSnapshot(){
+  const m = {};
+  dbEntities().forEach(([kind, owner, obj]) => { m[kind + '|' + owner] = JSON.stringify(KINDS[kind].rows(obj, owner)); });
+  return m;
+}
+// Vərəqlərdən (sətirlərdən) obyektlərə
+function fromTables(tb){
+  const g = (k) => tb[T[k][0]] || [];
+  const lt = dbGroup(g('ltarix'));
+  const H = (id) => (lt[id] || []).sort((x, y) => dbN(x[1]) - dbN(y[1])).map(r => ({ emel: dbS(r[2]), qeyd: dbS(r[3]), rol: dbS(r[4]), kim: dbS(r[5]), vaxt: dbS(r[6]) }));
+  const esas = g('esas').map(r => ({ id: dbN(r[0]), tip: 'esas', ad: dbS(r[1]), melumat: dbS(r[2]), kateqoriya: dbS(r[3]), novu: dbS(r[4]), yaranma: dbIso(r[5]), bitme: dbIso(r[6]), tarixce: H(dbS(r[0])) }));
+  const [mek, tes, ist, imt, emk, kon, sen] = ['mekan', 'teskilat', 'ist', 'imtina', 'emk', 'konullu', 'sened'].map(k => dbGroup(g(k)));
+  const alts = g('alt').map(r => {
+    const id = dbS(r[0]), m = {};
+    [['fond', 9], ['sponsor', 10], ['terefdas', 11]].forEach(([k, i]) => { if(dbN(r[i]) != null) m[k] = dbN(r[i]); });
+    const org = (nov) => (tes[id] || []).filter(x => dbS(x[1]) === nov).map(x => ({ voen: dbS(x[2]), ad: dbS(x[3]), tohfe: dbS(x[4]) || 'Maliyyə' }));
+    const o = { id: dbN(r[0]), tip: 'alt', parentId: dbN(r[1]), ad: dbS(r[2]), yaradilma: dbIso(r[3]), baslama: dbIso(r[4]), bitme: dbIso(r[5]),
+      olke: dbS(r[6]) || 'Azərbaycan', teskil: TESKIL_INV[dbS(r[7])] || dbS(r[7]) || 'offline', obyekt: dbS(r[8]), maliyye: m,
+      status: STATUS_INV[dbS(r[12])] || dbS(r[12]) || 'davam',
+      yerler: (mek[id] || []).filter(x => dbS(x[1]) === 'Şəhər/Rayon').map(x => dbS(x[2])),
+      ehate: (mek[id] || []).filter(x => dbS(x[1]) === 'Əhatə dairəsi').map(x => dbS(x[2])),
+      sponsorlar: org('Sponsor'), terefdaslar: org('Tərəfdaş'),
+      istirakcilar: (ist[id] || []).map(x => ({ fin: dbS(x[1]), ad: dbS(x[2]), kat: dbS(x[3]), cins: dbS(x[4]), tevellud: dbIso(x[5]), yas: dbN(x[6]) ?? '', yasTarixi: dbIso(x[7]) })),
+      imtinaEdenler: (imt[id] || []).map(x => ({ fin: dbS(x[1]), ad: dbS(x[2]), cins: dbS(x[3]), tevellud: dbIso(x[4]), sebeb: dbS(x[5]) })),
+      emekdaslar: (emk[id] || []).map(x => ({ fin: dbS(x[1]), ad: dbS(x[2]), vezife: dbS(x[3]) })),
+      konulluler: (kon[id] || []).map(x => ({ fin: dbS(x[1]), seriya: dbS(x[2]), ad: dbS(x[3]), qeyd: dbS(x[4]) })),
+      senedler: (sen[id] || []).map(x => ({ ad: dbS(x[1]), nov: dbS(x[2]) || 'Digər' })),
+      terefdasIstirakcilar: [], tarixce: H(id) };
+    if(dbS(r[13])) o.yekunTarix = dbIso(r[13]);
+    if(dbS(r[14])) o.yekunQeyd = dbS(r[14]);
+    if(dbS(r[15])) o.tamamlanma = dbIso(r[15]);
+    return o;
+  });
+  const odenis = g('odenis').map(r => {
+    const e = { id: dbN(r[0]), layiheId: dbN(r[1]), teyinat: dbS(r[2]), tesvir: dbS(r[3]), qebz: dbS(r[4]), tarix: dbIso(r[5]), icraci: dbS(r[6]),
+      yasat: dbN(r[7]) || 0, edv: dbN(r[8]) || 0, umumi: dbN(r[9]) || 0, status: OD_ST_INV[dbS(r[10])] || dbS(r[10]) || 'qaralama' };
+    if(dbS(r[11])) e.tesdiqTarix = dbIso(r[11]);
+    return e;
+  });
+  const reg = g('reg').map(r => ({ fin: dbS(r[0]), ad: dbS(r[1]), kateqoriya: dbS(r[2]) || 'Şəhid ailəsi', qohumluq: dbS(r[3]), sehid: dbS(r[4]),
+    elillik: dbS(r[5]), cins: dbS(r[6]), tevellud: dbIso(r[7]), region: dbS(r[8]) }));
+  const itarix = {};
+  Object.entries(dbGroup(g('itarix'))).forEach(([fin, rows]) => {
+    itarix[fin] = rows.sort((x, y) => dbN(x[1]) - dbN(y[1])).map(r => {
+      const es = dbS(r[4]), al = dbS(r[5]);
+      return { emel: dbS(r[2]), layiheId: dbN(r[3]), esas: es, alt: al, layihe: (es ? es + ' / ' : '') + al, baslama: dbIso(r[6]), bitme: dbIso(r[7]),
+        yas: dbN(r[8]) ?? '', sebeb: dbS(r[9]), qeyd: dbS(r[10]), rol: dbS(r[11]), kim: dbS(r[12]), vaxt: dbS(r[13]) };
+    });
+  });
+  const fondEmk = g('fondEmk').map(r => ({ fin: dbS(r[0]), ad: dbS(r[1]), vezife: dbS(r[2]) }));
+  const yer = {};
+  g('yer').forEach(r => { const o = dbS(r[0]); if(!o) return; yer[o] = yer[o] || []; if(dbS(r[1])) yer[o].push(dbS(r[1])); });
+  return { projects: [...esas, ...alts].sort((x, y) => x.id - y.id), odenis, reg, itarix, fondEmk, yer };
+}
+
 const DB = { on: false, snap: {}, timer: null, busy: false, again: false };
 function apiCall(fn, ...args){
   return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
 }
-// Brauzerə aid müvəqqəti fayl linkləri (blob:) bazaya yazılmır
-const cleanForDb = (o) => JSON.parse(JSON.stringify(o, (k, v) => (k === 'url' || k === 'qebzUrl' || k === 'qebzType') ? undefined : v));
-function dbItems(){
-  const items = [];
-  projects.forEach(p => items.push(['layihe', String(p.id), p]));
-  expenses.forEach(e => items.push(['odenis', String(e.id), e]));
-  Object.keys(PERSON_HIST).forEach(f => items.push(['istirakTarixce', f, PERSON_HIST[f]]));
-  items.push(['parametr', 'yerElave', yerElave]);
-  return items;
-}
-function dbSnapshot(){ const m = {}; dbItems().forEach(([k, id, o]) => { m[k + '|' + id] = JSON.stringify(cleanForDb(o)); }); return m; }
 function setDbStatus(st, msg){
   const el = document.getElementById('dbStatus'); if(!el) return;
   el.className = 'db-status ' + st;
@@ -3359,12 +3570,15 @@ async function runSync(){
   if(!DB.on) return;
   if(DB.busy){ DB.again = true; return; }
   const now = dbSnapshot(), ops = [];
-  const parts = (key) => { const i = key.indexOf('|'); return [key.slice(0, i), key.slice(i + 1)]; };
-  for(const key in now) if(now[key] !== DB.snap[key]){ const [kind, id] = parts(key); ops.push({ op: 'upsert', kind, id, obj: JSON.parse(now[key]) }); }
-  for(const key in DB.snap) if(!(key in now)){ const [kind, id] = parts(key); ops.push({ op: 'remove', kind, id }); }
+  const mk = (key, rowsObj) => {
+    const i = key.indexOf('|'), kind = key.slice(0, i), owner = key.slice(i + 1);
+    return { owner, tables: KINDS[kind].t.map(k => ({ name: T[k][0], headers: T[k][1], rows: (rowsObj && rowsObj[k]) || [] })) };
+  };
+  for(const key in now) if(now[key] !== DB.snap[key]) ops.push(mk(key, JSON.parse(now[key])));
+  for(const key in DB.snap) if(!(key in now)) ops.push(mk(key, null));
   if(!ops.length) return;
   DB.busy = true; setDbStatus('saving');
-  try { await apiCall('syncData', window.QX_TOKEN, ops); DB.snap = now; setDbStatus('ok'); }
+  try { await apiCall('syncTables', window.QX_TOKEN, ops); DB.snap = now; setDbStatus('ok'); }
   catch(e){ setDbStatus('err', e.message); showToast('Bazaya yazmaq alınmadı: ' + e.message); }
   DB.busy = false;
   if(DB.again){ DB.again = false; scheduleSync(); }
@@ -3372,32 +3586,42 @@ async function runSync(){
 async function loadDb(){
   DB.on = false; setDbStatus('saving', 'Yüklənir…');
   try{
-    const d = await apiCall('getData', window.QX_TOKEN);
-    if(!d.layihe.length && !d.odenis.length && IS_LOCALHOST){
+    const tb = await apiCall('getTables', window.QX_TOKEN, Object.values(T).map(x => x[0]));
+    const d = fromTables(tb);
+    if(!d.projects.length && !d.odenis.length && !d.reg.length && IS_LOCALHOST){
       // Lokal baza boşdur — bir dəfəlik nümunə məlumatla doldurulur
       DB.snap = {}; DB.on = true; await runSync();
       showToast('Lokal baza (layiheler.xlsx) nümunə məlumatla dolduruldu');
       return;
     }
-    projects = d.layihe;
+    projects = d.projects;
     expenses = d.odenis;
-    Object.keys(PERSON_HIST).forEach(k => delete PERSON_HIST[k]);
-    Object.assign(PERSON_HIST, d.istirakTarixce || {});
-    Object.assign(yerElave, (d.parametr || {}).yerElave || {});
+    if(d.reg.length){ AILELER.length = 0; AILELER.push(...d.reg); }
+    if(d.fondEmk.length){ EMEKDASLAR.length = 0; EMEKDASLAR.push(...d.fondEmk); }
+    Object.keys(PERSON_HIST).forEach(k => delete PERSON_HIST[k]); Object.assign(PERSON_HIST, d.itarix);
+    Object.keys(yerElave).forEach(k => delete yerElave[k]); Object.assign(yerElave, d.yer);
     nextProjectId = projects.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0) + 1;
     nextExpenseId = expenses.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0) + 1;
+    refreshRegistryUi();
     DB.snap = dbSnapshot(); DB.on = true;
     if(screen === 'alt' && !projectById(currentAltId)) showLayiheList();
     if(screen === 'esas' && !projectById(currentEsasId)) showLayiheList();
     renderAll();
     setDbStatus('ok');
   }catch(e){
-    const msg = /Naməlum əməliyyat: getData/.test(e.message)
-      ? 'Onlayn baza hələ qoşulmayıb: Apps Script-ə yeni Code.gs (getData/syncData) əlavə edilməlidir'
+    const msg = /Naməlum əməliyyat: getTables/.test(e.message)
+      ? 'Onlayn baza hələ qoşulmayıb: Apps Script-ə yeni Code.gs (getTables/syncTables) əlavə edilməlidir'
       : 'Bazaya qoşulmaq alınmadı: ' + e.message;
     setDbStatus('err', msg);
     showToast(msg + ' — dəyişikliklər yadda saxlanılmayacaq');
   }
+}
+// Fayl birbaşa açılıbsa (file://) heç nə yadda saxlanılmır — xəbərdarlıq
+if(location.protocol === 'file:'){
+  const bar = document.createElement('div');
+  bar.className = 'file-warn';
+  bar.innerHTML = '⚠ Səhifə fayl kimi birbaşa açılıb — <b>dəyişikliklər yadda saxlanılmır</b>. Qovluqdakı <b>start.bat</b> faylını iki dəfə klikləyin (http://localhost:8000 açılacaq).';
+  document.body.prepend(bar);
 }
 // Rəy qatı girişdən/çıxışdan sonra bunları çağırır
 window.appOnLogin = loadDb;
