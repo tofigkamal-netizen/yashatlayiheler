@@ -1,0 +1,7 @@
+# Excel-də istifadəçi parolları (hash) və rəy qeydləri var — public repoya getməməlidir
+layiheler.xlsx
+~$*.xlsx
+
+# Python
+__pycache__/
+*.pyc
