@@ -476,8 +476,6 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   .hist-table td.qeyd{white-space:pre-line;line-height:1.55;}
   .hist-table tbody tr:hover{background:transparent;}
   .bitir-table td,.bitir-table th{text-align:center;}
-  .bitir-table input[type=checkbox]{width:16px;height:16px;accent-color:#2196F3;cursor:pointer;}
-  .bitir-table tr.row-off td{color:#aaa;background:#fafafa;}
   .bitir-sum{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 22px;border-top:2px solid #b7b7b7;background:#fafbfd;font-size:.8125rem;}
   .bitir-sum .sep{margin:0 .5rem;color:#bbb;}
   .bitir-total{font-size:1rem;} .bitir-total b{color:#1E88E5;font-size:1.15rem;}
@@ -764,7 +762,6 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th style="width:60px;">№</th>
                 <th>Ad</th>
                 <th>Tarix aralığı</th>
-                <th>Təşkil forması</th>
                 <th>Maliyyələşmə</th>
                 <th>Status</th>
                 <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
@@ -991,7 +988,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <input type="date" id="fEsasTarix">
         </div>
         <div class="form-field">
-          <label>Layihənin bitmə tarixi <span class="opt">(məcburi)</span></label>
+          <label>Layihənin bitmə tarixi <span class="opt">(davamedici layihədə boş saxlayın)</span></label>
           <input type="date" id="fEsasBitme">
         </div>
       </div>
@@ -1083,7 +1080,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 
       <div class="form-section">
         <div class="form-section-title">Layihə ödənişi</div>
-        <div class="form-section-sub">Maliyyələşmə mənbələrini seçin — bir neçəsini seçmək olar. Seçilən hər mənbə üçün məbləğ məcburidir. Heç biri seçilməsə layihə ödənişsizdir.</div>
+        <div class="form-section-sub">Maliyyələşmə mənbələrini seçin — bir neçəsini seçmək olar. Fond və Sponsor üçün məbləğ məcburidir, Tərəfdaş üçün istəyə görə. Heç biri seçilməsə layihə ödənişsizdir.</div>
         <div class="src-list" id="srcList">
           <div class="src-row" data-src="fond">
             <label class="pill"><input type="checkbox" value="fond"> Fond</label>
@@ -1098,7 +1095,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <div class="src-row" data-src="terefdas">
             <label class="pill"><input type="checkbox" value="terefdas"> Tərəfdaş</label>
             <span class="src-off">Seçilməyib</span>
-            <div class="src-amount"><input type="number" class="inp" id="fSrcTerefdas" min="0" step="0.01" placeholder="Məbləğ (məcburi)"><span class="cur">AZN</span></div>
+            <div class="src-amount"><input type="number" class="inp" id="fSrcTerefdas" min="0" step="0.01" placeholder="Məbləğ (istəyə görə)"><span class="cur">AZN</span></div>
           </div>
         </div>
         <div class="info-note" id="altMaliyyeNote"></div>
@@ -1316,7 +1313,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   </div>
 </div>
 
-<!-- MODAL: Layihəni bitir — yekuna daxil olan ödənişləri seç -->
+<!-- MODAL: Layihəni bitir (Maliyyə) — bütün ödənişlər cəmlənir -->
 <div class="overlay" id="modalBitir" style="z-index:60;">
   <div class="modal xwide">
     <div class="modal-header">
@@ -1325,17 +1322,17 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="hist-sub">Layihənin yekun ödənişinə daxil olan ödənişləri seçin</div>
+    <div class="hist-sub">Layihə üzrə bütün ödənişlər cəmlənir və layihənin ümumi ödənişi kimi yadda saxlanılır</div>
     <div class="modal-body" style="padding:0;">
       <div class="table-scroll">
         <table class="hist-table bitir-table">
-          <thead><tr><th style="width:44px;"><input type="checkbox" id="bitirAll" title="Hamısını seç"></th><th>№</th><th style="text-align:left;">Xərcin təyinatı</th><th>Ödəmə tarixi</th><th>Sənəd (çek)</th><th class="num">ƏDV</th><th class="num">Ümumi</th><th>Status</th></tr></thead>
+          <thead><tr><th>№</th><th style="text-align:left;">Xərcin təyinatı</th><th>Ödəmə tarixi</th><th>Sənəd (çek)</th><th class="num">ƏDV</th><th class="num">Ümumi</th><th>Status</th></tr></thead>
           <tbody id="bitirBody"></tbody>
         </table>
       </div>
       <div class="bitir-sum">
         <div><span id="bitirSay"></span><span class="sep">·</span>Plan məbləği: <b id="bitirPlan"></b></div>
-        <div class="bitir-total">Seçilmiş ödənişlərin cəmi: <b id="bitirCem">0.00 AZN</b></div>
+        <div class="bitir-total">Ödənişlərin cəmi: <b id="bitirCem">0.00 AZN</b></div>
       </div>
       <div class="form-field" style="padding:0 22px 18px;">
         <label>Ümumi detallı təsvir <span class="opt">(məcburi)</span></label>
@@ -1343,7 +1340,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       </div>
     </div>
     <div class="modal-footer">
-      <span class="left">Seçilən ödənişlər təsdiqlənir və layihənin ümumi ödənişi kimi yadda saxlanılır.</span>
+      <span class="left">Bütün ödənişlər təsdiqlənir və layihənin ümumi ödənişi kimi yadda saxlanılır.</span>
       <button class="btn btn-ghost" data-close="modalBitir">Ləğv et</button>
       <button class="btn btn-green" id="btnBitirConfirm"><i class="icon-checkmark3"></i> Layihəni bitir</button>
     </div>
@@ -1774,7 +1771,10 @@ const SRC = [{ k: 'fond', l: 'Fond' }, { k: 'sponsor', l: 'Sponsor' }, { k: 'ter
 const menbeler = (a) => SRC.filter(s => a.maliyye && a.maliyye[s.k] != null);
 // Ödənişli (Fond, Sponsor və ya Tərəfdaş) layihəni Maliyyə, ödənişsiz layihəni Layihə rolu tamamlayır
 const gedirMaliyyeye = (a) => menbeler(a).length > 0;
-const maliyyeText = (a) => { const m = menbeler(a); return m.length ? m.map(s => `${s.l}: ${fmt(a.maliyye[s.k])} AZN`).join('; ') : 'Ödənişsiz'; };
+// Tərəfdaş məbləği məcburi deyil (dəstəyin dəyərini həmişə soruşmaq mümkün olmur) — boş olanda 0 saxlanılır
+const MEBLEG_YOX = 'məbləğ göstərilməyib';
+const srcMebleg = (a, k, cur = ' AZN') => k === 'terefdas' && !Number(a.maliyye[k]) ? MEBLEG_YOX : fmt(a.maliyye[k]) + cur;
+const maliyyeText = (a) => { const m = menbeler(a); return m.length ? m.map(s => `${s.l}: ${srcMebleg(a, s.k)}`).join('; ') : 'Ödənişsiz'; };
 function maliyyeBadges(a){
   const m = menbeler(a);
   if(!m.length) return '<span class="badge badge-gray">Ödənişsiz</span>';
@@ -1789,9 +1789,8 @@ const odenisBadge = (st) => st === 'tesdiqlendi' ? '<span class="badge badge-app
 const odenislerOf = (id) => expenses.filter(e => e.layiheId === id).sort((a, b) => a.id - b.id);
 const odenisNo = (e) => odenislerOf(e.layiheId).findIndex(x => x.id === e.id) + 1;
 const odenisCem = (list) => list.reduce((s, e) => s + (Number(e.umumi) || 0), 0);
-// Layihə üzrə ödənilən: layihə bitəndə seçilmiş ödənişlərin cəmi (yekun ödəniş), əks halda təsdiqlənmiş ödənişlərin cəmi
+// Layihə üzrə ödənilən: layihə bitəndə bütün ödənişlərin cəmi (yekun ödəniş), əks halda təsdiqlənmiş ödənişlərin cəmi
 const odenilib = (id) => { const a = projectById(id); return a && a.yekunOdenis ? Number(a.yekunOdenis.cem) || 0 : odenisCem(odenislerOf(id).filter(e => e.status === 'tesdiqlendi')); };
-const yekunaDaxil = (e) => { const a = projectById(e.layiheId); return !!(a && a.yekunOdenis && (a.yekunOdenis.odenisler || []).includes(e.id)); };
 const planMebleg = (a) => (a.maliyye?.fond || 0) + (a.maliyye?.sponsor || 0) + (a.maliyye?.terefdas || 0);
 
 function showToast(text){
@@ -2112,7 +2111,11 @@ function showWrap(which){
   if(which !== 'edit' && pageModal){
     const ov = $('#' + pageModal);
     ov.classList.remove('active');
-    document.body.insertBefore(ov, document.getElementById('qx'));
+    // Formu səhifəyə qaytarırıq. #qx (rəy qatı) body-nin birbaşa övladı olmaya bilər — onda insertBefore xəta verirdi
+    // və "Geri qayıt", "Ləğv et", "Yadda saxla" redaktə səhifəsini bağlaya bilmirdi.
+    const qx = document.getElementById('qx');
+    if(qx && qx.parentNode === document.body) document.body.insertBefore(ov, qx);
+    else document.body.appendChild(ov);
     pageModal = null;
   }
   $('#editWrap').style.display = which === 'edit' ? '' : 'none';
@@ -2147,7 +2150,7 @@ function renderLayiheTable(){
         <td>${esc(p.kateqoriya)}</td>
         <td>${esc(p.novu)}</td>
         <td>${fmtDate(p.yaranma)}</td>
-        <td>${fmtDate(p.bitme)}</td>
+        <td>${p.bitme ? fmtDate(p.bitme) : '<span class="v muted-v">Davamedici</span>'}</td>
         <td>${altListByParent(p.id).length}</td>
         <td>${rowMenu([
           ddItem('open-esas', p.id, ICON.eye, 'Ətraflı bax'),
@@ -2188,7 +2191,7 @@ function openEsasDetail(id){
       ${infoItem('Kateqoriya', esc(p.kateqoriya))}
       ${infoItem('Layihə növü', esc(p.novu))}
       ${infoItem('Yaranma tarixi', fmtDate(p.yaranma))}
-      ${infoItem('Bitmə tarixi', fmtDate(p.bitme))}
+      ${infoItem('Bitmə tarixi', p.bitme ? fmtDate(p.bitme) : 'Davamedici (bitmə tarixi yoxdur)', !p.bitme)}
       ${infoItem('Alt layihə sayı', alts.length)}
       ${infoItem('Statuslar', `Davam edir: ${say('davam')} · Maliyyədə: ${say('maliyyede')} · Tamamlandı: ${say('tamamlandi')}`)}
       ${infoItem('Ətraflı məlumat', esc(p.melumat) || '—', !p.melumat)}
@@ -2205,7 +2208,6 @@ function renderAltTable(){
         <td>#${pad4(a.id)}</td>
         <td><span class="link" data-act="open-alt" data-id="${a.id}">${esc(a.ad)}</span></td>
         <td>${fmtDate(a.baslama)} — ${fmtDate(a.bitme)}</td>
-        <td>${teskilLabel[a.teskil] || '—'}</td>
         <td>${maliyyeBadges(a)}</td>
         <td>${statusBadge(a.status)}${geriBadge(a)}</td>
         <td>${rowMenu([
@@ -2215,7 +2217,7 @@ function renderAltTable(){
           ddItem('report', 'alt:' + a.id, ICON.dl, 'İxrac et'),
           a.status === 'davam' ? DD_SEP + ddItem('delete-alt', a.id, ICON.trash, 'Sil', 'danger') : '',
         ])}</td>
-      </tr>`).join('') || `<tr><td colspan="7"><div class="empty">Hələ alt layihə yoxdur</div></td></tr>`;
+      </tr>`).join('') || `<tr><td colspan="6"><div class="empty">Hələ alt layihə yoxdur</div></td></tr>`;
 }
 $('#btnNewAlt').addEventListener('click', () => openAltModal(null));
 
@@ -2259,10 +2261,10 @@ $('#btnSaveEsas').addEventListener('click', () => {
   const bitme = $('#fEsasBitme').value;
   const kateqoriya = getSecim('#fEsasKateqoriya', '#fEsasKateqoriyaDiger');
   const novu = getSecim('#fEsasNovu', '#fEsasNovuDiger');
-  if(!ad || !melumat || !tarix || !bitme){ showToast('Bütün xanalar məcburidir'); return; }
+  if(!ad || !melumat || !tarix){ showToast('Ad, ətraflı məlumat və yaranma tarixi məcburidir'); return; }
   if(!kateqoriya){ showToast('"Digər" kateqoriyanı əllə yazın'); $('#fEsasKateqoriyaDiger').focus(); return; }
   if(!novu){ showToast('"Digər" layihə növünü əllə yazın'); $('#fEsasNovuDiger').focus(); return; }
-  if(bitme < tarix){ showToast('Bitmə tarixi yaranma tarixindən əvvəl ola bilməz'); return; }
+  if(bitme && bitme < tarix){ showToast('Bitmə tarixi yaranma tarixindən əvvəl ola bilməz'); return; }
 
   const data = { ad, melumat, kateqoriya, novu, yaranma: tarix, bitme };
   if(editingEsasId){
@@ -2668,7 +2670,7 @@ function openAltModal(id){
   $all('#srcList .src-row').forEach(r => {
     const k = r.dataset.src, v = a && a.maliyye ? a.maliyye[k] : null;
     r.querySelector('input[type=checkbox]').checked = v != null;
-    r.querySelector('.src-amount input').value = v != null ? v : '';
+    r.querySelector('.src-amount input').value = v != null && !(k === 'terefdas' && !Number(v)) ? v : '';
   });
   if(a){
     A.sponsor = (a.sponsorlar || []).map(r => ({ ...r }));
@@ -2702,6 +2704,7 @@ $('#btnSaveAlt').addEventListener('click', () => {
   for(const s of SRC){
     if(!(s.k in src)) continue;
     const n = Number(src[s.k]);
+    if(s.k === 'terefdas' && !(n < 0)){ $(SRC_INPUT[s.k]).classList.remove('invalid'); maliyye[s.k] = n || 0; continue; }
     if(!(n > 0)){ showToast(`${s.l} üçün məbləğ daxil edin`); $(SRC_INPUT[s.k]).classList.add('invalid'); $(SRC_INPUT[s.k]).focus(); return; }
     $(SRC_INPUT[s.k]).classList.remove('invalid');
     maliyye[s.k] = n;
@@ -2869,8 +2872,6 @@ function paymentActions(e){
   ]);
 }
 const qebzLink = (e) => e.qebz ? `<span class="link" data-act="view-receipt" data-id="${e.id}">${esc(e.qebz)}</span>` : '<span class="v muted-v">— yüklənməyib</span>';
-const yekunBadge = (e) => yekunaDaxil(e) ? '<span class="badge badge-approved" title="Layihənin yekun ödənişinə daxildir">✓ Yekuna daxil</span>' : '';
-
 function orgTable(rows){
   if(!rows || !rows.length) return '<span class="v muted-v">—</span>';
   return `<table class="mini-table"><thead><tr><th>VÖEN</th><th>Təşkilat</th><th>Töhfə</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.voen) || '—'}</td><td>${esc(r.ad)}</td><td>${esc(r.tohfe)}</td></tr>`).join('')}</tbody></table>`;
@@ -2937,7 +2938,7 @@ function altDetailBody(a){
     <div class="info-card">
       <h4>Layihə ödənişi</h4>
       <div class="info-grid">
-        ${SRC.map(s => infoItem(s.l, m[s.k] != null ? fmt(m[s.k]) + ' AZN' : '—', m[s.k] == null)).join('')}
+        ${SRC.map(s => infoItem(s.l, m[s.k] != null ? srcMebleg(a, s.k) : '—', m[s.k] == null || srcMebleg(a, s.k) === MEBLEG_YOX)).join('')}
         ${infoItem('Maliyyəyə gedir', gedirMaliyyeye(a) ? 'Bəli (ödənişli)' : 'Xeyr (ödənişsiz)')}
       </div>
       ${(a.sponsorlar || []).length || (a.terefdaslar || []).length ? `
@@ -2979,14 +2980,13 @@ function altDetailBody(a){
   if(gedirMaliyyeye(a)){
     const list = odenislerOf(a.id), plan = planMebleg(a), y = a.yekunOdenis;
     if(y){
-      const sec = list.filter(e => (y.odenisler || []).includes(e.id));
       html += `
     <div class="info-card">
       <h4>Yekun ödəniş <span class="count">layihə üçün ümumi ödənilən</span></h4>
       <div class="info-grid">
         ${infoItem('Ümumi ödənilib', `<b style="font-size:1rem;">${fmt(y.cem)} AZN</b>`)}
         ${infoItem('Plan məbləği', fmt(plan) + ' AZN')}
-        ${infoItem('Ödəniş sayı', sec.length)}
+        ${infoItem('Ödəniş sayı', list.length)}
         ${infoItem('Ümumi detallı təsvir', esc(y.tesvir) || '—')}
         ${infoItem('Bitirən / tarix', `${esc(y.kim || '—')} · ${fmtDate(y.tarix)}`)}
       </div>
@@ -2997,11 +2997,11 @@ function altDetailBody(a){
       <h4>Ödənişlər <span class="count">${list.length} qeyd</span></h4>
       <div class="money-strip">
         ${infoItem('Plan məbləği', fmt(plan) + ' AZN')}
-        ${infoItem(y ? 'Yekun ödəniş (seçilmiş)' : 'Ödənilib (təsdiqlənmiş)', fmt(odenilib(a.id)) + ' AZN')}
+        ${infoItem(y ? 'Yekun ödəniş' :'Ödənilib (təsdiqlənmiş)', fmt(odenilib(a.id)) + ' AZN')}
         ${infoItem('Təsdiqlənməyən', list.filter(e => e.status !== 'tesdiqlendi').length)}
       </div>
       ${list.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>№</th><th>Xərcin təyinatı</th><th>Çek</th><th>Ödəmə tarixi</th><th class="num">ƏDV</th><th class="num">Ümumi</th><th>Status</th><th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th></tr></thead><tbody>
-        ${list.map((e, i) => `<tr><td>Ödəniş ${i + 1}</td><td>${esc(e.teyinat)}</td><td>${qebzLink(e)}</td><td>${fmtDate(e.tarix)}</td><td class="num">${fmt(e.edv)}</td><td class="num">${fmt(e.umumi)}</td><td>${odenisBadge(e.status)} ${yekunBadge(e)}</td><td>${paymentActions(e)}</td></tr>`).join('')}
+        ${list.map((e, i) => `<tr><td>Ödəniş ${i + 1}</td><td>${esc(e.teyinat)}</td><td>${qebzLink(e)}</td><td>${fmtDate(e.tarix)}</td><td class="num">${fmt(e.edv)}</td><td class="num">${fmt(e.umumi)}</td><td>${odenisBadge(e.status)}</td><td>${paymentActions(e)}</td></tr>`).join('')}
       </tbody></table></div>` : `<div class="empty sm">${a.status === 'davam' ? 'Layihə Maliyyəyə göndəriləndən sonra ödənişlər burada görünəcək.' : 'Hələ ödəniş daxil edilməyib.'}</div>`}
     </div>`;
   }
@@ -3089,44 +3089,29 @@ function finishByMaliyye(id){
   bitirId = id;
   $('#bitirTitle').textContent = 'Layihəni bitir — ' + a.ad;
   $('#bitirBody').innerHTML = list.map((e, i) => `<tr>
-      <td><input type="checkbox" class="bitir-cb" value="${e.id}" checked></td>
       <td>Ödəniş ${i + 1}</td><td style="text-align:left;">${esc(e.teyinat)}${e.tesvir ? `<span class="sub">${esc(e.tesvir)}</span>` : ''}</td>
       <td>${fmtDate(e.tarix)}</td><td>${qebzLink(e)}</td><td class="num">${fmt(e.edv)}</td><td class="num"><b>${fmt(e.umumi)}</b></td><td>${odenisBadge(e.status)}</td>
     </tr>`).join('');
   $('#bitirPlan').textContent = fmt(planMebleg(a)) + ' AZN';
+  $('#bitirSay').textContent = `${list.length} ödəniş`;
+  $('#bitirCem').textContent = fmt(odenisCem(list)) + ' AZN';
   $('#fBitirTesvir').value = ''; $('#fBitirTesvir').classList.remove('invalid');
-  $('#bitirAll').checked = true;
-  syncBitir();
   openModal('modalBitir');
 }
 let bitirId = null;
-function bitirSecilmis(){ return [...document.querySelectorAll('#bitirBody .bitir-cb:checked')].map(c => Number(c.value)); }
-function syncBitir(){
-  const ids = bitirSecilmis(), all = document.querySelectorAll('#bitirBody .bitir-cb');
-  const cem = odenisCem(expenses.filter(e => ids.includes(e.id)));
-  $('#bitirCem').textContent = fmt(cem) + ' AZN';
-  $('#bitirSay').textContent = `${ids.length} / ${all.length} ödəniş seçilib`;
-  $('#bitirAll').checked = ids.length === all.length && all.length > 0;
-  $('#bitirAll').indeterminate = ids.length > 0 && ids.length < all.length;
-  $all('#bitirBody tr').forEach(tr => tr.classList.toggle('row-off', !tr.querySelector('.bitir-cb').checked));
-}
-$('#bitirBody').addEventListener('change', e => { if(e.target.classList.contains('bitir-cb')) syncBitir(); });
-$('#bitirAll').addEventListener('change', () => { $all('#bitirBody .bitir-cb').forEach(c => c.checked = $('#bitirAll').checked); syncBitir(); });
 $('#btnBitirConfirm').addEventListener('click', () => {
   const a = projectById(bitirId); if(!a) return;
-  const ids = bitirSecilmis();
-  if(!ids.length){ showToast('Ən azı bir ödəniş seçin'); return; }
-  const sec = expenses.filter(e => ids.includes(e.id));
+  const sec = odenislerOf(a.id);
+  if(!sec.length){ showToast('Layihənin heç bir ödənişi yoxdur — əvvəlcə ödəniş əlavə edin'); return; }
   const cekYox = sec.find(e => !e.qebz);
-  if(cekYox){ showToast(`Ödəniş ${odenisNo(cekYox)} (${cekYox.teyinat}): sənəd (çek) yüklənməyib — əvvəlcə yükləyin və ya seçimdən çıxarın`); return; }
+  if(cekYox){ showToast(`Ödəniş ${odenisNo(cekYox)} (${cekYox.teyinat}): sənəd (çek) yüklənməyib — əvvəlcə yükləyin və ya ödənişi silin`); return; }
   const tesvir = $('#fBitirTesvir').value.trim();
   if(!tesvir){ $('#fBitirTesvir').classList.add('invalid'); showToast('Ümumi detallı təsviri yazın'); $('#fBitirTesvir').focus(); return; }
   const cem = odenisCem(sec);
   sec.forEach(e => { if(e.status !== 'tesdiqlendi'){ e.status = 'tesdiqlendi'; e.tesdiqTarix = todayISO(); } });
-  a.yekunOdenis = { odenisler: ids, cem, tesvir, tarix: todayISO(), kim: kimdir() };
+  a.yekunOdenis = { cem, tesvir, tarix: todayISO(), kim: kimdir() };
   a.status = 'tamamlandi'; a.tamamlanma = todayISO();
-  const kenar = odenislerOf(a.id).length - ids.length;
-  addHistory(a, 'Tamamlandı', [`Ümumi ödənilib: ${fmt(cem)} AZN (${ids.length} ödəniş: ${sec.map(e => 'Ödəniş ' + odenisNo(e)).join(', ')})`, ...(kenar ? [`Yekuna daxil edilməyən: ${kenar} ödəniş`] : []), 'Təsvir: ' + tesvir]);
+  addHistory(a, 'Tamamlandı', [`Ümumi ödənilib: ${fmt(cem)} AZN (${sec.length} ödəniş)`, 'Təsvir: ' + tesvir]);
   closeModal('modalBitir');
   renderAll();
   showToast(`Layihə tamamlandı — ümumi ödəniş ${fmt(cem)} AZN`);
@@ -3142,14 +3127,14 @@ function renderXercView(){
   $('#xercProjCount').textContent = projs.length;
   $('#xercCount').textContent = expenses.length;
   $('#adminNoteText').textContent = role === 'maliyye'
-    ? 'Maliyyə rejimi: layihə üzrə ödənişləri (xərcin təyinatı, təsvir, tarix, məbləğ, ƏDV, sənəd) daxil edin. Sonda “Layihəni bitir” ilə yekuna daxil olan ödənişləri seçin, ümumi detallı təsviri yazın — layihə üçün ümumi ödənilən məbləğ yadda saxlanılır.'
+    ? 'Maliyyə rejimi: layihə üzrə ödənişləri (xərcin təyinatı, təsvir, tarix, məbləğ, ƏDV, sənəd) daxil edin. Sonda “Layihəni bitir” ilə ümumi detallı təsviri yazın — bütün ödənişlərin cəmi layihə üçün ümumi ödənilən məbləğ kimi yadda saxlanılır.'
     : 'Bu bölmə yalnız məlumat üçündür. Ödənişli layihə “Təsdiq et və maliyyəyə göndər” ilə buraya düşür; ödənişləri daxil edib layihəni Maliyyə tamamlayır.';
 
   $('#xercProjBody').innerHTML = projs.map(a => {
     const list = odenislerOf(a.id), parent = projectById(a.parentId);
     const tesdiq = list.filter(e => e.status === 'tesdiqlendi').length;
     const m = a.maliyye || {};
-    const menbe = menbeler(a).map(s => `${s.l}: ${fmt(m[s.k])}`).join('<br>');
+    const menbe = menbeler(a).map(s => `${s.l}: ${srcMebleg(a, s.k, '')}`).join('<br>');
     const canPay = role === 'maliyye' && a.status === 'maliyyede';
     const acts = rowMenu([
       ddItem('view-proj', a.id, ICON.eye, 'Ətraflı bax'),
@@ -3180,7 +3165,7 @@ function renderXercView(){
       <td>${fmtDate(e.tarix)}</td>
       <td class="num">${fmt(e.edv)}</td>
       <td class="num">${fmt(e.umumi)}</td>
-      <td>${odenisBadge(e.status)} ${yekunBadge(e)}</td>
+      <td>${odenisBadge(e.status)}</td>
       <td>${paymentActions(e)}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="9"><div class="empty sm">Hələ ödəniş qeydi yoxdur</div></td></tr>`;
@@ -3286,7 +3271,7 @@ function viewExpense(id){
         ${infoItem('YAŞAT Fondu tərəfindən ödənilən', fmt(e.yasat) + ' AZN')}
         ${infoItem('ƏDV', fmt(e.edv) + ' AZN')}
         ${infoItem('Ümumi', `<b>${fmt(e.umumi)} AZN</b>`)}
-        ${infoItem('Status', `${odenisBadge(e.status)}${e.tesdiqTarix ? ` <span style="color:var(--muted);">${fmtDate(e.tesdiqTarix)}</span>` : ''} ${yekunBadge(e)}`)}
+        ${infoItem('Status', `${odenisBadge(e.status)}${e.tesdiqTarix ? ` <span style="color:var(--muted);">${fmtDate(e.tesdiqTarix)}</span>` : ''}`)}
       </div>
     </div>`;
   openModal('modalView');
@@ -3642,7 +3627,7 @@ const REPORT_COLS = [
   { g: 'Maliyyə ödənişləri', k: 'a_odSay', l: 'Ödəniş sayı', v: alt(a => odenislerOf(a.id).length) },
   { g: 'Maliyyə ödənişləri', k: 'a_odTesdiq', l: 'Ümumi ödənilib (AZN)', v: alt(a => odenilib(a.id)) },
   { g: 'Maliyyə ödənişləri', k: 'a_yekunTesvir', l: 'Yekun ödənişin ümumi detallı təsviri', v: alt(a => (a.yekunOdenis || {}).tesvir || '') },
-  { g: 'Maliyyə ödənişləri', k: 'a_odList', l: 'Ödənişlər (№ — tarix — xərcin təyinatı — məbləğ — status)', v: alt(a => odenislerOf(a.id).map((e, i) => `Ödəniş ${i + 1} — ${fmtDate(e.tarix)} — ${e.teyinat} — ${fmt(e.umumi)} AZN — ${e.status === 'tesdiqlendi' ? 'Təsdiqləndi' : 'Təsdiqlənməyib'}${yekunaDaxil(e) ? ' (yekuna daxil)' : ''}`).join('; ')) },
+  { g: 'Maliyyə ödənişləri', k: 'a_odList', l: 'Ödənişlər (№ — tarix — xərcin təyinatı — məbləğ — status)', v: alt(a => odenislerOf(a.id).map((e, i) => `Ödəniş ${i + 1} — ${fmtDate(e.tarix)} — ${e.teyinat} — ${fmt(e.umumi)} AZN — ${e.status === 'tesdiqlendi' ? 'Təsdiqləndi' : 'Təsdiqlənməyib'}`).join('; ')) },
 ];
 const repChecked = new Set(REPORT_COLS.map(c => c.k));
 
@@ -3662,9 +3647,9 @@ const DETAIL_SHEETS = {
   a_konullu:    { name: 'Könüllülər', items: (a) => a.konulluler || [], headers: ['FİN', 'Seriya', 'Ad Soyad', 'Qeyd'], row: (r) => [r.fin || '', r.seriya || '', r.ad || '', r.qeyd || ''] },
   a_sened:      { name: 'Sənədlər', items: (a) => a.senedler || [], headers: ['Sənədin adı', 'Növ'], row: (d) => [d.ad || '', d.nov || 'Digər'] },
   a_odList:     { name: 'Ödənişlər', items: (a) => odenislerOf(a.id),
-                  headers: ['Ödəniş №', 'Xərcin təyinatı', 'Xərcin detallı təsviri', 'Sənəd (çek)', 'Ödəmə tarixi', 'İcraçı', 'YAŞAT Fondu tərəfindən ödənilən (AZN)', 'ƏDV (AZN)', 'Ümumi (AZN)', 'Status', 'Təsdiq tarixi', 'Yekuna daxil'],
+                  headers: ['Ödəniş №', 'Xərcin təyinatı', 'Xərcin detallı təsviri', 'Sənəd (çek)', 'Ödəmə tarixi', 'İcraçı', 'YAŞAT Fondu tərəfindən ödənilən (AZN)', 'ƏDV (AZN)', 'Ümumi (AZN)', 'Status', 'Təsdiq tarixi'],
                   row: (e, i) => ['Ödəniş ' + (i + 1), e.teyinat || '', e.tesvir || '', e.qebz || '', fmtDateOrEmpty(e.tarix), e.icraci || '',
-                                  Number(e.yasat) || 0, Number(e.edv) || 0, Number(e.umumi) || 0, odStatus(e), fmtDateOrEmpty(e.tesdiqTarix), yekunaDaxil(e) ? 'Bəli' : 'Xeyr'] },
+                                  Number(e.yasat) || 0, Number(e.edv) || 0, Number(e.umumi) || 0, odStatus(e), fmtDateOrEmpty(e.tesdiqTarix)] },
 };
 function detailSheets(pairs, keys){
   const LINK = ['Əsas layihə', 'Alt layihə №', 'Alt layihə'];
@@ -3823,7 +3808,7 @@ const T = {
   alt:      ['Alt layihələr', ['ID', 'Əsas layihə ID', 'Ad', 'Yaradılma tarixi', 'Başlama tarixi', 'Bitmə tarixi', 'Ölkə', 'Təşkil forması', 'İcra olunan müəssisə/obyekt',
                                'Fond (AZN)', 'Sponsor (AZN)', 'Tərəfdaş (AZN)', 'Status', 'Yekunlaşdırma tarixi', 'Yekun qeydlər', 'Tamamlanma tarixi',
                                'Geri qaytarılma tarixi', 'Geri qaytarılma səbəbi', 'Geri qaytaran',
-                               'Yekun ödəniş (AZN)', 'Yekun ödənişin təsviri', 'Yekuna daxil ödənişlər (ID)', 'Yekun ödəniş tarixi', 'Yekun ödənişi qeyd edən']],
+                               'Yekun ödəniş (AZN)', 'Yekun ödənişin təsviri', 'Yekun ödəniş tarixi', 'Yekun ödənişi qeyd edən']],
   mekan:    ['Layihə məkanları', ['Alt layihə ID', 'Növ', 'Şəhər/Rayon']],
   teskilat: ['Sponsor və tərəfdaşlar', ['Alt layihə ID', 'Növ', 'VÖEN', 'Təşkilatın adı', 'Töhfə növü']],
   ist:      ['Layihə iştirakçıları', ['Alt layihə ID', 'FİN', 'Ad Soyad', 'Kateqoriya', 'Cins', 'Təvəllüd', 'Yaş (layihə vaxtı)', 'Yaşın hesablandığı tarix']],
@@ -3861,7 +3846,7 @@ const KINDS = {
       alt: [[id, dbV(a.parentId), dbS(a.ad), dbD(a.yaradilma), dbD(a.baslama), dbD(a.bitme), dbS(a.olke), teskilLabel[a.teskil] || dbS(a.teskil), dbS(a.obyekt),
              dbV(m.fond), dbV(m.sponsor), dbV(m.terefdas), statusLabel(a.status), dbD(a.yekunTarix), dbS(a.yekunQeyd), dbD(a.tamamlanma),
              dbD((a.geriQaytarma || {}).tarix), dbS((a.geriQaytarma || {}).sebeb), dbS((a.geriQaytarma || {}).kim),
-             a.yekunOdenis ? dbV(a.yekunOdenis.cem) : '', dbS((a.yekunOdenis || {}).tesvir), a.yekunOdenis ? (a.yekunOdenis.odenisler || []).join(', ') : '', dbD((a.yekunOdenis || {}).tarix), dbS((a.yekunOdenis || {}).kim)]],
+             a.yekunOdenis ? dbV(a.yekunOdenis.cem) : '', dbS((a.yekunOdenis || {}).tesvir), dbD((a.yekunOdenis || {}).tarix), dbS((a.yekunOdenis || {}).kim)]],
       mekan: [...asArr(a.yerler).map(y => [id, 'Şəhər/Rayon', y]), ...asArr(a.ehate).map(y => [id, 'Əhatə dairəsi', y])],
       teskilat: [...(a.sponsorlar || []).map(o => [id, 'Sponsor', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)]), ...(a.terefdaslar || []).map(o => [id, 'Tərəfdaş', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)])],
       ist: (a.istirakcilar || []).map(r => [id, dbS(r.fin), dbS(r.ad), dbS(r.kat || (regPerson(r.fin) || {}).kateqoriya), dbS(r.cins), dbD(r.tevellud), dbV(r.yas), dbD(r.yasTarixi)]),
@@ -3921,7 +3906,11 @@ function fromTables(tb){
     if(dbS(r[14])) o.yekunQeyd = dbS(r[14]);
     if(dbS(r[15])) o.tamamlanma = dbIso(r[15]);
     if(dbS(r[17])) o.geriQaytarma = { tarix: dbIso(r[16]), sebeb: dbS(r[17]), kim: dbS(r[18]) };
-    if(dbS(r[19]) !== '') o.yekunOdenis = { cem: dbN(r[19]) || 0, tesvir: dbS(r[20]), odenisler: dbS(r[21]).split(',').map(x => dbN(x.trim())).filter(x => x != null), tarix: dbIso(r[22]), kim: dbS(r[23]) };
+    if(dbS(r[19]) !== ''){
+      // Köhnə formatda 22-ci sütun 'Yekuna daxil ödənişlər (ID)' idi (sonra tarix, qeyd edən) — o sütun çıxarılıb
+      const kohne = /^\d{2}\.\d{2}\.\d{4}/.test(dbS(r[22])), j = kohne ? 22 : 21;
+      o.yekunOdenis = { cem: dbN(r[19]) || 0, tesvir: dbS(r[20]), tarix: dbIso(r[j]), kim: dbS(r[j + 1]) };
+    }
     return o;
   });
   const hisseRows = tb['Ödəniş hissələri'] || [];
