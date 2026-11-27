@@ -1376,6 +1376,26 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   </div>
 </div>
 
+<!-- MODAL: Yadda saxlanılmamış dəyişikliklər -->
+<div class="overlay" id="modalUnsaved" style="z-index:80;">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3>Dəyişikliklər yadda saxlanılmayıb</h3>
+      <button class="modal-close" data-close="modalUnsaved">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="info-note warn" style="margin:0;">Bu səhifədə etdiyiniz dəyişikliklər hələ yadda saxlanılmayıb. Çıxmazdan əvvəl yadda saxlansın?</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btnUnsCancel">Ləğv et</button>
+      <button class="btn btn-red" id="btnUnsDiscard">Yadda saxlama</button>
+      <button class="btn btn-primary" id="btnUnsSave">Yadda saxla</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: İştirakçı (baza) — yeni / redaktə -->
 <div class="overlay" id="modalReg">
   <div class="modal">
@@ -1700,7 +1720,7 @@ function showToast(text){
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
-function openModal(id){ $('#' + id).classList.add('active'); }
+function openModal(id){ $('#' + id).classList.add('active'); snapForm(id); }
 function closeModal(id){
   if(pageModal === id){ showWrap(screen); return; }
   $('#' + id).classList.remove('active');
@@ -1714,10 +1734,58 @@ function openAsPage(id){
   showWrap('edit');
   pageModal = id;
   ov.classList.add('active');
+  snapForm(id);
   window.scrollTo(0, 0);
 }
-$all('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
-$all('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov && pageModal !== ov.id) ov.classList.remove('active'); }));
+
+// ---------- Yadda saxlanılmamış dəyişikliklər ----------
+// Form açılanda vəziyyəti yadda saxlanılır; "Geri qayıt", "Ləğv et", ×, fon, menyu ilə çıxanda dəyişiklik varsa soruşulur.
+const FORM_SAVE = { modalEsas: 'btnSaveEsas', modalAlt: 'btnSaveAlt', modalXerc: 'btnSaveXerc', modalReg: 'btnSaveReg' };
+const formSnap = {};
+function formState(id){
+  const el = $('#' + id);
+  const vals = [...el.querySelectorAll('input, select, textarea')]
+    .filter(i => i.type !== 'file' && !i.classList.contains('ms-search'))
+    .map(i => (i.type === 'checkbox' || i.type === 'radio') ? i.checked : i.value);
+  return JSON.stringify(vals) + (id === 'modalAlt' ? JSON.stringify(A) : '');
+}
+function snapForm(id){ if(FORM_SAVE[id]) formSnap[id] = formState(id); }
+const isFormOpen = (id) => $('#' + id).classList.contains('active');
+const isDirty = (id) => !!FORM_SAVE[id] && isFormOpen(id) && formSnap[id] !== undefined && formState(id) !== formSnap[id];
+let unsaved = null;
+function guardLeave(id, after){
+  if(!isDirty(id)){ closeModal(id); if(after) after(); return; }
+  unsaved = { id, after };
+  openModal('modalUnsaved');
+}
+$('#btnUnsSave').addEventListener('click', () => {
+  const u = unsaved; unsaved = null; closeModal('modalUnsaved');
+  if(!u) return;
+  $('#' + FORM_SAVE[u.id]).click();                 // yoxlamadan keçməsə, forma açıq qalır
+  if(!isFormOpen(u.id) && u.after) u.after();
+});
+$('#btnUnsDiscard').addEventListener('click', () => {
+  const u = unsaved; unsaved = null; closeModal('modalUnsaved');
+  if(!u) return;
+  closeModal(u.id); showToast('Dəyişikliklər yadda saxlanılmadı');
+  if(u.after) u.after();
+});
+$('#btnUnsCancel').addEventListener('click', () => { unsaved = null; closeModal('modalUnsaved'); });
+// Redaktə səhifəsi açıqdırsa, menyudan və ya başqa düymə ilə çıxmaq istəyəndə də soruşulur
+document.addEventListener('click', (e) => {
+  if(!pageModal || !isDirty(pageModal)) return;
+  const t = e.target.closest('.nav-item, [data-act], #btnBackToLayihe, #btnBackToEsas, #btnBackToAile');
+  if(!t || t.closest('#editWrap') || t.closest('#qx') || t.closest('.overlay')) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  $('#topMenu').classList.remove('open');
+  guardLeave(pageModal, () => t.click());
+}, true);
+// Səhifəni yeniləyəndə / bağlayanda brauzerin öz xəbərdarlığı
+window.addEventListener('beforeunload', (e) => {
+  if(Object.keys(FORM_SAVE).some(isDirty)){ e.preventDefault(); e.returnValue = ''; }
+});
+$all('[data-close]').forEach(btn => btn.addEventListener('click', () => guardLeave(btn.dataset.close)));
+$all('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov && pageModal !== ov.id) guardLeave(ov.id); }));
 
 function confirmAction(title, text, action, btnText, btnClass){
   $('#confirmTitle').textContent = title;
@@ -1962,7 +2030,7 @@ function showLayiheList(){
   renderLayiheTable();
 }
 $('#btnBackToLayihe').addEventListener('click', showLayiheList);
-$('#btnEditBack').addEventListener('click', () => { if(pageModal) closeModal(pageModal); });
+$('#btnEditBack').addEventListener('click', () => { if(pageModal) guardLeave(pageModal); });
 $('#btnBackToEsas').addEventListener('click', () => currentEsasId ? openEsasDetail(currentEsasId) : showLayiheList());
 function goToAlt(id){
   $all('.overlay.active').forEach(o => o.classList.remove('active'));
@@ -3250,7 +3318,7 @@ function openPerson(fin){
     <div class="info-card">
       <h4>Layihələr <span class="count">${hist.length} layihə</span></h4>
       ${hist.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>Əsas layihə</th><th>Alt layihə</th><th>Tarix aralığı</th><th>Rol</th><th>Yaş (layihə vaxtı)</th><th>Əlavə edilmə tarixi</th><th>Status</th><th style="width:110px;"></th></tr></thead><tbody>
-        ${hist.map(x => `<tr><td>${x.parent ? esc(x.parent.ad) : '—'}</td><td>${projectById(x.a.id) ? `<span class="link" data-act="go-alt" data-id="${x.a.id}">${esc(x.a.ad)}</span>` : esc(x.a.ad)}</td><td>${fmtDate(x.a.baslama)} — ${fmtDate(x.a.bitme)}</td><td>${x.rol === 'İştirakçı' ? 'İştirak edib' : esc(x.rol)}${x.sebeb ? `<span class="sub">Səbəb: ${esc(x.sebeb)}</span>` : ''}</td><td>${x.yas === '' || x.yas == null ? '—' : x.yas}</td><td>${x.rol === 'İştirakçı' || x.rol === 'İştirakdan imtina' || x.silinib ? esc(elaveTarixi(fin, x.a.id)) : '—'}</td><td>${statusBadge(x.a.status)}</td><td><button type="button" class="btn btn-ghost btn-xs" data-person-hist="${x.a.id}">${ICON.hist} Tarixçə</button></td></tr>`).join('')}
+        ${hist.map(x => `<tr><td>${x.parent ? esc(x.parent.ad) : '—'}</td><td>${projectById(x.a.id) ? `<span class="link" data-act="go-alt" data-id="${x.a.id}">${esc(x.a.ad)}</span>` : esc(x.a.ad)}</td><td>${fmtDate(x.a.baslama)} — ${fmtDate(x.a.bitme)}</td><td>${x.rol === 'İştirakçı' ? 'İştirak edib' : esc(x.rol)}</td><td>${x.yas === '' || x.yas == null ? '—' : x.yas}</td><td>${x.rol === 'İştirakçı' || x.rol === 'İştirakdan imtina' || x.silinib ? esc(elaveTarixi(fin, x.a.id)) : '—'}</td><td>${statusBadge(x.a.status)}</td><td><button type="button" class="btn btn-ghost btn-xs" data-person-hist="${x.a.id}">${ICON.hist} Tarixçə</button></td></tr>`).join('')}
       </tbody></table></div>` : '<span class="v muted-v">Hələ heç bir layihədə iştirak etməyib</span>'}
     </div>`;
   window.scrollTo(0, 0);
