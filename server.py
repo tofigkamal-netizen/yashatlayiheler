@@ -328,6 +328,8 @@ def a_syncTables(token, ops):
             w = len(headers)
             for i, h in enumerate(headers, 1):
                 ws.cell(1, i, h).font = Font(bold=True)
+            for c in range(w + 1, ws.max_column + 1):  # köhnə formatdan qalan artıq başlıqlar
+                ws.cell(1, c).value = None
             rows = [list(r)[:w] for r in ws.iter_rows(min_row=2, values_only=True)]
             rows = [r for r in rows if any(v not in (None, '') for v in r)]
             key = lambda r: str(cell_out(r[0])) if r else ''
