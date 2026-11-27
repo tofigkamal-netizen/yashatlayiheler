@@ -1188,7 +1188,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 </div>
 
 <!-- MODAL: Tarixçə (əsas və alt layihə) -->
-<div class="overlay" id="modalHist">
+<div class="overlay" id="modalHist" style="z-index:62;">
   <div class="modal xwide">
     <div class="modal-header">
       <h3>Tarixçə</h3>
@@ -1233,7 +1233,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 </div>
 
 <!-- MODAL: Ödəniş (Maliyyə) -->
-<div class="overlay" id="modalXerc">
+<div class="overlay" id="modalXerc" style="z-index:58;">
   <div class="modal">
     <div class="modal-header">
       <h3 id="modalXercTitle">Yeni ödəniş</h3>
@@ -1271,7 +1271,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 </div>
 
 <!-- MODAL: Ödəniş məlumatı -->
-<div class="overlay" id="modalView">
+<div class="overlay" id="modalView" style="z-index:55;">
   <div class="modal xwide">
     <div class="modal-header">
       <h3 id="viewTitle">Ödəniş məlumatı</h3>
@@ -1398,6 +1398,49 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <i class="icon-file-excel"></i>
         Yüklə
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Maliyyə — layihəyə ətraflı baxış -->
+<div class="overlay" id="modalProj">
+  <div class="modal xwide" style="max-width:1100px;">
+    <div class="modal-header">
+      <div>
+        <h3 id="projTitle">Layihə</h3>
+        <div id="projSub" style="margin-top:6px;font-size:.75rem;color:var(--muted);"></div>
+      </div>
+      <button class="modal-close" data-close="modalProj">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="max-height:72vh;">
+      <div class="toolbar-actions" id="projActions" style="justify-content:flex-end;margin-bottom:14px;"></div>
+      <div id="projBody"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-gray" data-close="modalProj">Bağla</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Maliyyə — layihəni geri qaytar -->
+<div class="overlay" id="modalGeri" style="z-index:70;">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>Layihəni geri qaytar</h3>
+      <button class="modal-close" data-close="modalGeri">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="info-note warn" id="geriInfo" style="margin:0 0 14px;"></div>
+      <div class="form-field">
+        <label>Geri qaytarma səbəbi <span class="opt">(məcburi — Layihə roluna və tarixçəyə yazılır)</span></label>
+        <textarea id="fGeriSebeb" placeholder="Məs: sponsor məbləği müqavilə ilə uyğun deyil, düzəliş edin" style="min-height:90px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modalGeri">Ləğv et</button>
+      <button class="btn btn-danger-solid" id="btnGeriConfirm"><i class="icon-undo2"></i> Geri qaytar</button>
     </div>
   </div>
 </div>
@@ -1737,6 +1780,7 @@ function maliyyeBadges(a){
 }
 const STATUS = { davam: { l: 'Davam edir', c: 'badge-blue' }, maliyyede: { l: 'Maliyyədə', c: 'badge-pending' }, tamamlandi: { l: 'Tamamlandı', c: 'badge-approved' }, silinib: { l: 'Layihə silinib', c: 'badge-gray' } };
 const statusLabel = (st) => (STATUS[st] || STATUS.davam).l;
+const geriBadge = (a) => a.geriQaytarma && a.status === 'davam' ? ' <span class="badge badge-rejected" title="Maliyyə tərəfindən geri qaytarılıb">Geri qaytarılıb</span>' : '';
 const statusBadge = (st) => { const s = STATUS[st] || STATUS.davam; return `<span class="badge ${s.c}">${s.l}</span>`; };
 const odenisBadge = (st) => st === 'tesdiqlendi' ? '<span class="badge badge-approved">✓ Təsdiqləndi</span>' : '<span class="badge badge-pending">Təsdiqlənməyib</span>';
 
@@ -2171,7 +2215,7 @@ function renderAltTable(){
         <td>${fmtDate(a.baslama)} — ${fmtDate(a.bitme)}</td>
         <td>${teskilLabel[a.teskil] || '—'}</td>
         <td>${maliyyeBadges(a)}</td>
-        <td>${statusBadge(a.status)}</td>
+        <td>${statusBadge(a.status)}${geriBadge(a)}</td>
         <td>${rowMenu([
           ddItem('open-alt', a.id, ICON.eye, 'Ətraflı bax'),
           a.status !== 'tamamlandi' ? ddItem('edit-alt', a.id, ICON.edit, 'Redaktə et') : '',
@@ -2850,7 +2894,7 @@ function openAltDetail(id){
   const parent = projectById(a.parentId);
   $('#btnBackToEsasLabel').textContent = parent ? `"${parent.ad}" — alt layihələrə qayıt` : 'Əsas layihəyə qayıt';
   $('#detailTitle').textContent = a.ad;
-  $('#detailBadges').innerHTML = `<span class="badges">${statusBadge(a.status)} ${maliyyeBadges(a)} <span class="badge badge-gray">${teskilLabel[a.teskil] || '—'}</span></span>`;
+  $('#detailBadges').innerHTML = `<span class="badges">${statusBadge(a.status)}${geriBadge(a)} ${maliyyeBadges(a)} <span class="badge badge-gray">${teskilLabel[a.teskil] || '—'}</span></span>`;
 
   let acts = `<button class="btn btn-export btn-sm" data-act="report" data-id="alt:${a.id}"><span class="ic">${ICON.dl}</span><span class="tx">İxrac et</span></button>
     <button class="btn btn-ghost btn-sm" data-act="history" data-id="${a.id}">${ICON.hist} Tarixçə</button>`;
@@ -2865,7 +2909,12 @@ function openAltDetail(id){
     else acts += `<span class="role-hint">Ödənişləri Maliyyə daxil edir</span>`;
   }
   $('#altActions').innerHTML = acts;
+  $('#altBody').innerHTML = altDetailBody(a);
+}
 
+// Alt layihənin ətraflı baxış məzmunu — həm Layihələr səhifəsində, həm Maliyyənin pəncərəsində
+function altDetailBody(a){
+  const parent = projectById(a.parentId);
   const ist = a.istirakcilar || [];
   const kisi = ist.filter(r => r.cins === 'Kişi').length, qadin = ist.filter(r => r.cins === 'Qadın').length;
   const yaslar = ist.map(r => Number(r.yas)).filter(n => !isNaN(n) && n !== '');
@@ -2910,7 +2959,7 @@ function openAltDetail(id){
     <div class="info-card">
       <h4>İştirakçılar <span class="count">${ist.length} nəfər · Kişi: ${kisi} · Qadın: ${qadin} · Orta yaş: ${ortaYas}</span></h4>
       ${ist.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>FİN</th><th>Ad Soyad</th><th>Cins</th><th>Təvəllüd</th><th>Yaş (layihə vaxtı)</th></tr></thead><tbody>
-        ${ist.map(r => `<tr><td>${esc(r.fin)}</td><td>${inReg(r.fin) ? `<span class="link" data-act="person" data-id="${esc(r.fin)}">${esc(r.ad)}</span>` : esc(r.ad)}</td><td>${esc(r.cins)}</td><td>${fmtDate(r.tevellud)}</td><td>${r.yas !== '' && r.yas != null ? r.yas : '—'}</td></tr>`).join('')}
+        ${ist.map(r => `<tr><td>${esc(r.fin)}</td><td>${inReg(r.fin) && canView('aile') ? `<span class="link" data-act="person" data-id="${esc(r.fin)}">${esc(r.ad)}</span>` : esc(r.ad)}</td><td>${esc(r.cins)}</td><td>${fmtDate(r.tevellud)}</td><td>${r.yas !== '' && r.yas != null ? r.yas : '—'}</td></tr>`).join('')}
       </tbody></table></div>` : '<span class="v muted-v">İştirakçı yoxdur</span>'}
     </div>
     <div class="info-card">
@@ -2953,8 +3002,11 @@ function openAltDetail(id){
       </tbody></table></div>` : `<div class="empty sm">${a.status === 'davam' ? 'Layihə Maliyyəyə göndəriləndən sonra ödənişlər burada görünəcək.' : 'Hələ ödəniş daxil edilməyib.'}</div>`}
     </div>`;
   }
-  $('#altBody').innerHTML = html;
+  return geriQaytarmaNote(a) + html;
 }
+const geriQaytarmaNote = (a) => a.geriQaytarma && a.status === 'davam'
+  ? `<div class="admin-note" style="margin:0 0 16px;"><i class="icon-undo2"></i><span><b>Maliyyə tərəfindən geri qaytarılıb</b> (${fmtDate(a.geriQaytarma.tarix)}${a.geriQaytarma.kim ? ', ' + esc(a.geriQaytarma.kim) : ''}): ${esc(a.geriQaytarma.sebeb)}<br>Düzəlişləri edib yenidən “Təsdiq et və maliyyəyə göndər” basın.</span></div>`
+  : '';
 
 // ---------- Yekunlaşdırma (Layihəçi) ----------
 let yekunId = null;
@@ -2979,10 +3031,50 @@ $('#btnYekunConfirm').addEventListener('click', () => {
   const t = $('#fYekunQeyd').value.trim();
   if(!t){ $('#fYekunQeyd').classList.add('invalid'); showToast('Yekun qeydləri yazın'); return; }
   a.yekunQeyd = t; a.yekunTarix = todayISO();
-  if(gedirMaliyyeye(a)){ a.status = 'maliyyede'; addHistory(a, 'Maliyyəyə göndərildi', t); showToast('Layihə Maliyyəyə göndərildi'); }
+  const yeniden = !!a.geriQaytarma; delete a.geriQaytarma;
+  if(gedirMaliyyeye(a)){ a.status = 'maliyyede'; addHistory(a, yeniden ? 'Yenidən Maliyyəyə göndərildi' : 'Maliyyəyə göndərildi', t); showToast(yeniden ? 'Layihə yenidən Maliyyəyə göndərildi' : 'Layihə Maliyyəyə göndərildi'); }
   else { a.status = 'tamamlandi'; a.tamamlanma = todayISO(); addHistory(a, 'Tamamlandı', t); showToast('Layihə tamamlandı'); }
   closeModal('modalYekun');
   renderAll();
+});
+
+// ---------- Maliyyə: layihəyə ətraflı baxış (öz bölməsindən çıxmadan) ----------
+let projViewId = null;
+function openProjView(id){
+  const a = projectById(id); if(!a) return;
+  projViewId = id;
+  const parent = projectById(a.parentId), canPay = role === 'maliyye' && a.status === 'maliyyede';
+  $('#projTitle').textContent = a.ad;
+  $('#projSub').innerHTML = `${parent ? esc(parent.ad) + ' · ' : ''}<span class="badges">${statusBadge(a.status)} ${maliyyeBadges(a)}</span>`;
+  $('#projActions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" data-act="history" data-id="${a.id}">${ICON.hist} Tarixçə</button>
+    ${canPay ? `<button class="btn btn-primary btn-sm" data-act="add-payment" data-id="${a.id}">${ICON.plus} Ödəniş əlavə et</button>
+    <button class="btn btn-red btn-sm" data-act="return-proj" data-id="${a.id}"><i class="icon-undo2"></i> Geri qaytar</button>` : ''}`;
+  $('#projBody').innerHTML = altDetailBody(a);
+  openModal('modalProj');
+}
+
+// ---------- Maliyyə: layihəni Layihə roluna geri qaytarmaq (səbəb məcburi) ----------
+let geriId = null;
+function openGeri(id){
+  const a = projectById(id); if(!a) return;
+  if(role !== 'maliyye' || a.status !== 'maliyyede'){ showToast('Yalnız Maliyyədə olan layihəni Maliyyə geri qaytara bilər'); return; }
+  geriId = id;
+  const n = odenislerOf(id).length;
+  $('#geriInfo').innerHTML = `<b>${esc(a.ad)}</b> Layihə roluna geri qaytarılacaq və “Davam edir” statusuna keçəcək. Layihə rolu düzəliş edib yenidən göndərə biləcək.${n ? `<br>Daxil edilmiş ${n} ödəniş silinmir — layihə yenidən göndəriləndə yerində olacaq.` : ''}`;
+  $('#fGeriSebeb').value = ''; $('#fGeriSebeb').classList.remove('invalid');
+  openModal('modalGeri'); $('#fGeriSebeb').focus();
+}
+$('#btnGeriConfirm').addEventListener('click', () => {
+  const a = projectById(geriId); if(!a) return;
+  const sebeb = $('#fGeriSebeb').value.trim();
+  if(!sebeb){ $('#fGeriSebeb').classList.add('invalid'); showToast('Geri qaytarma səbəbini yazın'); return; }
+  a.status = 'davam';
+  a.geriQaytarma = { tarix: todayISO(), sebeb, kim: kimdir() };
+  addHistory(a, 'Maliyyədən geri qaytarıldı', 'Səbəb: ' + sebeb);
+  closeModal('modalGeri'); closeModal('modalProj');
+  renderAll();
+  showToast('Layihə geri qaytarıldı — Layihə rolu düzəliş edib yenidən göndərəcək');
 });
 
 // ---------- Layihəni bitir (Maliyyə, sonuncu ödənişdən sonra) ----------
@@ -3022,9 +3114,11 @@ function renderXercView(){
     const menbe = menbeler(a).map(s => `${s.l}: ${fmt(m[s.k])}`).join('<br>');
     const canPay = role === 'maliyye' && a.status === 'maliyyede';
     const acts = rowMenu([
+      ddItem('view-proj', a.id, ICON.eye, 'Ətraflı bax'),
       ddItem('history', a.id, ICON.hist, 'Tarixçə'),
       canPay ? DD_SEP + ddItem('add-payment', a.id, ICON.plus, 'Ödəniş əlavə et') : '',
       canPay ? ddItem('finish-fin', a.id, ICON.check, 'Layihəni bitir', 'ok') : '',
+      canPay ? ddItem('return-proj', a.id, '<i class="icon-undo2"></i>', 'Geri qaytar', 'danger') : '',
     ]);
     return `<tr>
       <td>#${pad4(a.id)}</td>
@@ -3723,6 +3817,8 @@ const ACTIONS = {
   'delete-alt': (id) => deleteAlt(id),
   'finalize': (id) => openYekun(id),
   'add-payment': (id) => openXercModal(null, id),
+  'view-proj': (id) => openProjView(id),
+  'return-proj': (id) => openGeri(id),
   'finish-fin': (id) => finishByMaliyye(id),
   'add-hisse': (id) => openHisseModal(id, null),
   'edit-hisse': (key) => { const [eid, no] = hisseKey(key); openHisseModal(eid, no); },
@@ -3752,6 +3848,7 @@ document.addEventListener('click', (e) => {
 // =====================================================================
 function renderAll(){
   renderLayiheTable();
+  if(projViewId && isFormOpen('modalProj')) openProjView(projViewId);
   if(personFin && $('#personWrap').style.display !== 'none') openPerson(personFin);
   renderXercView();
   renderAile();
@@ -3771,7 +3868,8 @@ const IS_LOCALHOST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const T = {
   esas:     ['Əsas layihələr', ['ID', 'Ad', 'Ətraflı məlumat', 'Kateqoriya', 'Layihə növü', 'Yaranma tarixi', 'Bitmə tarixi']],
   alt:      ['Alt layihələr', ['ID', 'Əsas layihə ID', 'Ad', 'Yaradılma tarixi', 'Başlama tarixi', 'Bitmə tarixi', 'Ölkə', 'Təşkil forması', 'İcra olunan müəssisə/obyekt',
-                               'Fond (AZN)', 'Sponsor (AZN)', 'Tərəfdaş (AZN)', 'Status', 'Yekunlaşdırma tarixi', 'Yekun qeydlər', 'Tamamlanma tarixi']],
+                               'Fond (AZN)', 'Sponsor (AZN)', 'Tərəfdaş (AZN)', 'Status', 'Yekunlaşdırma tarixi', 'Yekun qeydlər', 'Tamamlanma tarixi',
+                               'Geri qaytarılma tarixi', 'Geri qaytarılma səbəbi', 'Geri qaytaran']],
   mekan:    ['Layihə məkanları', ['Alt layihə ID', 'Növ', 'Şəhər/Rayon']],
   teskilat: ['Sponsor və tərəfdaşlar', ['Alt layihə ID', 'Növ', 'VÖEN', 'Təşkilatın adı', 'Töhfə növü']],
   ist:      ['Layihə iştirakçıları', ['Alt layihə ID', 'FİN', 'Ad Soyad', 'Kateqoriya', 'Cins', 'Təvəllüd', 'Yaş (layihə vaxtı)', 'Yaşın hesablandığı tarix']],
@@ -3808,7 +3906,8 @@ const KINDS = {
     const m = a.maliyye || {}, id = a.id;
     return {
       alt: [[id, dbV(a.parentId), dbS(a.ad), dbD(a.yaradilma), dbD(a.baslama), dbD(a.bitme), dbS(a.olke), teskilLabel[a.teskil] || dbS(a.teskil), dbS(a.obyekt),
-             dbV(m.fond), dbV(m.sponsor), dbV(m.terefdas), statusLabel(a.status), dbD(a.yekunTarix), dbS(a.yekunQeyd), dbD(a.tamamlanma)]],
+             dbV(m.fond), dbV(m.sponsor), dbV(m.terefdas), statusLabel(a.status), dbD(a.yekunTarix), dbS(a.yekunQeyd), dbD(a.tamamlanma),
+             dbD((a.geriQaytarma || {}).tarix), dbS((a.geriQaytarma || {}).sebeb), dbS((a.geriQaytarma || {}).kim)]],
       mekan: [...asArr(a.yerler).map(y => [id, 'Şəhər/Rayon', y]), ...asArr(a.ehate).map(y => [id, 'Əhatə dairəsi', y])],
       teskilat: [...(a.sponsorlar || []).map(o => [id, 'Sponsor', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)]), ...(a.terefdaslar || []).map(o => [id, 'Tərəfdaş', dbS(o.voen), dbS(o.ad), dbS(o.tohfe)])],
       ist: (a.istirakcilar || []).map(r => [id, dbS(r.fin), dbS(r.ad), dbS(r.kat || (regPerson(r.fin) || {}).kateqoriya), dbS(r.cins), dbD(r.tevellud), dbV(r.yas), dbD(r.yasTarixi)]),
@@ -3868,6 +3967,7 @@ function fromTables(tb){
     if(dbS(r[13])) o.yekunTarix = dbIso(r[13]);
     if(dbS(r[14])) o.yekunQeyd = dbS(r[14]);
     if(dbS(r[15])) o.tamamlanma = dbIso(r[15]);
+    if(dbS(r[17])) o.geriQaytarma = { tarix: dbIso(r[16]), sebeb: dbS(r[17]), kim: dbS(r[18]) };
     return o;
   });
   const hisMap = dbGroup(g('hisse'));
