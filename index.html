@@ -512,6 +512,8 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   @keyframes alDot{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
   @keyframes alBar{0%{transform:translateX(-110%);}100%{transform:translateX(260%);}}
   @media (prefers-reduced-motion: reduce){.app-loader *{animation:none !important;}}
+  .req{color:#e53935;font-weight:700;margin-left:3px;}
+  .src-amount .req{margin-left:4px;align-self:center;}
   .bitir-sum{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 22px;border-top:2px solid #b7b7b7;background:#fafbfd;font-size:.8125rem;}
   .bitir-sum .sep{margin:0 .5rem;color:#bbb;}
   .bitir-total{font-size:1rem;} .bitir-total b{color:#1E88E5;font-size:1.15rem;}
@@ -1032,15 +1034,15 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-field full">
-          <label>Ad <span class="opt">(məcburi)</span></label>
+          <label>Ad <span class="req" title="Məcburi xana">*</span></label>
           <input type="text" id="fEsasAd" placeholder="Məs: Hədiyyə karvanı">
         </div>
         <div class="form-field full">
-          <label>Ətraflı məlumat <span class="opt">(məcburi)</span></label>
+          <label>Ətraflı məlumat <span class="req" title="Məcburi xana">*</span></label>
           <textarea id="fEsasMelumat" placeholder="Əsas layihə haqqında məlumat" style="min-height:80px;"></textarea>
         </div>
         <div class="form-field">
-          <label>Kateqoriya <span class="opt">(məcburi)</span></label>
+          <label>Kateqoriya <span class="req" title="Məcburi xana">*</span></label>
           <select id="fEsasKateqoriya">
             <option value="Təhsil">Təhsil</option>
             <option value="Müalicə">Müalicə</option>
@@ -1051,7 +1053,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <input type="text" id="fEsasKateqoriyaDiger" placeholder="Kateqoriyanı əllə yazın" style="display:none;">
         </div>
         <div class="form-field">
-          <label>Layihə növü <span class="opt">(məcburi)</span></label>
+          <label>Layihə növü <span class="req" title="Məcburi xana">*</span></label>
           <select id="fEsasNovu">
             <option value="Sosial">Sosial</option>
             <option value="Təhsil">Təhsil</option>
@@ -1061,11 +1063,11 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <input type="text" id="fEsasNovuDiger" placeholder="Layihə növünü əllə yazın" style="display:none;">
         </div>
         <div class="form-field">
-          <label>Layihənin yaranma tarixi <span class="opt">(məcburi)</span></label>
+          <label>Layihənin yaranma tarixi <span class="req" title="Məcburi xana">*</span></label>
           <input type="date" id="fEsasTarix">
         </div>
         <div class="form-field">
-          <label>Layihənin bitmə tarixi <span class="opt">(davamedici layihədə boş saxlayın)</span></label>
+          <label>Layihənin bitmə tarixi</label>
           <input type="date" id="fEsasBitme">
         </div>
       </div>
@@ -1091,11 +1093,11 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       <div class="form-section">
         <div class="form-grid">
           <div class="form-field full">
-            <label>Əsas layihə <span class="opt">(məcburi)</span></label>
+            <label>Əsas layihə <span class="req" title="Məcburi xana">*</span></label>
             <select id="fAltParent"></select>
           </div>
           <div class="form-field full">
-            <label>Ad <span class="opt">(məcburi)</span></label>
+            <label>Ad <span class="req" title="Məcburi xana">*</span></label>
             <input type="text" id="fAltAd" placeholder="Məs: Hədiyyə karvanı — 2026, Gəncə">
           </div>
           <div class="form-field">
@@ -1157,22 +1159,22 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 
       <div class="form-section">
         <div class="form-section-title">Layihə ödənişi</div>
-        <div class="form-section-sub">Maliyyələşmə mənbələrini seçin — bir neçəsini seçmək olar. Fond və Sponsor üçün məbləğ məcburidir, Tərəfdaş üçün istəyə görə. Heç biri seçilməsə layihə ödənişsizdir.</div>
+        <div class="form-section-sub">Maliyyələşmə mənbələrini seçin — bir neçəsini seçmək olar. Heç biri seçilməsə layihə ödənişsizdir.</div>
         <div class="src-list" id="srcList">
           <div class="src-row" data-src="fond">
             <label class="pill"><input type="checkbox" value="fond"> Fond</label>
             <span class="src-off">Seçilməyib</span>
-            <div class="src-amount"><input type="number" class="inp" id="fSrcFond" min="0" step="0.01" placeholder="Məbləğ (məcburi)"><span class="cur">AZN</span></div>
+            <div class="src-amount"><input type="number" class="inp" id="fSrcFond" min="0" step="0.01" placeholder="Məbləğ"><span class="cur">AZN</span><span class="req" title="Seçiləndə məcburidir">*</span></div>
           </div>
           <div class="src-row" data-src="sponsor">
             <label class="pill"><input type="checkbox" value="sponsor"> Sponsor</label>
             <span class="src-off">Seçilməyib</span>
-            <div class="src-amount"><input type="number" class="inp" id="fSrcSponsor" min="0" step="0.01" placeholder="Məbləğ (məcburi)"><span class="cur">AZN</span></div>
+            <div class="src-amount"><input type="number" class="inp" id="fSrcSponsor" min="0" step="0.01" placeholder="Məbləğ"><span class="cur">AZN</span><span class="req" title="Seçiləndə məcburidir">*</span></div>
           </div>
           <div class="src-row" data-src="terefdas">
             <label class="pill"><input type="checkbox" value="terefdas"> Tərəfdaş</label>
             <span class="src-off">Seçilməyib</span>
-            <div class="src-amount"><input type="number" class="inp" id="fSrcTerefdas" min="0" step="0.01" placeholder="Məbləğ (istəyə görə)"><span class="cur">AZN</span></div>
+            <div class="src-amount"><input type="number" class="inp" id="fSrcTerefdas" min="0" step="0.01" placeholder="Məbləğ"><span class="cur">AZN</span></div>
           </div>
         </div>
         <div class="info-note" id="altMaliyyeNote"></div>
@@ -1299,7 +1301,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body">
       <div class="info-note" id="yekunInfo" style="margin:0 0 14px;"></div>
       <div class="form-field full">
-        <label>Yekun qeydlər <span class="opt">(məcburi)</span></label>
+        <label>Yekun qeydlər <span class="req" title="Məcburi xana">*</span></label>
         <textarea id="fYekunQeyd" style="min-height:120px;" placeholder="Məs: Layihədə 1 insident yaşandı, 2 nəfər layihədən kənarlaşdırıldı, 5 nəfər iştirakı təsdiqləmişdi, 3-ü gəldi və s."></textarea>
       </div>
     </div>
@@ -1322,12 +1324,12 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-field full">
-          <label>Layihə <span class="opt">(yalnız Maliyyəyə göndərilmiş layihələr)</span></label>
+          <label>Layihə <span class="req" title="Məcburi xana">*</span></label>
           <select id="fXercLayihe"></select>
           <div class="hint" id="xercNoHint"></div>
         </div>
         <div class="form-field full">
-          <label>Xərcin təyinatı <span class="opt">(məcburi)</span></label>
+          <label>Xərcin təyinatı <span class="req" title="Məcburi xana">*</span></label>
           <input type="text" id="fXercTeyinat" placeholder="Məs: Hədiyyələrin yerləşdiyi qutuların alınması">
         </div>
         <div class="form-field full">
@@ -1335,7 +1337,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <textarea id="fXercTesvir" placeholder="Xərc haqqında ətraflı izah"></textarea>
         </div>
         <div class="form-field full">
-          <label>Sənəd (çek) <span class="opt">(təsdiq üçün məcburi)</span></label>
+          <label>Sənəd (çek)</label>
           <div class="file-drop" id="fileDrop">
             <i class="icon-file-text2"></i>
             <span id="fileDropText">Sənədi seçmək üçün klikləyin (PDF/JPG/PNG)</span>
@@ -1343,7 +1345,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <input type="file" id="fXercQebz" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
         </div>
         <div class="form-field">
-          <label>Ödəmə tarixi <span class="opt">(məcburi)</span></label>
+          <label>Ödəmə tarixi <span class="req" title="Məcburi xana">*</span></label>
           <input type="date" id="fXercTarix">
         </div>
         <div class="form-field">
@@ -1359,7 +1361,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <input type="number" id="fXercEdv" placeholder="0.00" step="0.01">
         </div>
         <div class="form-field full">
-          <label>Ümumi (AZN) <span class="opt">(məcburi)</span></label>
+          <label>Ümumi (AZN) <span class="req" title="Məcburi xana">*</span></label>
           <input type="number" id="fXercUmumi" placeholder="0.00" step="0.01">
           <div class="hint">YAŞAT Fondu tərəfindən ödənilən + ƏDV cəmi avtomatik hesablanır, lazım olsa dəyişə bilərsiniz.</div>
         </div>
@@ -1412,7 +1414,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <div class="bitir-total">Ödənişlərin cəmi: <b id="bitirCem">0.00 AZN</b></div>
       </div>
       <div class="form-field" style="padding:0 22px 18px;">
-        <label>Ümumi detallı təsvir <span class="opt">(məcburi)</span></label>
+        <label>Ümumi detallı təsvir <span class="req" title="Məcburi xana">*</span></label>
         <textarea id="fBitirTesvir" placeholder="Məs: 2026-cı il “Hədiyyə karvanı” layihəsi üçün promo məhsulların, qutuların, hədiyyələrin alınması və daşınması xərcləri" style="min-height:80px;"></textarea>
       </div>
     </div>
@@ -1516,7 +1518,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body">
       <div class="info-note warn" id="geriInfo" style="margin:0 0 14px;"></div>
       <div class="form-field">
-        <label>Geri qaytarma səbəbi <span class="opt">(məcburi — Layihə roluna və tarixçəyə yazılır)</span></label>
+        <label>Geri qaytarma səbəbi <span class="req" title="Məcburi xana">*</span></label>
         <textarea id="fGeriSebeb" placeholder="Məs: sponsor məbləği müqavilə ilə uyğun deyil, düzəliş edin" style="min-height:90px;"></textarea>
       </div>
     </div>
@@ -1558,14 +1560,14 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-field"><label>FİN <span class="opt">(məcburi, 7 simvol)</span></label><input type="text" id="fRegFin" maxlength="7" style="text-transform:uppercase;"></div>
-        <div class="form-field"><label>Ad Soyad <span class="opt">(məcburi)</span></label><input type="text" id="fRegAd"></div>
+        <div class="form-field"><label>FİN <span class="req" title="Məcburi xana">*</span></label><input type="text" id="fRegFin" maxlength="7" style="text-transform:uppercase;"></div>
+        <div class="form-field"><label>Ad Soyad <span class="req" title="Məcburi xana">*</span></label><input type="text" id="fRegAd"></div>
         <div class="form-field"><label>Kateqoriya</label><select id="fRegKat"><option>Şəhid ailəsi</option><option>Yaralı</option></select></div>
         <div class="form-field reg-s"><label>Qohumluq</label><select id="fRegQohum"><option>Övlad</option><option>Həyat yoldaşı</option><option>Ana</option><option>Ata</option><option>Digər</option></select></div>
         <div class="form-field reg-s"><label>Şəhid</label><input type="text" id="fRegSehid" placeholder="Şəhidin adı soyadı"></div>
         <div class="form-field reg-y" style="display:none;"><label>Əlillik</label><select id="fRegElillik"><option>Əlillik yoxdur</option><option>I qrup</option><option>II qrup</option><option>III qrup</option></select></div>
         <div class="form-field"><label>Cins</label><select id="fRegCins"><option>Kişi</option><option>Qadın</option></select></div>
-        <div class="form-field"><label>Təvəllüd <span class="opt">(məcburi)</span></label><input type="date" id="fRegTevellud"></div>
+        <div class="form-field"><label>Təvəllüd <span class="req" title="Məcburi xana">*</span></label><input type="date" id="fRegTevellud"></div>
         <div class="form-field full"><label>Region</label><input type="text" id="fRegRegion" list="regRegionList" placeholder="Məs: Gəncə"><datalist id="regRegionList"></datalist></div>
       </div>
     </div>
@@ -1588,7 +1590,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-body">
       <div class="info-note warn" id="istSilInfo" style="margin:0 0 14px;"></div>
       <div class="form-field">
-        <label>Silinmə səbəbi <span class="opt">(məcburi — iştirakçının tarixçəsinə yazılır)</span></label>
+        <label>Silinmə səbəbi <span class="req" title="Məcburi xana">*</span></label>
         <textarea id="fIstSilSebeb" placeholder="Məs: ailə iştirakdan imtina etdi, səhvən əlavə olunmuşdu…" style="min-height:80px;"></textarea>
       </div>
     </div>
@@ -2282,7 +2284,7 @@ const REP = {
     { k: 'ad', l: 'Ad Soyad', ph: 'avtomatik', ro: true, w: '1.3fr' },
     { k: 'cins', l: 'Cins', ph: '—', ro: true, w: '72px' },
     { k: 'tevellud', l: 'Təvəllüd', ph: '—', ro: true, w: '100px', show: fmtDateOrEmpty },
-    { k: 'sebeb', l: 'İmtina səbəbi', ph: 'Səbəb (istəyə görə)', w: '1.2fr' } ] },
+    { k: 'sebeb', l: 'İmtina səbəbi', ph: 'Səbəb', w: '1.2fr' } ] },
   konullu: { box: 'repKonullu', head: 'repKonulluHead', empty: 'Könüllü əlavə edilməyib', cols: [
     FIN_COL, { k: 'seriya', l: 'Seriya', ph: 'AA1234567', w: '120px', seriya: true },
     { k: 'ad', l: 'Ad Soyad', ph: 'bazadan və ya əllə', w: '1fr' }, { k: 'qeyd', l: 'Qeyd', ph: 'Könüllü haqqında qeyd', w: '1.3fr' } ] },
