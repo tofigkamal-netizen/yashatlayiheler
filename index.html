@@ -40,6 +40,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 </script>
 <!-- ===== Əlaqə hissəsinin sonu ===== -->
 
+<link href="assets/icomoon/styles.min.css" rel="stylesheet" type="text/css">
 <style>
   :root{
     --blue:#1a6fe0;
@@ -497,52 +498,189 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   #editWrap .form-field > label{grid-column:1;font-weight:400;font-size:12.5px;color:#333;}
   #editWrap .form-field > :not(label){grid-column:2;}
   #editWrap .modal-footer{padding:16px 0 4px;border:none;justify-content:flex-start;position:sticky;bottom:0;background:#fff;z-index:2;}
+
+  /* ================= YAŞAT admin (Admin.Web — Limitless/Bootstrap 4) üslubu ================= */
+  :root{--blue:#2196F3;--blue-dark:#1E88E5;--navy:#293a50;--bg:#f5f5f5;--border:#ddd;--text:#333;--muted:#999;
+        --green:#4CAF50;--red:#F44336;--orange:#FF7043;--card-b:rgba(0,0,0,.125);}
+  body{font-family:Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:.7125rem;line-height:1.5385;color:#333;background:#f5f5f5;}
+  a{color:#2196F3;}
+  [class^="icon-"],[class*=" icon-"]{font-size:1rem;}
+
+  /* navbar-dark */
+  .topbar{height:auto;min-height:3rem;background:#293a50;color:rgba(255,255,255,.9);padding:0 1.25rem;gap:0;box-shadow:none;border-bottom:1px solid rgba(255,255,255,.1);}
+  .brand{padding:.5rem 0 .4rem;margin-right:3rem;display:flex;align-items:center;}
+  .brand img{height:1.8rem;display:block;}
+  .menu{height:auto;align-self:stretch;}
+  .menu-btn{height:100%;padding:.875rem .6rem;font-size:.8125rem;color:rgba(255,255,255,.9);gap:0;}
+  .menu-btn i{margin-right:.5rem;}
+  .menu-btn::after{content:'';display:inline-block;margin-left:.46875rem;border-top:.3125rem solid;border-right:.3125rem solid transparent;border-left:.3125rem solid transparent;vertical-align:middle;}
+  .menu-btn:hover,.menu.open .menu-btn{color:#fff;background:rgba(0,0,0,.15);}
+  .mega{top:100%;margin-top:0;padding:1.25rem;gap:1.25rem;border:1px solid rgba(0,0,0,.15);border-radius:.1875rem;box-shadow:0 .25rem .5rem rgba(0,0,0,.1);min-width:30rem;}
+  .mega-col{min-width:13rem;flex:1;}
+  .mega-h{font-size:.75rem;line-height:1.6667;font-weight:500;text-transform:uppercase;margin-top:.25rem;color:#333;}
+  .mega-div{height:0;margin:.5rem 0;border-top:1px solid #ddd;margin-bottom:.5rem;}
+  .mega .nav-item,.mega .role-toggle button{padding:.5rem 1rem;font-size:.8125rem;border-radius:.1875rem;gap:0;color:#333;font-weight:400;}
+  .mega .nav-item i,.mega .role-toggle button i{margin-right:1rem;color:inherit;font-size:1rem;}
+  .mega .nav-item:hover,.mega .role-toggle button:hover{background:#f5f5f5;}
+  .mega .nav-item.active,.mega .role-toggle button.active{background:#2196F3;color:#fff;font-weight:400;}
+  .mega .nav-item.active i,.mega .role-toggle button.active i{color:#fff;}
+  .mega .nav-badge{background:#FF7043;}
+  .top-right{gap:1.25rem;font-size:.8125rem;}
+  .role-pill{background:rgba(0,0,0,.15);border-radius:.125rem;font-size:.75rem;padding:.25rem .5rem;}
+  .top-user{display:flex;align-items:center;gap:.5rem;font-weight:500;}
+
+  /* content + card */
+  .main{padding:.3rem .3rem 6rem;}
+  .view.active{background:#fff;border:1px solid var(--card-b);border-radius:.1875rem;box-shadow:0 1px 2px rgba(0,0,0,.05);padding:0;min-height:0;}
+  .toolbar{padding:.8rem 1rem;margin:0;align-items:center;}
+  .page-title{font-size:1.0625rem;font-weight:400;color:#333;line-height:1.5385;}
+  .page-sub{font-size:1.0625rem;margin-top:1.6rem;color:#333;}
+  .page-sub b{font-weight:700;}
+  .view .card{border:0;border-top:1px solid #ddd;border-radius:0;box-shadow:none;margin:0;}
+  .card + .card{margin-top:0;}
+  .card-head{background:#fff;padding:.8rem 1rem;border-bottom:0;}
+  .card-head h4{font-size:.9375rem;font-weight:400;}
+  .admin-note{margin:0 1rem .8rem;border-radius:.1875rem;font-size:.75rem;}
+  #esasDetailWrap,#altDetailWrap,#personWrap,#editWrap{padding:1rem 1.25rem 1.25rem;}
+  #esasDetailWrap .card,#personWrap .card{border:1px solid var(--card-b);border-radius:.1875rem;}
+  .detail-back{font-weight:500;font-size:.8125rem;}
+  .detail-back i{font-size:1rem;}
+  .detail-title{font-size:1.0625rem;font-weight:400;}
+
+  /* table-bordered table-list */
+  table{border-collapse:collapse;}
+  th{font-size:.7rem;font-weight:500;color:#333;background:#fff;padding:.8rem .3rem;border:1px solid #ddd;border-bottom:1px solid #b7b7b7;text-align:center;vertical-align:middle;}
+  td{font-size:.7rem;color:#333;padding:.8rem .3rem;border:1px solid #ddd;text-align:center;vertical-align:middle;}
+  tbody tr:hover{background:rgba(0,0,0,.03);}
+  th i[class^="icon-"]{font-size:1rem;}
+  .link{color:#2196F3;font-weight:400;}
+  .mini-table th{padding:.6rem .75rem;font-size:.7rem;text-align:left;}
+  .mini-table td{padding:.6rem .75rem;font-size:.7rem;text-align:left;}
+  .filters{background:#fff;border-bottom:1px solid #ddd;padding:.8rem 1rem;}
+  .filters .form-field label{font-size:.7rem;color:#999;}
+
+  /* buttons */
+  .btn{font-size:.8125rem;font-weight:400;padding:.4375rem .875rem;border-radius:.1875rem;border:1px solid transparent;line-height:1.5385;gap:.5rem;}
+  .btn i{font-size:1rem;}
+  .btn-sm{padding:.3125rem .75rem;font-size:.75rem;}
+  .btn-xs{padding:.25rem .625rem;font-size:.7rem;}
+  .btn-primary{background:#2196F3;color:#fff;}
+  .btn-primary:hover,.btn-export:hover,.btn-green:hover,.btn-danger-solid:hover{box-shadow:inset 0 0 0 62.5rem rgba(0,0,0,.075);background:inherit;}
+  .btn-primary:hover{background:#2196F3;}
+  .btn-ghost{background:#fafafa;color:#333;border-color:#ddd;}
+  .btn-ghost:hover{background:#f5f5f5;box-shadow:inset 0 0 0 62.5rem rgba(0,0,0,.025);}
+  .btn-outline{background:transparent;color:#2196F3;border-color:#2196F3;}
+  .btn-outline:hover{background:#2196F3;color:#fff;}
+  .btn-green{background:#4CAF50;color:#fff;}
+  .btn-red{background:transparent;color:#F44336;border-color:#F44336;}
+  .btn-red:hover{background:#F44336;color:#fff;}
+  .btn-danger-solid{background:#F44336;color:#fff;}
+  .btn-gray{background:#777;color:#fff;padding:.4375rem 1.25rem;}
+  .btn-gray:hover{background:#777;box-shadow:inset 0 0 0 62.5rem rgba(0,0,0,.075);}
+  /* btn-labeled btn-labeled-left (İxrac et, Yeni ...) */
+  .btn-export,.btn-labeled{position:relative;padding:0;gap:0;overflow:hidden;background:#2196F3;color:#fff;}
+  .btn-export:hover{background:#2196F3;}
+  .btn-export .ic,.btn-labeled .lb{display:flex;align-items:center;justify-content:center;align-self:stretch;width:2.375rem;background:rgba(0,0,0,.15);padding:0;font-weight:400;}
+  .btn-export .tx,.btn-labeled > span{padding:.4375rem .875rem .4375rem .875rem;}
+  .btn-export.btn-sm .ic{width:2.125rem;} .btn-export.btn-sm .tx{padding:.3125rem .75rem;}
+
+  /* badges */
+  .badge{font-size:75%;font-weight:500;padding:.3125rem .375rem;border-radius:.125rem;line-height:1;border:1px solid transparent;}
+  .badge-blue{background:#2196F3;color:#fff;}
+  .badge-pending{background:transparent;color:#1E88E5;border-color:#2196F3;}
+  .badge-approved{background:#4CAF50;color:#fff;}
+  .badge-rejected{background:#F44336;color:#fff;}
+  .badge-gray{background:#777;color:#fff;}
+  .badge-kat-s{background:#607D8B;color:#fff;}
+  .badge-kat-y{background:#FF7043;color:#fff;}
+  .nav-badge{font-size:.6875rem;}
+
+  /* row dropdown (list-icons + dropdown-menu-right) */
+  .dd-btn{padding:.25rem;color:#333;background:transparent !important;}
+  .dd-btn:hover,.dd.open .dd-btn{opacity:.75;}
+  .dd-btn i{font-size:1rem;}
+  .dd-menu{padding:.5rem 0;min-width:11.25rem;border:1px solid rgba(0,0,0,.15);border-radius:.1875rem;box-shadow:0 .25rem .5rem rgba(0,0,0,.1);}
+  .dd-item{padding:.5rem 1rem;font-size:.8125rem;gap:0;color:#333;}
+  .dd-item i{margin-right:1rem;color:#1565C0;font-size:1rem;}
+  .dd-item:hover{background:#f5f5f5;}
+  .dd-item.danger,.dd-item.ok{color:#333;}
+  .dd-item.danger i{color:#E53935;}
+  .dd-item.ok i{color:#43A047;}
+  .dd-sep{margin:.5rem 0;background:#ddd;}
+
+  /* ətraflı baxış: card + table (sol — ad, sağ — dəyər) */
+  .info-card{border:1px solid var(--card-b);border-radius:.1875rem;box-shadow:0 1px 2px rgba(0,0,0,.05);margin-bottom:1.25rem;}
+  .info-card > h4{padding:.8rem 1rem;font-size:1.0625rem;font-weight:400;border-bottom:0;}
+  .info-card > h4 .count{font-size:.75rem;color:#999;}
+  .info-item{padding:.75rem 1.25rem;border-top:1px solid #ddd;border-bottom:0;}
+  .info-grid .info-item:last-child,.money-strip .info-item:last-child{border-bottom:0;}
+  .info-item .k,.info-item .v,.money-strip .info-item .v{font-size:.7125rem;}
+  .file-box{border:1px dashed #ddd;border-radius:.1875rem;}
+  .file-box.empty-box{color:#999;}
+  .file-card{border-radius:.1875rem;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+  .file-card .thumb i{font-size:2.5rem;color:#999;}
+  .file-ic{color:#999;}
+
+  /* forms */
+  .form-field label{font-size:.8125rem;font-weight:400;color:#333;}
+  .form-field label .opt{color:#999;}
+  .form-field input,.form-field select,.form-field textarea,.inp{font-size:.8125rem;padding:.4375rem .875rem;border:1px solid #ddd;border-radius:.1875rem;line-height:1.5385;color:#333;}
+  .form-field input:focus,.form-field select:focus,.form-field textarea:focus,.inp:focus{border-color:#2196F3;}
+  .date-btn i{font-size:1rem;}
+  .ms-box{border-color:#ddd;border-radius:.1875rem;}
+  .ms.open .ms-box{border-color:#2196F3;}
+  .pill{border-radius:.1875rem;font-size:.8125rem;}
+  .pill.checked{background:#E3F2FD;border-color:#2196F3;color:#1565C0;}
+  .repeater-add{border-radius:.1875rem;color:#2196F3;}
+  .info-note{border-radius:.1875rem;font-size:.75rem;}
+
+  /* modal */
+  .modal{border-radius:.25rem;border:1px solid rgba(0,0,0,.2);box-shadow:0 .25rem .5rem rgba(0,0,0,.1);}
+  .modal-header{padding:1.25rem;border-bottom:1px solid rgba(0,0,0,.125);}
+  .modal-header h3{font-size:1.0625rem;font-weight:400;}
+  .modal-close{opacity:.5;color:#333;}
+  .modal-close:hover{opacity:1;background:transparent;}
+  .modal-body{padding:1.25rem;}
+  .modal-footer{padding:1.25rem;border-top:1px solid rgba(0,0,0,.125);}
+  .hist-sub{font-size:.9375rem;padding:1rem 1.25rem;}
+  .hist-table th,.hist-table td{font-size:.7125rem;padding:.75rem 1.25rem;}
+  .hist-table th{font-weight:500;border-bottom:1px solid #b7b7b7;}
+
+  /* footer (navbar-light) */
+  .app-footer{margin-top:1rem;padding:.875rem 1.25rem;background:#fff;border-top:1px solid #ddd;color:#333;font-size:.7125rem;}
+  .app-footer a{color:#2196F3;}
+  .toast{border-radius:.1875rem;font-size:.8125rem;}
 </style>
 
 </head>
 <body>
 
 <header class="topbar">
-  <div class="brand">
-    <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.4 6.2L21 9l-5 4.4L17.5 20 12 16.6 6.5 20 8 13.4 3 9l6.6-.8z"/></svg>
-    YAŞAT
-  </div>
+  <a class="brand" href="#" onclick="return false;" title="YAŞAT"><img src="assets/LogoHeaderNavbar.svg" alt="YAŞAT"></a>
   <div class="menu" id="topMenu">
-    <button type="button" class="menu-btn" id="menuBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17.5h7M17.5 14v7"/></svg>
-      Menyu
-      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
+    <button type="button" class="menu-btn" id="menuBtn"><i class="icon-make-group"></i>Menyu</button>
     <div class="mega">
       <div class="mega-col">
-        <h6>Rollar</h6>
+        <div class="mega-h">Rollar</div>
+        <div class="mega-div"></div>
         <div class="role-toggle">
-          <button type="button" data-role="layiheci" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14l2 2 4-4"/></svg>Layihə</button>
-          <button type="button" data-role="maliyye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/><path d="M6 6l9-3 2 3"/></svg>Maliyyə</button>
+          <button type="button" data-role="layiheci" class="active"><i class="icon-file-check"></i>Layihə</button>
+          <button type="button" data-role="maliyye"><i class="icon-file-check"></i>Maliyyə</button>
         </div>
       </div>
       <div class="mega-col">
-        <h6>Bölmələr</h6>
-        <div class="nav-item active" data-view="layihe">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
-          Layihələr
-        </div>
-        <div class="nav-item" data-view="xerc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
-          Ümumi Təyinatlı Xərclər
-          <span class="nav-badge" id="pendingBadge" style="display:none;">0</span>
-        </div>
-        <div class="nav-item" data-view="aile">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg>
-          İştirakçılar
-        </div>
+        <div class="mega-h">Bölmələr</div>
+        <div class="mega-div"></div>
+        <div class="nav-item active" data-view="layihe"><i class="icon-list"></i>Layihələr</div>
+        <div class="nav-item" data-view="xerc"><i class="icon-list"></i>Ümumi Təyinatlı Xərclər<span class="nav-badge" id="pendingBadge" style="display:none;">0</span></div>
+        <div class="nav-item" data-view="aile"><i class="icon-users"></i>İştirakçılar</div>
       </div>
     </div>
   </div>
   <div class="top-right">
     <span class="db-status" id="dbStatus" title="Məlumat bazası">● Baza: qoşulmayıb</span>
     <span class="role-pill" id="roleName">Layihə</span>
-    <span class="top-user" id="topUser"></span>
+    <span class="top-user"><i class="icon-user"></i><span id="topUser"></span></span>
   </div>
 </header>
 
@@ -561,11 +699,8 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
             <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="layiheCount">0</b></div>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-export" data-act="report" data-id="all"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
-            <button class="btn btn-primary" id="btnNewLayihe">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-              Yeni Əsas Layihə
-            </button>
+            <button class="btn btn-export" data-act="report" data-id="all"><span class="ic"><i class="icon-file-excel"></i></span><span class="tx">İxrac et</span></button>
+            <button class="btn btn-primary btn-labeled" id="btnNewLayihe"><b class="lb"><i class="icon-add"></i></b><span>Yeni Əsas Layihə</span></button>
           </div>
         </div>
         <div class="card table-scroll">
@@ -579,7 +714,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th>Yaranma tarixi</th>
                 <th>Bitmə tarixi</th>
                 <th>Alt layihə sayı</th>
-                <th style="width:90px;">Əməliyyat</th>
+                <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
               </tr>
             </thead>
             <tbody id="layiheTableBody"></tbody>
@@ -590,7 +725,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       <!-- ƏSAS LAYİHƏ DETAIL -->
       <div id="esasDetailWrap" style="display:none;">
         <div class="detail-back" id="btnBackToLayihe">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <i class="icon-arrow-left8"></i>
           Əsas Layihələrə qayıt
         </div>
         <div class="detail-head">
@@ -599,13 +734,13 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
             <div class="detail-meta"><span id="esasDetailBadges"></span></div>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-export btn-sm" id="btnReportEsas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
+            <button class="btn btn-export btn-sm" id="btnReportEsas"><span class="ic"><i class="icon-file-excel"></i></span><span class="tx">İxrac et</span></button>
             <button class="btn btn-ghost btn-sm" id="btnEditEsas">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <i class="icon-pencil3"></i>
               Redaktə et
             </button>
             <button class="btn btn-ghost btn-sm" id="btnHistEsas" data-act="history" data-id="">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+              <i class="icon-history"></i>
               Tarixçə
             </button>
           </div>
@@ -614,10 +749,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 
         <div class="toolbar">
           <h3 class="page-title" style="font-size:15px;">Alt Layihələr</h3>
-          <button class="btn btn-primary btn-sm" id="btnNewAlt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-            Yeni Alt Layihə
-          </button>
+          <button class="btn btn-primary btn-sm btn-labeled" id="btnNewAlt"><b class="lb"><i class="icon-add"></i></b><span>Yeni Alt Layihə</span></button>
         </div>
         <div class="card table-scroll">
           <table>
@@ -629,7 +761,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th>Təşkil forması</th>
                 <th>Maliyyələşmə</th>
                 <th>Status</th>
-                <th style="width:90px;">Əməliyyat</th>
+                <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
               </tr>
             </thead>
             <tbody id="altTableBody"></tbody>
@@ -640,7 +772,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       <!-- REDAKTƏ (ətraflı baxış kimi səhifədə) -->
       <div id="editWrap" style="display:none;">
         <div class="detail-back" id="btnEditBack">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <i class="icon-arrow-left8"></i>
           Geri qayıt
         </div>
         <div id="editSlot"></div>
@@ -649,7 +781,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       <!-- ALT LAYİHƏ DETAIL -->
       <div id="altDetailWrap" style="display:none;">
         <div class="detail-back" id="btnBackToEsas">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <i class="icon-arrow-left8"></i>
           <span id="btnBackToEsasLabel">Əsas layihəyə qayıt</span>
         </div>
         <div class="detail-head">
@@ -671,10 +803,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <div class="page-sub">Maliyyəyə göndərilmiş layihə: <b id="xercProjCount">0</b> · Ödəniş qeydi: <b id="xercCount">0</b></div>
         </div>
         <div class="toolbar-actions">
-          <button class="btn btn-primary" id="btnNewXerc">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-            Yeni ödəniş
-          </button>
+          <button class="btn btn-primary btn-labeled" id="btnNewXerc"><b class="lb"><i class="icon-add"></i></b><span>Yeni ödəniş</span></button>
         </div>
       </div>
 
@@ -696,7 +825,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th class="num">Ödənilib (təsdiqlənmiş)</th>
                 <th>Ödəniş sayı</th>
                 <th>Status</th>
-                <th style="width:90px;">Əməliyyat</th>
+                <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
               </tr>
             </thead>
             <tbody id="xercProjBody"></tbody>
@@ -718,7 +847,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th class="num">ƏDV</th>
                 <th class="num">Ümumi</th>
                 <th>Status</th>
-                <th style="width:90px;">Əməliyyat</th>
+                <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
               </tr>
             </thead>
             <tbody id="xercTableBody"></tbody>
@@ -736,12 +865,9 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <div class="page-sub">Filter üzrə toplam nəticə sayı: <b id="aileCount">0</b> (cəmi <span id="aileTotal">0</span>) · <span style="color:var(--muted);font-size:13px;">nümunə məlumatlar</span></div>
         </div>
         <div class="toolbar-actions">
-          <button class="btn btn-export" data-aile-export="xlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
+          <button class="btn btn-export" data-aile-export="xlsx"><span class="ic"><i class="icon-file-excel"></i></span><span class="tx">İxrac et</span></button>
           <button class="btn btn-ghost" data-aile-export="csv">CSV</button>
-          <button class="btn btn-primary" id="btnNewReg">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-            Yeni iştirakçı
-          </button>
+          <button class="btn btn-primary btn-labeled" id="btnNewReg"><b class="lb"><i class="icon-add"></i></b><span>Yeni iştirakçı</span></button>
         </div>
       </div>
       <div class="card">
@@ -781,7 +907,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
                 <th>Sinif</th>
                 <th>Region</th>
                 <th>Layihə sayı</th>
-                <th style="width:90px;">Əməliyyat</th>
+                <th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th>
               </tr>
             </thead>
             <tbody id="aileTableBody"></tbody>
@@ -793,7 +919,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
       <!-- İŞTİRAKÇI — ətraflı baxış -->
       <div id="personWrap" style="display:none;">
         <div class="detail-back" id="btnBackToAile">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <i class="icon-arrow-left8"></i>
           İştirakçılara qayıt
         </div>
         <div class="detail-head">
@@ -803,16 +929,17 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           </div>
           <div class="toolbar-actions">
             <button class="btn btn-ghost btn-sm" id="btnEditReg">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <i class="icon-pencil3"></i>
               Redaktə et
             </button>
-            <button class="btn btn-export btn-sm" id="btnPersonXlsx"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="tx">İxrac et</span></button>
+            <button class="btn btn-export btn-sm" id="btnPersonXlsx"><span class="ic"><i class="icon-file-excel"></i></span><span class="tx">İxrac et</span></button>
           </div>
         </div>
         <div id="personBody"></div>
       </div>
     </div>
 
+    <div class="app-footer">&copy; 2020 - 2026. <a href="https://www.vxsida.gov.az/az" target="_blank" rel="noopener">Vətəndaşlara Xidmət və Sosial İnnovasiyalar üzrə Dövlət Agentliyi</a></div>
   </main>
 </div>
 
@@ -1044,7 +1171,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <div class="form-field full">
           <label>Sənəd yüklə</label>
           <div class="file-drop" id="altFileDrop">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
+            <i class="icon-file-excel"></i>
             <span>Fayl seçmək üçün klikləyin (PDF, DOCX, PPTX, JPG, PNG)</span>
           </div>
           <input type="file" id="fAltFile" accept=".pdf,.docx,.pptx,.jpg,.jpeg,.png" style="display:none;">
@@ -1133,7 +1260,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
         <div class="form-field full">
           <label>Ödəniş qəbzi <span class="opt">(təsdiq üçün məcburi)</span></label>
           <div class="file-drop" id="fileDrop">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
+            <i class="icon-file-excel"></i>
             <span id="fileDropText">Qəbzi seçmək üçün klikləyin (PDF/JPG/PNG)</span>
           </div>
           <input type="file" id="fXercQebz" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
@@ -1242,7 +1369,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     <div class="modal-footer">
       <button class="btn btn-ghost" data-close="modalHesabat">Ləğv et</button>
       <button class="btn btn-primary" id="btnRepDownload">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+        <i class="icon-file-excel"></i>
         Yüklə
       </button>
     </div>
@@ -1355,17 +1482,17 @@ function muddetHesabla(s, e){
 function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 const ICON = {
-  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>',
-  menu: '<svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 6h18M2 12h18M2 18h18"/><path d="M23 10.5h8l-4 4.5z" fill="currentColor" stroke="none"/></svg>',
-  hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>',
-  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
-  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
-  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>',
-  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>',
-  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-  file: '<svg style="width:16px;height:16px;flex-shrink:0;color:var(--muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
-  dl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>',
-  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+  plus: '<i class="icon-add"></i>',
+  menu: '<i class="icon-menu9"></i>',
+  hist: '<i class="icon-history"></i>',
+  eye: '<i class="icon-eye"></i>',
+  edit: '<i class="icon-pencil3"></i>',
+  trash: '<i class="icon-bin"></i>',
+  check: '<i class="icon-checkmark3"></i>',
+  x: '<i class="icon-cross2"></i>',
+  file: '<i class="icon-file-text2 file-ic"></i>',
+  dl: '<i class="icon-file-excel"></i>',
+  cal: '<i class="icon-calendar3"></i>',
 };
 
 // =====================================================================
@@ -2690,7 +2817,7 @@ function openAltDetail(id){
         ${infoItem('Ödənilib (təsdiqlənmiş)', fmt(paid) + ' AZN')}
         ${infoItem('Təsdiqlənməyən', list.filter(e => e.status !== 'tesdiqlendi').length)}
       </div>
-      ${list.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>№</th><th>Təyinat</th><th>Qəbz</th><th>Tarix</th><th class="num">Məbləğ</th><th>Status</th><th style="width:90px;">Əməliyyat</th></tr></thead><tbody>
+      ${list.length ? `<div class="table-scroll"><table class="mini-table"><thead><tr><th>№</th><th>Təyinat</th><th>Qəbz</th><th>Tarix</th><th class="num">Məbləğ</th><th>Status</th><th style="width:56px;" title="Əməliyyat"><i class="icon-menu-open2"></i></th></tr></thead><tbody>
         ${list.map((e, i) => `<tr><td>Ödəniş ${i + 1}</td><td>${esc(e.teyinat)}</td><td>${qebzLink(e)}</td><td>${fmtDate(e.tarix)}</td><td class="num">${fmt(e.umumi)}</td><td>${odenisBadge(e.status)}</td><td>${paymentActions(e)}</td></tr>`).join('')}
       </tbody></table></div>` : `<div class="empty sm">${a.status === 'davam' ? 'Layihə Maliyyəyə göndəriləndən sonra ödənişlər burada görünəcək.' : 'Hələ ödəniş daxil edilməyib.'}</div>`}
     </div>`;
@@ -2769,7 +2896,7 @@ function renderXercView(){
     return `<tr>
       <td>#${pad4(a.id)}</td>
       <td><span class="link" data-act="go-alt" data-id="${a.id}">${esc(a.ad)}</span><span class="sub">${parent ? esc(parent.ad) : ''}</span></td>
-      <td style="font-size:12.5px;">${menbe}</td>
+      <td>${menbe}</td>
       <td class="num">${fmt(planMebleg(a))}</td>
       <td class="num">${fmt(odenilib(a.id))}</td>
       <td>${tesdiq} / ${list.length} təsdiqlənib</td>
