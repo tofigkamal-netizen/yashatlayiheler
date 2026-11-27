@@ -476,6 +476,42 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   .hist-table td.qeyd{white-space:pre-line;line-height:1.55;}
   .hist-table tbody tr:hover{background:transparent;}
   .bitir-table td,.bitir-table th{text-align:center;}
+  /* Yükləmə ekranı */
+  /* Popup kimi: arxada səhifə yarımşəffaf fonun altından görünür */
+  .app-loader{position:fixed;inset:0;z-index:8900;background:rgba(15,25,45,.32);backdrop-filter:blur(1.5px);display:flex;align-items:center;justify-content:center;padding:16px;transition:opacity .4s, visibility .4s;}
+  .app-loader.hide{opacity:0;visibility:hidden;pointer-events:none;}
+  .al-box{width:100%;max-width:380px;text-align:center;color:#263238;background:#fff;border-radius:16px;padding:22px 24px 24px;box-shadow:0 20px 60px rgba(15,25,45,.28);animation:alPop .45s cubic-bezier(.2,.9,.3,1.2) both;transition:transform .4s;}
+  .app-loader.hide .al-box{transform:scale(.92) translateY(10px);}
+  @keyframes alPop{from{opacity:0;transform:scale(.85) translateY(16px);}to{opacity:1;transform:none;}}
+  .al-art{width:100%;max-width:300px;height:auto;display:block;margin:0 auto 6px;}
+  .al-art .al-stroke,.al-art .al-line{fill:none;stroke:#263238;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+  .al-art .al-line{stroke-dasharray:6 7;}
+  .al-art .al-fill{fill:#fff;stroke:#263238;stroke-width:2.4;stroke-linejoin:round;}
+  .al-art .al-screen{fill:#fff;stroke:#263238;stroke-width:2;}
+  .al-art .al-tri{fill:#263238;animation:alFloat 2.4s ease-in-out infinite;}
+  .al-art .al-tri.d2{animation-delay:.4s;} .al-art .al-tri.d3{animation-delay:.8s;}
+  .al-art .al-word{font:800 22px/1 system-ui,-apple-system,"Segoe UI",sans-serif;fill:#263238;letter-spacing:1px;}
+  .al-art .al-word.sm{font-size:14px;font-weight:700;letter-spacing:4px;fill:#2196F3;}
+  .al-art .al-chev path{fill:none;stroke:#2196F3;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;animation:alChev 1.2s ease-in-out infinite;}
+  .al-art .al-chev path:nth-child(2){animation-delay:.15s;} .al-art .al-chev path:nth-child(3){animation-delay:.3s;}
+  .al-art .al-leaf{transform-box:fill-box;animation:alSway 3.6s ease-in-out infinite;}
+  .al-art .al-leaf.l{transform-origin:bottom right;} .al-art .al-leaf.r{transform-origin:bottom left;animation-delay:-1.8s;}
+  .al-title{font-size:17px;font-weight:600;margin-top:4px;}
+  .al-dots i{font-style:normal;animation:alDot 1.4s infinite;} .al-dots i:nth-child(2){animation-delay:.2s;} .al-dots i:nth-child(3){animation-delay:.4s;}
+  .al-sub{font-size:13px;color:#78909c;margin-top:6px;}
+  .al-bar{height:4px;background:#e3f2fd;border-radius:4px;overflow:hidden;margin:18px auto 0;max-width:240px;}
+  .al-bar span{display:block;height:100%;width:40%;background:#2196F3;border-radius:4px;animation:alBar 1.3s ease-in-out infinite;}
+  .al-err-box{display:none;margin-top:16px;}
+  .app-loader.err .al-err-box{display:block;}
+  .app-loader.err .al-bar,.app-loader.err .al-sub,.app-loader.err .al-title,.app-loader.err .al-chev{display:none;}
+  .al-err-title{font-size:16px;font-weight:600;color:#c62828;}
+  .al-err{font-size:13px;color:#546e7a;margin:6px 0 14px;word-break:break-word;}
+  @keyframes alFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  @keyframes alChev{0%,100%{opacity:.25;transform:translateX(0);}50%{opacity:1;transform:translateX(3px);}}
+  @keyframes alSway{0%,100%{transform:rotate(0);}50%{transform:rotate(-3deg);}}
+  @keyframes alDot{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+  @keyframes alBar{0%{transform:translateX(-110%);}100%{transform:translateX(260%);}}
+  @media (prefers-reduced-motion: reduce){.app-loader *{animation:none !important;}}
   .bitir-sum{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 22px;border-top:2px solid #b7b7b7;background:#fafbfd;font-size:.8125rem;}
   .bitir-sum .sep{margin:0 .5rem;color:#bbb;}
   .bitir-total{font-size:1rem;} .bitir-total b{color:#1E88E5;font-size:1.15rem;}
@@ -658,6 +694,47 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
 
 </head>
 <body>
+<!-- Yükləmə ekranı: məlumatlar bazadan gələnə qədər görünür -->
+<div class="app-loader" id="appLoader" role="status" aria-live="polite">
+  <div class="al-box">
+    <svg class="al-art" viewBox="0 0 360 260" aria-hidden="true">
+      <g class="al-float">
+        <path class="al-tri" d="M98 30l12 6-12 6z"/><path class="al-tri d2" d="M186 18l12 6-12 6z"/><path class="al-tri d3" d="M262 36l12 6-12 6z"/>
+        <path class="al-line" d="M70 70c30-40 70-50 110-34s70 10 100-18"/>
+      </g>
+      <g class="al-leaf l">
+        <path class="al-stroke" d="M70 214c-10-40-6-80 14-112"/>
+        <path class="al-fill" d="M80 120c-22-4-34-18-34-34 20 2 32 14 34 34z"/>
+        <path class="al-fill" d="M74 152c-24 0-40-12-44-28 22-2 38 8 44 28z"/>
+        <path class="al-fill" d="M74 150c18-10 30-26 28-44-18 8-28 24-28 44z"/>
+        <path class="al-fill" d="M70 186c-22 4-40-4-48-18 20-6 38 0 48 18z"/>
+      </g>
+      <g class="al-leaf r">
+        <path class="al-stroke" d="M292 214c8-36 4-72-12-100"/>
+        <path class="al-fill" d="M282 130c20-6 30-22 28-38-18 4-28 18-28 38z"/>
+        <path class="al-fill" d="M288 164c22 2 38-8 44-24-22-4-38 6-44 24z"/>
+        <path class="al-fill" d="M288 162c-16-12-24-28-20-46 16 10 24 26 20 46z"/>
+        <path class="al-fill" d="M292 196c20 6 38 0 48-14-20-8-38-2-48 14z"/>
+      </g>
+      <rect class="al-fill" x="92" y="66" width="176" height="122" rx="10"/>
+      <rect class="al-screen" x="104" y="78" width="152" height="98" rx="4"/>
+      <text class="al-word" x="180" y="116" text-anchor="middle">YÜKLƏNİR</text>
+      <text class="al-word sm" x="180" y="134" text-anchor="middle">BAZA</text>
+      <g class="al-chev"><path d="M146 152l7 6-7 6"/><path d="M158 152l7 6-7 6"/><path d="M170 152l7 6-7 6"/></g>
+      <path class="al-line" d="M186 158h30"/>
+      <path class="al-stroke" d="M170 188l-8 26M190 188l8 26M146 216h68"/>
+      <path class="al-stroke" d="M30 216h300"/>
+    </svg>
+    <div class="al-title">Məlumatlar bazadan yüklənir<span class="al-dots"><i>.</i><i>.</i><i>.</i></span></div>
+    <div class="al-sub">Layihələr, iştirakçılar və ödənişlər hazırlanır</div>
+    <div class="al-bar"><span></span></div>
+    <div class="al-err-box">
+      <div class="al-err-title">Bazaya qoşulmaq alınmadı</div>
+      <div class="al-err" id="appLoaderErr"></div>
+      <button type="button" class="btn btn-primary" id="appLoaderRetry">Yenidən cəhd et</button>
+    </div>
+  </div>
+</div>
 
 <header class="topbar">
   <a class="brand" href="#" onclick="return false;" title="YAŞAT"><img src="assets/LogoHeaderNavbar.svg" alt="YAŞAT"></a>
@@ -1573,7 +1650,6 @@ function muddetHesabla(s, e){
   const months = Math.floor(days / 30);
   return `${days} gün${months > 0 ? ' (~' + months + ' ay)' : ''}`;
 }
-function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 const ICON = {
   plus: '<i class="icon-add"></i>',
@@ -1593,113 +1669,48 @@ const ICON = {
 //  SORĞU KİTABÇALARI (statik nümunə siyahılar)
 // =====================================================================
 // Ölkələr və onların şəhər/rayonları. Yeni ölkə və şəhər formdan əlavə edilə bilər (brauzerdə yadda saxlanılır).
-const AZ_SEHERLER = ['Bakı','Gəncə','Sumqayıt','Mingəçevir','Şirvan','Naftalan','Xankəndi','Lənkəran','Şəki','Yevlax','Naxçıvan','Şuşa'];
-const BAKI_RAYONLARI = ['Binəqədi','Qaradağ','Nərimanov','Nəsimi','Nizami','Pirallahı','Sabunçu','Səbail','Suraxanı','Xətai','Xəzər','Yasamal'];
-const AZ_RAYONLAR = ['Abşeron','Ağcabədi','Ağdam','Ağdaş','Ağstafa','Ağsu','Astara','Babək','Balakən','Bərdə','Beyləqan','Biləsuvar',
-  'Cəbrayıl','Cəlilabad','Culfa','Daşkəsən','Füzuli','Gədəbəy','Goranboy','Göyçay','Göygöl','Hacıqabul','İmişli','İsmayıllı',
-  'Kəlbəcər','Kəngərli','Kürdəmir','Laçın','Lənkəran','Lerik','Masallı','Neftçala','Oğuz','Ordubad','Qax','Qazax','Qəbələ',
-  'Qobustan','Quba','Qubadlı','Qusar','Saatlı','Sabirabad','Sədərək','Salyan','Samux','Siyəzən','Şabran','Şahbuz','Şamaxı',
-  'Şəki','Şəmkir','Şərur','Şuşa','Tərtər','Tovuz','Ucar','Xaçmaz','Xızı','Xocalı','Xocavənd','Yardımlı','Yevlax','Zaqatala',
-  'Zəngilan','Zərdab'].filter(r => !AZ_SEHERLER.includes(r)); // eyni adlı şəhər və rayon bir dəfə göstərilir
-const YER_KATALOQ = {
-  'Azərbaycan': [
-    { qrup: 'Şəhərlər', items: AZ_SEHERLER },
-    { qrup: 'Bakının rayonları', items: BAKI_RAYONLARI.map(r => 'Bakı, ' + r) },
-    { qrup: 'Rayonlar', items: AZ_RAYONLAR },
-  ],
-  'Almaniya': [{ qrup: 'Şəhərlər', items: ['Frankfurt'] }],
-  'Böyük Britaniya': [{ qrup: 'Şəhərlər', items: ['London'] }],
-  'Türkiyə': [{ qrup: 'Şəhərlər', items: ['İstanbul', 'Antalya', 'Çanaqqala'] }],
-  'Avstriya': [{ qrup: 'Şəhərlər', items: ['Vyana'] }],
-};
+// Ölkə və şəhər/rayon kataloqu — bazadan yüklənir ("Ölkə və şəhərlər" vərəqi: Ölkə | Qrup | Şəhər/Rayon)
+const YER = {}; // { ölkə: [{ qrup, items: [...] }] } — vərəqdəki sıra ilə
+const YER_ELAVE_QRUP = 'Əlavə edilənlər';
 // Köhnə "Gəncə ş." / "Goranboy r." yazılışlarını "Gəncə" / "Goranboy" edir
 const yerAd = (y) => String(y || '').replace(/\s+(ş|r)\.$/u, '');
 const asArr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
-// Formdan əlavə edilən ölkə və şəhərlər
-const ELAVE_KEY = 'yasat_yer_elave';
-const yerElave = (() => { try { return JSON.parse(localStorage.getItem(ELAVE_KEY)) || {}; } catch(e) { return {}; } })();
-const saveYerElave = () => { try { localStorage.setItem(ELAVE_KEY, JSON.stringify(yerElave)); } catch(e) {} scheduleSync(); };
-const olkeler = () => [...new Set([...Object.keys(YER_KATALOQ), ...Object.keys(yerElave)])];
-function yerQruplari(olke){
-  const base = (YER_KATALOQ[olke] || []).map(g => ({ ...g }));
-  const extra = (yerElave[olke] || []).filter(x => !base.some(g => g.items.includes(x)));
-  if(extra.length) base.push({ qrup: 'Əlavə edilənlər', items: extra });
-  return base;
+const olkeler = () => Object.keys(YER);
+const yerQruplari = (olke) => YER[olke] || [];
+// Formdan yeni ölkə (ad boş) və ya ölkəyə yeni şəhər/rayon əlavə edir və bazaya yazır
+function yerElaveEt(olke, ad){
+  const qruplar = (YER[olke] = YER[olke] || []);
+  if(ad && !qruplar.some(g => g.items.includes(ad))){
+    let g = qruplar.find(x => x.qrup === YER_ELAVE_QRUP);
+    if(!g) qruplar.push(g = { qrup: YER_ELAVE_QRUP, items: [] });
+    g.items.push(ad);
+  }
+  scheduleSync();
 }
 
-// Fond əməkdaşları — admin siyahısı (FİN ilə çəkilir)
-const EMEKDASLAR = [
-  { fin: 'EM1A2B3', ad: 'Elvin Məmmədov', vezife: 'Layihə meneceri' },
-  { fin: 'AR4C5D6', ad: 'Aygün Rəhimova', vezife: 'Sosial işçi' },
-  { fin: 'RQ7E8F9', ad: 'Rəşad Quliyev', vezife: 'Psixoloq' },
-  { fin: 'NE2G3H4', ad: 'Nərmin Əliyeva', vezife: 'Koordinator' },
-  { fin: 'TH5J6K7', ad: 'Tural Hüseynov', vezife: 'Təhsil mütəxəssisi' },
-];
+// Fond əməkdaşları — bazadan ("Fond əməkdaşları" vərəqi), FİN ilə çəkilir
+const EMEKDASLAR = [];
 
 const TOHFE = ['Maliyyə', 'Xidmət', 'Əşya/material', 'Digər'];
 
-// Şəhid ailələri reyestri — real inteqrasiya olmadığı üçün deterministik nümunə məlumat yaradılır
-const AILELER = (() => {
-  const rnd = mulberry32(20261120);
-  const pick = arr => arr[Math.floor(rnd() * arr.length)];
-  const kisi = ['Elçin','Ramil','Orxan','Vüsal','Kamran','Tural','Anar','Rəşad','Səbuhi','Elnur','Fərid','Mübariz','Şahin','Natiq'];
-  const qadin = ['Aysel','Günel','Leyla','Nigar','Sevinc','Ülviyyə','Aynur','Kamalə','Səbinə','Nərmin','Lalə','Fidan'];
-  const oglan = ['Murad','Əli','Hüseyn','Yusif','Ömər','Nihad','Kənan','Rauf','Tofiq','Emil','Ayxan','Fuad'];
-  const qiz = ['Zəhra','Fatimə','Ayan','Nuray','Mədinə','Lamiyə','Aylin','Xədicə','Səma','İnci','Nərgiz','Sara'];
-  const soyad = ['Məmmədov','Əliyev','Həsənov','Quliyev','Hüseynov','İsmayılov','Kərimov','Abbasov','Rzayev','Babayev','Cəfərov','Nəsirov','Orucov','Səfərov'];
-  const regionlar = ['Bakı, Nəsimi','Bakı, Sabunçu','Gəncə','Sumqayıt','Şəki','Quba','Ağdam','Füzuli','Lənkəran','Tərtər','Bərdə','Şəmkir','Masallı','Goranboy'];
-  const CH = '0123456789ABCDEFGHJKLMNPRSTUVXYZ';
-  const used = new Set();
-  const fin = () => { let s; do { s = ''; for(let i = 0; i < 7; i++) s += CH[Math.floor(rnd() * CH.length)]; } while(used.has(s)); used.add(s); return s; };
-  const dob = (age) => { const d = new Date(2026, 5, 1); d.setFullYear(d.getFullYear() - age); d.setDate(d.getDate() - Math.floor(rnd() * 360)); return localISO(d); };
-  const list = [];
-  for(let f = 0; f < soyad.length; f++){
-    const sv = soyad[f], sq = sv + 'a', sehidAd = kisi[f];
-    const sehid = sehidAd + ' ' + sv, region = regionlar[f], sehidYas = 26 + Math.floor(rnd() * 20);
-    if(rnd() < 0.85) list.push({ fin: fin(), ad: pick(qadin) + ' ' + sq, qohumluq: 'Həyat yoldaşı', cins: 'Qadın', tevellud: dob(sehidYas - 2 + Math.floor(rnd() * 4)), region, sehid });
-    const usaqSayi = 1 + Math.floor(rnd() * 3);
-    for(let c = 0; c < usaqSayi; c++){
-      const o = rnd() < 0.5;
-      const yas = Math.max(2, Math.min(19, 2 + Math.floor(rnd() * (sehidYas - 21))));
-      list.push({ fin: fin(), ad: (o ? pick(oglan) : pick(qiz)) + ' ' + (o ? sv : sq), qohumluq: 'Övlad', cins: o ? 'Kişi' : 'Qadın', tevellud: dob(yas), region, sehid });
-    }
-    if(rnd() < 0.55) list.push({ fin: fin(), ad: pick(qadin) + ' ' + sq, qohumluq: 'Ana', cins: 'Qadın', tevellud: dob(sehidYas + 22 + Math.floor(rnd() * 10)), region, sehid });
-    if(rnd() < 0.3) list.push({ fin: fin(), ad: pick(kisi.filter(k => k !== sehidAd)) + ' ' + sv, qohumluq: 'Ata', cins: 'Kişi', tevellud: dob(sehidYas + 25 + Math.floor(rnd() * 10)), region, sehid });
-  }
-  return list;
-})();
-
-// Yaralılar — nümunə reyestr (şəhid ailələri ilə birlikdə "İştirakçılar" bazasını təşkil edir)
-AILELER.forEach(p => { p.kateqoriya = 'Şəhid ailəsi'; });
-(() => {
-  const rnd = mulberry32(20261127);
-  const adlar = ['Ramin Həsənov','Elvin Quliyev','Samir Əliyev','Kənan Məmmədov','Fuad Rzayev','Nicat Abbasov','Ülvi Kərimov','Vüqar İsmayılov','Rauf Babayev','Tərlan Cəfərov','Murad Səfərov','Emil Orucov','Cavid Nəsirov','Seymur Hüseynov'];
-  const reg = ['Bakı, Xətai','Bakı, Binəqədi','Gəncə','Sumqayıt','Mingəçevir','Ağdam','Füzuli','Tərtər','Bərdə','Şəmkir','Lənkəran','Quba','Şəki','Goranboy'];
-  const qrup = ['I qrup','II qrup','III qrup','Əlillik yoxdur'];
-  const CH = '0123456789ABCDEFGHJKLMNPRSTUVXYZ', used = new Set(AILELER.map(p => p.fin));
-  const fin = () => { let s; do { s = ''; for(let i = 0; i < 7; i++) s += CH[Math.floor(rnd() * CH.length)]; } while(used.has(s)); used.add(s); return s; };
-  adlar.forEach((ad, i) => {
-    const d = new Date(2026, 5, 1); d.setFullYear(d.getFullYear() - (22 + Math.floor(rnd() * 18))); d.setDate(d.getDate() - Math.floor(rnd() * 360));
-    AILELER.push({ fin: fin(), ad, cins: 'Kişi', tevellud: localISO(d), region: reg[i], kateqoriya: 'Yaralı', qohumluq: '', sehid: '', elillik: qrup[Math.floor(rnd() * qrup.length)] });
-  });
-})();
+// İştirakçılar reyestri (şəhid ailələri və yaralılar) — bazadan ("İştirakçılar" vərəqi)
+const AILELER = [];
 const regPerson = (fin) => AILELER.find(p => p.fin === fin);
 
-// FİN-dən ad/cins/təvəllüd "gətirən" demo funksiya: əvvəlcə reyestrdə axtarır, tapılmasa FİN-ə görə deterministik nümunə qaytarır
-const demoAdlar = ['Kamran Əliyev','Günel Həsənova','Tural Bayramov','Səbinə Quliyeva','Orxan Məmmədov','Leyla İsmayılova','Rüstəm Vəliyev','Aynur Səfərova'];
+// FİN-ə görə şəxsi bazada axtarır: İştirakçılar, Fond əməkdaşları, layihələrdəki könüllülər. Tapılmasa null.
 function finLookup(fin){
-  const reg = AILELER.find(p => p.fin === fin);
-  if(reg) return { ad: reg.ad, cins: reg.cins, tevellud: reg.tevellud };
-  let h = 0;
-  for(const ch of fin) h = (h * 31 + ch.charCodeAt(0)) % 100000;
-  const ad = demoAdlar[h % demoAdlar.length];
-  const cins = /[aə]$/.test(ad) ? 'Qadın' : 'Kişi';
-  const y = 1970 + (h % 40), m = 1 + (h % 12), d = 1 + (h % 28);
-  return { ad, cins, tevellud: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` };
+  const r = regPerson(fin);
+  if(r) return { ad: r.ad, cins: r.cins, tevellud: r.tevellud };
+  const e = EMEKDASLAR.find(x => x.fin === fin);
+  if(e) return { ad: e.ad, cins: '', tevellud: '' };
+  for(const p of projects) for(const k of (p.konulluler || [])) if(k.fin === fin && k.ad) return { ad: k.ad, cins: '', tevellud: '' };
+  return null;
 }
-// VÖEN-dən təşkilat adı "gətirən" demo funksiya
-const DEMO_SIRKETLER = ['Azər Ərzaq MMC','Dəniz Logistika MMC','Şəfa Tibb MMC','Ulduz Tikinti MMC','Yaşıl Bağ MMC','Sahil Servis MMC','Nur Təhsil Mərkəzi','Ümid İctimai Birliyi'];
-function voenLookup(v){ let h = 0; for(const ch of v) h = (h * 31 + ch.charCodeAt(0)) % 100000; return DEMO_SIRKETLER[h % DEMO_SIRKETLER.length]; }
+// VÖEN-ə görə təşkilat adını bazadakı layihələrin sponsor/tərəfdaşlarından tapır. Tapılmasa '' (ad əllə yazılır).
+function voenLookup(v){
+  for(const p of projects) for(const o of [...(p.sponsorlar || []), ...(p.terefdaslar || [])]) if(o.voen === v && o.ad) return o.ad;
+  return '';
+}
 
 // =====================================================================
 //  STATE
@@ -1710,53 +1721,15 @@ let currentEsasId = null, currentAltId = null;
 let editingEsasId = null, editingAltId = null, editingExpenseId = null;
 let pendingConfirm = null;
 
-const usaqlar = AILELER.filter(p => p.qohumluq === 'Övlad'); // yalnız nümunə layihələr üçün (ilkin)
 const usaqList = () => AILELER.filter(p => p.qohumluq === 'Övlad');
 const istFromReg = (p, ref) => ({ fin: p.fin, ad: p.ad, kat: p.kateqoriya, cins: p.cins, tevellud: p.tevellud, yas: yasHesabla(p.tevellud, ref), yasTarixi: ref });
-const orgRow = (voen, tohfe) => ({ voen, ad: voenLookup(voen), tohfe });
 
-let projects = [
-  // Əsas layihələr
-  { id: 1, tip: 'esas', ad: 'Hədiyyə karvanı', melumat: 'Hər il təkrarlanan, döyüş bölgələrindəki ailələrə hədiyyə paylanması tədbiri.', kateqoriya: 'Məişət', novu: 'Sosial', yaranma: '2024-01-15', bitme: '2026-12-31' },
-  { id: 2, tip: 'esas', ad: 'Reabilitasiya proqramı', melumat: 'Psixoloji və fiziki reabilitasiya xidmətləri üzrə davamlı proqram.', kateqoriya: 'Müalicə', novu: 'Sosial', yaranma: '2025-02-10', bitme: '2027-02-10' },
-  // Alt layihələr
-  { id: 3, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2026, Gəncə', yaradilma: '2026-03-01', baslama: '2026-03-12', bitme: '2026-09-12',
-    olke: 'Azərbaycan', yerler: ['Gəncə'], ehate: ['Goranboy', 'Şəmkir', 'Samux'], obyekt: '15 nömrəli məktəb', teskil: 'offline',
-    maliyye: { fond: 5000, sponsor: 2000 },
-    sponsorlar: [orgRow('1700345121', 'Maliyyə')], terefdaslar: [],
-    istirakcilar: [usaqlar[0], usaqlar[1], usaqlar[2], usaqlar[3]].map(p => istFromReg(p, '2026-03-12')),
-    emekdaslar: [EMEKDASLAR[0]], terefdasIstirakcilar: [],
-    konulluler: [{ fin: 'K7L8M9N', seriya: 'AA4417290', ad: finLookup('K7L8M9N').ad, qeyd: 'Hədiyyələrin paylanmasında köməklik etdi' }],
-    senedler: [{ ad: 'muqavile_azt.pdf', nov: 'Müqavilə' }],
-    status: 'maliyyede', yekunTarix: '2026-09-15',
-    yekunQeyd: 'Layihədə 1 insident yaşandı, 2 nəfər layihədən kənarlaşdırıldı. 5 nəfər iştirakı təsdiqləmişdi, 3-ü gəldi.' },
-  { id: 4, tip: 'alt', parentId: 2, ad: 'Reabilitasiya Mərkəzi — Bakı', yaradilma: '2026-04-20', baslama: '2026-05-02', bitme: '2026-12-01',
-    olke: 'Azərbaycan', yerler: ['Bakı, Nəsimi'], ehate: ['Bakı, Yasamal', 'Bakı, Nərimanov'], obyekt: '', teskil: 'hybrid',
-    maliyye: { sponsor: 8000, terefdas: 2500 },
-    sponsorlar: [orgRow('1500872341', 'Maliyyə')], terefdaslar: [orgRow('2000456781', 'Xidmət')],
-    istirakcilar: [usaqlar[6], usaqlar[7]].filter(Boolean).map(p => istFromReg(p, '2026-05-02')),
-    emekdaslar: [EMEKDASLAR[1], EMEKDASLAR[2]], terefdasIstirakcilar: [], konulluler: [],
-    senedler: [], status: 'davam' },
-  { id: 5, tip: 'alt', parentId: 1, ad: 'Hədiyyə karvanı — 2025, Şəki', yaradilma: '2025-02-01', baslama: '2025-03-10', bitme: '2025-03-20',
-    olke: 'Azərbaycan', yerler: ['Şəki'], ehate: ['Qax', 'Oğuz'], obyekt: 'Şəki şəhər 3 nömrəli məktəb', teskil: 'offline',
-    maliyye: { terefdas: 1500 },
-    sponsorlar: [], terefdaslar: [orgRow('1300987651', 'Əşya/material')],
-    istirakcilar: [usaqlar[0], usaqlar[1], usaqlar[5]].filter(Boolean).map(p => istFromReg(p, '2025-03-10')),
-    emekdaslar: [EMEKDASLAR[0], EMEKDASLAR[3]], terefdasIstirakcilar: [], konulluler: [],
-    senedler: [{ ad: 'tehvil_tesellum_aktı.pdf', nov: 'Digər' }],
-    status: 'tamamlandi', yekunTarix: '2025-03-22', tamamlanma: '2025-03-22',
-    yekunQeyd: 'Planlaşdırılan bütün hədiyyələr paylandı. 12 ailə ziyarət olundu, 1 ailə ünvanda olmadığı üçün hədiyyə sonradan çatdırıldı.' },
-];
-
-// Maliyyənin daxil etdiyi ödənişlər (Admin təsdiqi yoxdur: qaralama → təsdiqləndi)
-let expenses = [
-  { id: 1, layiheId: 3, teyinat: 'Hədiyyə paketləri — 120 ədəd', tesvir: 'Uşaqlar üçün məktəb ləvazimatı və oyuncaq dəstləri', qebz: 'qebz_0108.pdf', tarix: '2026-09-20', icraci: 'Elvin Məmmədov', yasat: 3500, edv: 630, umumi: 4130, status: 'tesdiqlendi', tesdiqTarix: '2026-09-21' },
-  { id: 2, layiheId: 3, teyinat: 'Hədiyyələrin daşınması — avtobus icarəsi', tesvir: '2 günlük avtobus icarəsi (Gəncə)', qebz: 'qebz_0112.pdf', tarix: '2026-10-02', icraci: 'Elvin Məmmədov', yasat: 900, edv: 162, umumi: 1062, status: 'tesdiqlendi', tesdiqTarix: '2026-10-03' },
-  { id: 3, layiheId: 3, teyinat: 'Yekun tədbir — qonaqlama', tesvir: '', qebz: '', tarix: '2026-10-15', icraci: 'Aygün Rəhimova', yasat: 600, edv: 108, umumi: 708, status: 'qaralama' },
-];
-
-let nextProjectId = 6;
-let nextExpenseId = 4;
+// Bütün məlumat bazadan (loadDb) gəlir
+let projects = [];
+// Maliyyənin daxil etdiyi ödənişlər (qaralama → təsdiqləndi)
+let expenses = [];
+let nextProjectId = 1;
+let nextExpenseId = 1;
 
 // =====================================================================
 //  ÜMUMİ FUNKSİYALAR
@@ -2293,7 +2266,7 @@ const blankOrg = () => ({ voen: '', ad: '', tohfe: 'Maliyyə' });
 const FIN_COL = { k: 'fin', l: 'FİN', ph: 'FİN', w: '110px', fin: true };
 const ORG_COLS = [
   { k: 'voen', l: 'VÖEN', ph: '10 rəqəm', w: '130px', voen: true },
-  { k: 'ad', l: 'Təşkilatın adı (redaktə etmək olar)', ph: 'VÖEN-ə görə avtomatik gəlir, dəyişmək olar', w: '1fr' },
+  { k: 'ad', l: 'Təşkilatın adı (redaktə etmək olar)', ph: 'bazada varsa avtomatik gəlir, yoxdursa əllə yazın', w: '1fr' },
   { k: 'tohfe', l: 'Töhfə növü', w: '150px', opts: TOHFE },
 ];
 const REP = {
@@ -2352,7 +2325,8 @@ function onRepInput(el){
     const dup = v.length === 7 && A[key].some((r, j) => j !== i && r.fin === v);
     if(dup){ showToast('Bu FİN artıq əlavə edilib'); row.fin = ''; el.value = ''; v = ''; }
     if(v.length === 7){
-      const info = finLookup(v);
+      const info = finLookup(v) || { ad: '', cins: '', tevellud: '' };
+      if(key === 'imtina' && !regPerson(v)) showToast('Bu FİN İştirakçılar bazasında (şəhid ailələri və yaralılar) tapılmadı');
       if(key === 'konullu'){ const reg = AILELER.find(p => p.fin === v) || EMEKDASLAR.find(p => p.fin === v); if(reg) row.ad = reg.ad; }
       else row.ad = info.ad;
       if(key === 'imtina'){ row.cins = info.cins; row.tevellud = info.tevellud; }
@@ -2380,7 +2354,7 @@ function onRepInput(el){
     if(key === 'istirakci'){ setCell(key, i, 'yas', row.yas); setCell(key, i, 'kat', row.kat); }
   }
   if(k === 'voen'){
-    if(v.length === 10 && (!row.ad || row.adAuto)){ row.ad = voenLookup(v); row.adAuto = true; setCell(key, i, 'ad', row.ad); }
+    if(v.length === 10 && (!row.ad || row.adAuto)){ const ad = voenLookup(v); if(ad){ row.ad = ad; row.adAuto = true; setCell(key, i, 'ad', row.ad); } }
     else if(v.length < 10 && row.adAuto){ row.ad = ''; row.adAuto = false; setCell(key, i, 'ad', ''); }
   }
   if((key === 'sponsor' || key === 'terefdasOrg') && k === 'ad') row.adAuto = false;
@@ -2487,7 +2461,7 @@ function addOlke(){
   const ad = $('#fOlkeYeni').value.trim();
   if(!ad){ $('#fOlkeYeni').focus(); return; }
   const var_ = olkeler().find(o => o.toLocaleLowerCase('az') === ad.toLocaleLowerCase('az'));
-  if(!var_){ yerElave[ad] = yerElave[ad] || []; saveYerElave(); showToast(`"${ad}" ölkələr siyahısına əlavə edildi`); }
+  if(!var_){ yerElaveEt(ad); showToast(`"${ad}" ölkələr siyahısına əlavə edildi`); }
   A.yerler = []; A.ehate = [];
   renderOlkeOptions(var_ || ad); MS_LIST.forEach(m => m.render());
   $('#olkeAddRow').style.display = 'none';
@@ -2549,7 +2523,7 @@ function makeMs(id, stateKey){
   drop.addEventListener('click', e => {
     if(!e.target.closest('[data-ms-add]')) return;
     const ad = q(), olke = $('#fAltOlke').value;
-    (yerElave[olke] = yerElave[olke] || []).push(ad); saveYerElave();
+    yerElaveEt(olke, ad);
     if(!A[stateKey].includes(ad)) A[stateKey].push(ad);
     search.value = ''; renderChips(); renderDrop();
     showToast(`"${ad}" ${olke} siyahısına əlavə edildi`);
@@ -2661,7 +2635,7 @@ function openAltModal(id){
   $('#fAltBitme').value = a ? (a.bitme || '') : '';
   $('#fAltBitme').min = $('#fAltBaslama').value;
   const olke = a && a.olke ? a.olke : 'Azərbaycan';
-  if(a && a.olke && !olkeler().includes(a.olke)){ yerElave[a.olke] = []; saveYerElave(); }
+  if(a && a.olke && !olkeler().includes(a.olke)) yerElaveEt(a.olke);
   renderOlkeOptions(olke);
   A.yerler = a ? asArr(a.yerler).map(yerAd) : [];
   A.ehate = a ? asArr(a.ehate).map(yerAd) : [];
@@ -3821,7 +3795,7 @@ const T = {
   reg:      ['İştirakçılar', ['FİN', 'Ad Soyad', 'Kateqoriya', 'Qohumluq', 'Şəhid', 'Əlillik', 'Cins', 'Təvəllüd', 'Region']],
   itarix:   ['İştirakçı tarixçəsi', ['FİN', '№', 'Əməliyyat', 'Layihə ID', 'Əsas layihə', 'Alt layihə', 'Başlama', 'Bitmə', 'Yaş', 'Səbəb', 'Qeyd', 'Rol', 'İstifadəçi', 'Tarix']],
   fondEmk:  ['Fond əməkdaşları', ['FİN', 'Ad Soyad', 'Vəzifə']],
-  yer:      ['Əlavə ölkə və şəhərlər', ['Ölkə', 'Şəhər/Rayon']],
+  yer:      ['Ölkə və şəhərlər', ['Ölkə', 'Qrup', 'Şəhər/Rayon']],
 };
 // --- çevirmələr ---
 const dbD = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}.${m[2]}.${m[1]}` : String(iso || ''); };
@@ -3862,7 +3836,7 @@ const KINDS = {
   itarix: { t: ['itarix'], rows: (list, fin) => ({ itarix: list.map((h, i) => { const [es, al] = splitLayihe(h);
     return [fin, i + 1, dbS(h.emel), dbV(h.layiheId), es, al, dbD(h.baslama), dbD(h.bitme), dbV(h.yas), dbS(h.sebeb), dbS(h.qeyd), dbS(h.rol), dbS(h.kim), dbS(h.vaxt)]; }) }) },
   fondEmk: { t: ['fondEmk'], rows: (e) => ({ fondEmk: [[dbS(e.fin), dbS(e.ad), dbS(e.vezife)]] }) },
-  yer: { t: ['yer'], rows: (list, olke) => ({ yer: (list || []).length ? list.map(c => [olke, c]) : [[olke, '']] }) },
+  yer: { t: ['yer'], rows: (qruplar, olke) => { const r = (qruplar || []).flatMap(g => g.items.map(c => [olke, g.qrup, c])); return { yer: r.length ? r : [[olke, '', '']] }; } },
 };
 function dbEntities(){
   const out = [];
@@ -3871,7 +3845,7 @@ function dbEntities(){
   AILELER.forEach(p => out.push(['reg', p.fin, p]));
   Object.keys(PERSON_HIST).forEach(f => out.push(['itarix', f, PERSON_HIST[f]]));
   EMEKDASLAR.forEach(e => out.push(['fondEmk', e.fin, e]));
-  Object.keys(yerElave).forEach(o => out.push(['yer', o, yerElave[o]]));
+  Object.keys(YER).forEach(o => out.push(['yer', o, YER[o]]));
   return out;
 }
 function dbSnapshot(){
@@ -3942,7 +3916,13 @@ function fromTables(tb){
   });
   const fondEmk = g('fondEmk').map(r => ({ fin: dbS(r[0]), ad: dbS(r[1]), vezife: dbS(r[2]) }));
   const yer = {};
-  g('yer').forEach(r => { const o = dbS(r[0]); if(!o) return; yer[o] = yer[o] || []; if(dbS(r[1])) yer[o].push(dbS(r[1])); });
+  g('yer').forEach(r => {
+    const o = dbS(r[0]); if(!o) return;
+    const qruplar = (yer[o] = yer[o] || []), ad = dbS(r[2]); if(!ad) return;
+    const qn = dbS(r[1]) || YER_ELAVE_QRUP;
+    let gr = qruplar.find(x => x.qrup === qn); if(!gr) qruplar.push(gr = { qrup: qn, items: [] });
+    if(!gr.items.includes(ad)) gr.items.push(ad);
+  });
   return { projects: [...esas, ...alts].sort((x, y) => x.id - y.id), odenis, reg, itarix, fondEmk, yer };
 }
 
@@ -3976,21 +3956,16 @@ async function runSync(){
 }
 async function loadDb(){
   DB.on = false; setDbStatus('saving', 'Yüklənir…');
+  appLoader('loading');
   try{
     const tb = await apiCall('getTables', window.QX_TOKEN, Object.values(T).map(x => x[0]));
     const d = fromTables(tb);
-    if(!d.projects.length && !d.odenis.length && !d.reg.length && IS_LOCALHOST){
-      // Lokal baza boşdur — bir dəfəlik nümunə məlumatla doldurulur
-      DB.snap = {}; DB.on = true; await runSync();
-      showToast('Lokal baza (layiheler.xlsx) nümunə məlumatla dolduruldu');
-      return;
-    }
     projects = d.projects;
     expenses = d.odenis;
-    if(d.reg.length){ AILELER.length = 0; AILELER.push(...d.reg); }
-    if(d.fondEmk.length){ EMEKDASLAR.length = 0; EMEKDASLAR.push(...d.fondEmk); }
+    AILELER.length = 0; AILELER.push(...d.reg);
+    EMEKDASLAR.length = 0; EMEKDASLAR.push(...d.fondEmk);
     Object.keys(PERSON_HIST).forEach(k => delete PERSON_HIST[k]); Object.assign(PERSON_HIST, d.itarix);
-    Object.keys(yerElave).forEach(k => delete yerElave[k]); Object.assign(yerElave, d.yer);
+    Object.keys(YER).forEach(k => delete YER[k]); Object.assign(YER, d.yer);
     nextProjectId = projects.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0) + 1;
     nextExpenseId = expenses.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0) + 1;
     refreshRegistryUi();
@@ -3999,14 +3974,30 @@ async function loadDb(){
     if(screen === 'esas' && !projectById(currentEsasId)) showLayiheList();
     renderAll();
     setDbStatus('ok');
+    appLoader('done');
   }catch(e){
     const msg = /Naməlum əməliyyat: getTables/.test(e.message)
       ? 'Onlayn baza hələ qoşulmayıb: Apps Script-ə yeni Code.gs (getTables/syncTables) əlavə edilməlidir'
       : 'Bazaya qoşulmaq alınmadı: ' + e.message;
     setDbStatus('err', msg);
-    showToast(msg + ' — dəyişikliklər yadda saxlanılmayacaq');
+    appLoader('error', msg);
   }
 }
+// Yükləmə ekranı: 'loading' | 'done' | 'error'
+// Popup ən azı LOADER_MIN_MS görünür (məlumat tez gəlsə də), sonra yavaşca bağlanır
+const LOADER_MIN_MS = 6000;
+let loaderShownAt = Date.now(), loaderTimer = null;
+function appLoader(st, msg){
+  const el = document.getElementById('appLoader'); if(!el) return;
+  clearTimeout(loaderTimer);
+  if(st === 'done'){
+    const left = LOADER_MIN_MS - (Date.now() - loaderShownAt);
+    if(left > 0){ loaderTimer = setTimeout(() => appLoader('done'), left); return; }
+  } else if(st === 'loading') loaderShownAt = Date.now();
+  el.className = 'app-loader' + (st === 'done' ? ' hide' : st === 'error' ? ' err' : '');
+  document.getElementById('appLoaderErr').textContent = String(msg || '').replace(/^Bazaya qoşulmaq alınmadı:\s*/, '');
+}
+document.getElementById('appLoaderRetry').addEventListener('click', () => loadDb());
 // Fayl birbaşa açılıbsa (file://) heç nə yadda saxlanılmır — xəbərdarlıq
 if(location.protocol === 'file:'){
   const bar = document.createElement('div');
