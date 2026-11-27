@@ -803,7 +803,6 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
           <div class="page-sub">Maliyyəyə göndərilmiş layihə: <b id="xercProjCount">0</b> · Ödəniş qeydi: <b id="xercCount">0</b></div>
         </div>
         <div class="toolbar-actions">
-          <button class="btn btn-primary btn-labeled" id="btnNewXerc"><b class="lb"><i class="icon-add"></i></b><span>Yeni ödəniş</span></button>
         </div>
       </div>
 
@@ -2947,7 +2946,6 @@ function renderXercView(){
   $('#adminNoteText').textContent = role === 'maliyye'
     ? 'Maliyyə rejimi: Layihə rolunun göndərdiyi layihələr üzrə ödənişləri (təyinat, təsvir, məbləğ, tarix, qəbz) daxil edin. Hər ödənişdən sonra “Ödənişi təsdiqlə”, sonuncu ödənişdən sonra isə “Layihəni bitir” düyməsini basın.'
     : 'Bu bölmə yalnız məlumat üçündür. Ödənişli layihə “Təsdiq et və maliyyəyə göndər” ilə buraya düşür; ödənişləri daxil edib layihəni Maliyyə tamamlayır.';
-  $('#btnNewXerc').style.display = role === 'maliyye' ? '' : 'none';
 
   $('#xercProjBody').innerHTML = projs.map(a => {
     const list = odenislerOf(a.id), parent = projectById(a.parentId);
@@ -2998,7 +2996,6 @@ function updateBadge(){
 
 // ---------- Ödəniş modalı ----------
 let selectedFile = null;
-$('#btnNewXerc').addEventListener('click', () => openXercModal(null));
 function openXercModal(id, projId){
   if(role !== 'maliyye'){ showToast('Ödənişləri yalnız Maliyyə rejimində daxil etmək olar'); return; }
   const e = id ? expenses.find(x => x.id === id) : null;
