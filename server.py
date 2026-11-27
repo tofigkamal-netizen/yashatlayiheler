@@ -8,6 +8,9 @@ Açmaq:        http://localhost:8000
 - index.html-i verir və POST /api sorğularına Apps Script ilə eyni formatda
   ({ok, data} / {ok:false, error}) cavab verir.
 - İstifadəçilər, Qeydlər, Log vərəqləri layiheler.xlsx-dən oxunur və ora yazılır.
+- Layihələr, Ödənişlər, İştirakçı tarixçəsi, Parametrlər vərəqlərində proqramın bütün
+  məlumatı saxlanılır (getData / syncData). Fayl Google Sheets-ə yüklənsə, eyni vərəqlərlə
+  apps-script/Code.gs işləyir.
 - "admin" / "admin" istifadəçisi yoxdursa, avtomatik əlavə olunur.
 - Diqqət: Excel faylı Excel-də açıq olarsa, yazmaq alınmayacaq — faylı bağlayın.
 """
@@ -23,7 +26,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import openpyxl
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-XLSX = os.path.join(BASE, 'layiheler.xlsx')
+XLSX = os.environ.get('LAYIHE_XLSX') or os.path.join(BASE, 'layiheler.xlsx')
 PORT = int(os.environ.get('PORT', '8000'))
 
 SH_USERS, SH_NOTES, SH_LOG = 'İstifadəçilər', 'Qeydlər', 'Log'
@@ -43,9 +46,16 @@ def iso(v):
     return v or ''
 
 
+HASH_ROUNDS = 100  # Apps Script-dəki hashPassword_ ilə eyni
+
+
 def hash_pw(pw, salt=None):
+    """Apps Script hashPassword_ ilə eyni: h = salt + parol; 100 dəfə h = sha256(h + salt)."""
     salt = salt or secrets.token_hex(8)
-    return 'sha256$%s$%s' % (salt, hashlib.sha256((salt + pw).encode('utf-8')).hexdigest())
+    h = salt + str(pw)
+    for _ in range(HASH_ROUNDS):
+        h = hashlib.sha256((h + salt).encode('utf-8')).hexdigest()
+    return 'sha256$%s$%s' % (salt, h)
 
 
 def check_pw(pw, stored):
@@ -56,8 +66,10 @@ def check_pw(pw, stored):
         _, salt, h = stored.split('$', 2)
     except ValueError:
         return False
-    cands = (salt + pw, pw + salt)
-    return any(hashlib.sha256(c.encode('utf-8')).hexdigest() == h for c in cands)
+    if hash_pw(pw, salt) == stored:
+        return True
+    # Köhnə lokal format (server.py-ın əvvəlki versiyası, tək sha256) — geriyə uyğunluq üçün
+    return hashlib.sha256((salt + pw).encode('utf-8')).hexdigest() == h
 
 
 def load():
@@ -256,6 +268,112 @@ def a_setNoteStatus(token, nid, status):
     old = ws.cell(r, C_STATUS).value
     ws.cell(r, C_STATUS, status)
     log(wb, user, 'Status dəyişdi', nid, old, status)
+    save(wb)
+    return True
+
+
+# ---------- Layihə məlumatları (layihələr, ödənişlər, iştirakçı tarixçəsi, parametrlər) ----------
+# Hər qeyd bir sətirdir: 1-ci sütun açar, sonra oxunaqlı sütunlar, sonda tam obyekt JSON kimi.
+# JSON uzun olarsa "JSON", "JSON 2", "JSON 3"... sütunlarına bölünür (Excel xanası ≤ 32767 simvol).
+# Vərəq və sütun adları Google Sheet (Apps Script, apps-script/Code.gs) ilə eynidir.
+JSON_CHUNK = 30000
+
+
+def _d(v):
+    v = str(v or '')
+    return '.'.join(reversed(v.split('-'))) if len(v) == 10 and v[4] == '-' else v
+
+
+DATA_SHEETS = {
+    'layihe': ('Layihələr', ['ID', 'Tip', 'Əsas layihə ID', 'Ad', 'Status', 'Başlama', 'Bitmə'],
+               lambda o: [o.get('tip', ''), o.get('parentId', ''), o.get('ad', ''), o.get('status', ''),
+                          _d(o.get('baslama') or o.get('yaranma')), _d(o.get('bitme'))]),
+    'odenis': ('Ödənişlər', ['ID', 'Layihə ID', 'Ödənişin təyinatı', 'Ödəmə tarixi', 'Ümumi (AZN)', 'Status'],
+               lambda o: [o.get('layiheId', ''), o.get('teyinat', ''), _d(o.get('tarix')), o.get('umumi', ''), o.get('status', '')]),
+    'istirakTarixce': ('İştirakçı tarixçəsi', ['FİN', 'Qeyd sayı', 'Son əməliyyat'],
+                       lambda o: [len(o), (o[-1].get('emel', '') + ' — ' + o[-1].get('layihe', '')) if o else '']),
+    'parametr': ('Parametrlər', ['Açar', 'Təsvir'], lambda o: ['Formdan əlavə edilən ölkə və şəhərlər']),
+}
+META = ['Yenilənib', 'Yeniləyən']
+
+
+def data_sheet(wb, kind):
+    name, cols, _ = DATA_SHEETS[kind]
+    if name in wb.sheetnames:
+        return wb[name]
+    ws = wb.create_sheet(name)
+    for i, h in enumerate(cols + META + ['JSON'], 1):
+        ws.cell(1, i, h)
+    return ws
+
+
+def json_col(kind):
+    return len(DATA_SHEETS[kind][1]) + len(META) + 1
+
+
+def read_json(ws, r, kind):
+    c0 = json_col(kind)
+    parts = []
+    for c in range(c0, ws.max_column + 1):
+        v = ws.cell(r, c).value
+        if v in (None, ''):
+            break
+        parts.append(str(v))
+    return json.loads(''.join(parts)) if parts else None
+
+
+def a_getData(token):
+    auth(token)
+    wb = load()
+    out = {'layihe': [], 'odenis': [], 'istirakTarixce': {}, 'parametr': {}}
+    for kind, (name, _, _) in DATA_SHEETS.items():
+        if name not in wb.sheetnames:
+            continue
+        ws = wb[name]
+        for r in range(2, last_row(ws) + 1):
+            key = ws.cell(r, 1).value
+            if key in (None, ''):
+                continue
+            obj = read_json(ws, r, kind)
+            if obj is None:
+                continue
+            if kind in ('layihe', 'odenis'):
+                out[kind].append(obj)
+            else:
+                out[kind][str(key)] = obj
+    out['layihe'].sort(key=lambda o: o.get('id', 0))
+    out['odenis'].sort(key=lambda o: o.get('id', 0))
+    return out
+
+
+def a_syncData(token, ops):
+    user = auth(token)
+    wb = load()
+    for op in ops or []:
+        kind, key = op.get('kind'), str(op.get('id'))
+        if kind not in DATA_SHEETS:
+            raise RuntimeError('Naməlum məlumat növü: %s' % kind)
+        ws = data_sheet(wb, kind)
+        row = next((r for r in range(2, last_row(ws) + 1) if str(ws.cell(r, 1).value) == key), None)
+        if op.get('op') == 'remove':
+            if row:
+                ws.delete_rows(row)
+            continue
+        obj = op.get('obj')
+        if row is None:
+            row = last_row(ws) + 1
+        _, cols, readable = DATA_SHEETS[kind]
+        text = json.dumps(obj, ensure_ascii=False)
+        chunks = [text[i:i + JSON_CHUNK] for i in range(0, len(text), JSON_CHUNK)] or ['']
+        values = [int(key) if key.isdigit() else key] + readable(obj) + [datetime.now(), user['name']] + chunks
+        c0 = json_col(kind)
+        for c in range(c0 + len(chunks), ws.max_column + 1):  # köhnə artıq JSON hissələrini təmizlə
+            ws.cell(row, c).value = None
+        for i, v in enumerate(values, 1):
+            ws.cell(row, i, v)
+        for n in range(2, len(chunks) + 1):
+            if ws.cell(1, c0 + n - 1).value in (None, ''):
+                ws.cell(1, c0 + n - 1, 'JSON %d' % n)
     save(wb)
     return True
 

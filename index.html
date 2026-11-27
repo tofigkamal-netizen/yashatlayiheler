@@ -397,6 +397,8 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
   .top-right{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:13px;}
   .role-pill{background:rgba(255,255,255,.14);padding:4px 10px;border-radius:3px;font-size:12px;}
   .top-user{font-weight:600;text-transform:uppercase;}
+  .db-status{font-size:12px;color:#c9d4e6;white-space:nowrap;}
+  .db-status.ok{color:#7fd6a0;} .db-status.saving{color:#ffd27a;} .db-status.err{color:#ff9a9a;}
 
   .main{height:auto;overflow:visible;padding:10px 4px 110px;}
   .view.active{background:#fff;border:1px solid var(--border);padding:18px 18px 24px;min-height:calc(100vh - 82px);}
@@ -537,6 +539,7 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API_URL = '/api';
     </div>
   </div>
   <div class="top-right">
+    <span class="db-status" id="dbStatus" title="Məlumat bazası">● Baza: qoşulmayıb</span>
     <span class="role-pill" id="roleName">Layihə</span>
     <span class="top-user" id="topUser"></span>
   </div>
@@ -1356,7 +1359,7 @@ const asArr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
 // Formdan əlavə edilən ölkə və şəhərlər
 const ELAVE_KEY = 'yasat_yer_elave';
 const yerElave = (() => { try { return JSON.parse(localStorage.getItem(ELAVE_KEY)) || {}; } catch(e) { return {}; } })();
-const saveYerElave = () => { try { localStorage.setItem(ELAVE_KEY, JSON.stringify(yerElave)); } catch(e) {} };
+const saveYerElave = () => { try { localStorage.setItem(ELAVE_KEY, JSON.stringify(yerElave)); } catch(e) {} scheduleSync(); };
 const olkeler = () => [...new Set([...Object.keys(YER_KATALOQ), ...Object.keys(yerElave)])];
 function yerQruplari(olke){
   const base = (YER_KATALOQ[olke] || []).map(g => ({ ...g }));
@@ -3320,7 +3323,86 @@ function renderAll(){
   updateBadge();
   if(screen === 'esas' && currentEsasId) openEsasDetail(currentEsasId);
   else if(screen === 'alt' && currentAltId) openAltDetail(currentAltId);
+  scheduleSync();
 }
+
+// =====================================================================
+//  MƏLUMAT BAZASI
+//  Lokal: python server.py → layiheler.xlsx;  onlayn: Apps Script → Google Sheet (eyni vərəqlər).
+//  Girişdən sonra bütün məlumat bazadan yüklənir; hər dəyişiklikdən sonra yalnız dəyişən
+//  qeydlər (layihə, ödəniş, iştirakçı tarixçəsi, parametr) avtomatik bazaya yazılır.
+// =====================================================================
+const IS_LOCALHOST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const DB = { on: false, snap: {}, timer: null, busy: false, again: false };
+function apiCall(fn, ...args){
+  return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+}
+// Brauzerə aid müvəqqəti fayl linkləri (blob:) bazaya yazılmır
+const cleanForDb = (o) => JSON.parse(JSON.stringify(o, (k, v) => (k === 'url' || k === 'qebzUrl' || k === 'qebzType') ? undefined : v));
+function dbItems(){
+  const items = [];
+  projects.forEach(p => items.push(['layihe', String(p.id), p]));
+  expenses.forEach(e => items.push(['odenis', String(e.id), e]));
+  Object.keys(PERSON_HIST).forEach(f => items.push(['istirakTarixce', f, PERSON_HIST[f]]));
+  items.push(['parametr', 'yerElave', yerElave]);
+  return items;
+}
+function dbSnapshot(){ const m = {}; dbItems().forEach(([k, id, o]) => { m[k + '|' + id] = JSON.stringify(cleanForDb(o)); }); return m; }
+function setDbStatus(st, msg){
+  const el = document.getElementById('dbStatus'); if(!el) return;
+  el.className = 'db-status ' + st;
+  el.textContent = { ok: '● Baza: yadda saxlanılıb', saving: '● Baza: yazılır…', err: '● Baza: xəta', off: '● Baza: qoşulmayıb' }[st] || '';
+  el.title = msg || (IS_LOCALHOST ? 'Lokal baza: layiheler.xlsx' : 'Onlayn baza: Google Sheet');
+}
+function scheduleSync(){ if(!DB.on) return; clearTimeout(DB.timer); DB.timer = setTimeout(runSync, 400); }
+async function runSync(){
+  if(!DB.on) return;
+  if(DB.busy){ DB.again = true; return; }
+  const now = dbSnapshot(), ops = [];
+  const parts = (key) => { const i = key.indexOf('|'); return [key.slice(0, i), key.slice(i + 1)]; };
+  for(const key in now) if(now[key] !== DB.snap[key]){ const [kind, id] = parts(key); ops.push({ op: 'upsert', kind, id, obj: JSON.parse(now[key]) }); }
+  for(const key in DB.snap) if(!(key in now)){ const [kind, id] = parts(key); ops.push({ op: 'remove', kind, id }); }
+  if(!ops.length) return;
+  DB.busy = true; setDbStatus('saving');
+  try { await apiCall('syncData', window.QX_TOKEN, ops); DB.snap = now; setDbStatus('ok'); }
+  catch(e){ setDbStatus('err', e.message); showToast('Bazaya yazmaq alınmadı: ' + e.message); }
+  DB.busy = false;
+  if(DB.again){ DB.again = false; scheduleSync(); }
+}
+async function loadDb(){
+  DB.on = false; setDbStatus('saving', 'Yüklənir…');
+  try{
+    const d = await apiCall('getData', window.QX_TOKEN);
+    if(!d.layihe.length && !d.odenis.length && IS_LOCALHOST){
+      // Lokal baza boşdur — bir dəfəlik nümunə məlumatla doldurulur
+      DB.snap = {}; DB.on = true; await runSync();
+      showToast('Lokal baza (layiheler.xlsx) nümunə məlumatla dolduruldu');
+      return;
+    }
+    projects = d.layihe;
+    expenses = d.odenis;
+    Object.keys(PERSON_HIST).forEach(k => delete PERSON_HIST[k]);
+    Object.assign(PERSON_HIST, d.istirakTarixce || {});
+    Object.assign(yerElave, (d.parametr || {}).yerElave || {});
+    nextProjectId = projects.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0) + 1;
+    nextExpenseId = expenses.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0) + 1;
+    DB.snap = dbSnapshot(); DB.on = true;
+    if(screen === 'alt' && !projectById(currentAltId)) showLayiheList();
+    if(screen === 'esas' && !projectById(currentEsasId)) showLayiheList();
+    renderAll();
+    setDbStatus('ok');
+  }catch(e){
+    const msg = /Naməlum əməliyyat: getData/.test(e.message)
+      ? 'Onlayn baza hələ qoşulmayıb: Apps Script-ə yeni Code.gs (getData/syncData) əlavə edilməlidir'
+      : 'Bazaya qoşulmaq alınmadı: ' + e.message;
+    setDbStatus('err', msg);
+    showToast(msg + ' — dəyişikliklər yadda saxlanılmayacaq');
+  }
+}
+// Rəy qatı girişdən/çıxışdan sonra bunları çağırır
+window.appOnLogin = loadDb;
+window.appOnLogout = () => { DB.on = false; clearTimeout(DB.timer); setDbStatus('off'); };
+
 renderAll();
 </script>
 </body>
@@ -3656,7 +3738,8 @@ renderAll();
   });
 
   function enter(token, user){
-    S.token = token; S.user = user; window.QX_USER = user;
+    S.token = token; S.user = user; window.QX_USER = user; window.QX_TOKEN = token;
+    if (window.appOnLogin) window.appOnLogin();
     var tu = document.getElementById('topUser'); if (tu) tu.textContent = user.name;
     show($('qx-login'), false); show($('qx-bar'), true);
     var av = $('qx-user-av'); av.textContent = initials(user.name);
@@ -3667,7 +3750,8 @@ renderAll();
 
   function signOut(silent){
     if (S.token && !silent) run('logout', S.token).catch(function(){});
-    S.token = null; S.user = null; window.QX_USER = null;
+    S.token = null; S.user = null; window.QX_USER = null; window.QX_TOKEN = null;
+    if (window.appOnLogout) window.appOnLogout();
     var tu = document.getElementById('topUser'); if (tu) tu.textContent = ''; S.notes = []; clearSession();
     setMode(false); closePop(); closeComp(); togglePanel(false); show($('qx-menu'), false);
     show($('qx-bar'), false); show($('qx-login'), true); renderPins(); $('qx-l').focus();

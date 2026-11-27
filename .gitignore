@@ -5,3 +5,6 @@ layiheler.xlsx
 # Python
 __pycache__/
 *.pyc
+
+# Apps Script kodu ilkin parolu (DEFAULT_PASSWORD) saxlayır — public repoya getməməlidir
+apps-script/Code.gs
