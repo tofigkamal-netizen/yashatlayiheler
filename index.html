@@ -1773,7 +1773,7 @@ $('#btnUnsCancel').addEventListener('click', () => { unsaved = null; closeModal(
 // Redaktə səhifəsi açıqdırsa, menyudan və ya başqa düymə ilə çıxmaq istəyəndə də soruşulur
 document.addEventListener('click', (e) => {
   if(!pageModal || !isDirty(pageModal)) return;
-  const t = e.target.closest('.nav-item, [data-act], #btnBackToLayihe, #btnBackToEsas, #btnBackToAile');
+  const t = e.target.closest('.nav-item, .role-toggle button, [data-act], #btnBackToLayihe, #btnBackToEsas, #btnBackToAile');
   if(!t || t.closest('#editWrap') || t.closest('#qx') || t.closest('.overlay')) return;
   e.preventDefault(); e.stopImmediatePropagation();
   $('#topMenu').classList.remove('open');
@@ -1986,7 +1986,21 @@ function exportData(format, baseName, title, headers, rows){
 // =====================================================================
 //  NAVİQASİYA VƏ ROL
 // =====================================================================
+// Rollar üzrə bölmələr: Layihə rolu — Layihələr və İştirakçılar; Maliyyə — yalnız Ümumi Təyinatlı Xərclər
+const ROLE_VIEWS = { layiheci: ['layihe', 'aile'], maliyye: ['xerc'] };
+const canView = (v) => (ROLE_VIEWS[role] || []).includes(v);
+function applyRoleViews(){
+  $all('.nav-item').forEach(i => { i.style.display = canView(i.dataset.view) ? '' : 'none'; });
+  const cur = (document.querySelector('.view.active') || { id: '' }).id.replace('view-', '');
+  if(!canView(cur)){
+    const v = ROLE_VIEWS[role][0];
+    activateView(v);
+    if(v === 'layihe') showLayiheList();
+    if(v === 'aile') showAileList();
+  }
+}
 function activateView(v){
+  if(!canView(v)) return;  // rolun görmədiyi bölməyə keçid olmur
   $all('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.view === v));
   $all('.view').forEach(x => x.classList.toggle('active', x.id === 'view-' + v));
 }
@@ -2002,6 +2016,7 @@ $all('.role-toggle button').forEach(btn => btn.addEventListener('click', () => {
   role = btn.dataset.role;
   $all('.role-toggle button').forEach(b => b.classList.toggle('active', b === btn));
   $('#roleName').textContent = role === 'maliyye' ? 'Maliyyə' : 'Layihə';
+  applyRoleViews();
   renderAll();
 }));
 
@@ -2954,14 +2969,13 @@ function renderXercView(){
     const menbe = menbeler(a).map(s => `${s.l}: ${fmt(m[s.k])}`).join('<br>');
     const canPay = role === 'maliyye' && a.status === 'maliyyede';
     const acts = rowMenu([
-      ddItem('go-alt', a.id, ICON.eye, 'Layihəyə bax'),
       ddItem('history', a.id, ICON.hist, 'Tarixçə'),
       canPay ? DD_SEP + ddItem('add-payment', a.id, ICON.plus, 'Ödəniş əlavə et') : '',
       canPay ? ddItem('finish-fin', a.id, ICON.check, 'Layihəni bitir', 'ok') : '',
     ]);
     return `<tr>
       <td>#${pad4(a.id)}</td>
-      <td><span class="link" data-act="go-alt" data-id="${a.id}">${esc(a.ad)}</span><span class="sub">${parent ? esc(parent.ad) : ''}</span></td>
+      <td>${esc(a.ad)}<span class="sub">${parent ? esc(parent.ad) : ''}</span></td>
       <td>${menbe}</td>
       <td class="num">${fmt(planMebleg(a))}</td>
       <td class="num">${fmt(odenilib(a.id))}</td>
@@ -3819,6 +3833,7 @@ if(location.protocol === 'file:'){
 window.appOnLogin = loadDb;
 window.appOnLogout = () => { DB.on = false; clearTimeout(DB.timer); setDbStatus('off'); };
 
+applyRoleViews();
 renderAll();
 </script>
 </body>
